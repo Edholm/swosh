@@ -8,11 +8,13 @@ import java.nio.charset.StandardCharsets
 
 
 data class StringValue(
-        val value: String
+        val value: String,
+        val editable: Boolean = false
 )
 
 data class IntValue(
-        val value: Int
+        val value: Int,
+        val editable: Boolean = false
 )
 
 data class SwishDataDTO(
@@ -30,7 +32,7 @@ fun SwishDataDTO.generateUri(): URI {
 
 fun Swosh.toSwishDataDTO(): SwishDataDTO {
     return SwishDataDTO(
-            payee = StringValue(this.payee),
-            amount = IntValue(this.amount),
-            message = StringValue(this.description ?: ""))
+            payee = StringValue(this.payee, false),
+            amount = IntValue(this.amount, false),
+            message = StringValue(this.description ?: "", true))
 }
