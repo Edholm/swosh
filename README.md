@@ -8,3 +8,16 @@ This is useful since https:// links are almost universally clickable.
 * java 8
 * _kotlin_ 
 * _spring-boot_
+
+## API
+* `POST /api/create`
+Accepts `application/json` and the body is as follows:
+```javascript
+	{
+		"phone": "07xxxxxx",
+		"amount": 100,
+		"message": "example message",
+		"expireAfterSeconds": null, // (optional, 0 or null is never expire)
+	}
+```
+
