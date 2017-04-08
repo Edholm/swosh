@@ -6,7 +6,7 @@ import java.time.Instant
 
 @Component
 class ExpiryManager(private val swoshRepo: SwoshRepository) {
-    @Scheduled(fixedDelay = 60000) // TODO: use application.properties instead
+    @Scheduled(fixedRateString = "\${swosh.expire.rate}", initialDelay = 1337)
     fun expireOldLinks() {
         swoshRepo.delete(
                 swoshRepo.findByExpiresOnBefore(Instant.now()))
