@@ -9,7 +9,7 @@ import java.time.Instant
 @Document
 data class Swosh(
         @Id
-        val id: String = BigInteger(130, SecureRandom()).toString(32).substring(Swosh.ID_LENGTH),
+        val id: String = BigInteger(130, SecureRandom()).toString(32).substring(0, Swosh.ID_LENGTH),
         val payee: String = "N/A",
         val amount: Int = 1,
         val description: String? = null,
