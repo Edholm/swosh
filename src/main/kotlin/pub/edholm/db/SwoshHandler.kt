@@ -55,20 +55,25 @@ class SwoshHandler(val repo: SwoshRepository) {
                                 }
                     }
                 }
-                .otherwise { e ->
+                .otherwise { _ ->
                     ErrorDTO(reason = "Invalid input format!")
                             .badRequestResponse()
                 }
     }
 
     private fun constructAndInsertNewSwosh(dto: SwoshDTO): Mono<Swosh> {
+        val expireOn: Instant?
+        when {
+            dto.expireAfterSeconds == null || dto.expireAfterSeconds == 0L -> expireOn = null
+            else -> expireOn = Instant.now().plusSeconds(dto.expireAfterSeconds)
+        }
         val swosh = Swosh(
                 payee = dto.phone?.trim()
                         ?.replace("-", "")
                         ?.replace(" ", "") ?: "",
                 amount = dto.amount ?: 1,
                 description = dto.message,
-                expiresOn = Instant.now().plusSeconds(dto.expireAfterSeconds ?: Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS))
+                expiresOn = expireOn)
         return repo.save(swosh)
     }
 
