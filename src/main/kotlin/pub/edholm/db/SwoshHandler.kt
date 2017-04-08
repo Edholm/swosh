@@ -59,12 +59,10 @@ class SwoshHandler(val repo: SwoshRepository) {
     }
 
     private fun constructAndInsertNewSwosh(dto: SwoshDTO): Mono<Swosh> {
-        println(dto)
         val swosh = Swosh(payee = dto.phone ?: "",
                 amount = dto.amount ?: 1,
                 description = dto.description,
                 expiresOn = Instant.now().plusSeconds(dto.expireAfterSeconds ?: Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS))
-        println(swosh)
         return repo.save(swosh)
     }
 
