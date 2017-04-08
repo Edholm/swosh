@@ -3,6 +3,8 @@
     <title>Swosh</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <script>
         function generateLink() {
             document.getElementById("erroralert").style.visibility = 'hidden';
@@ -33,6 +35,15 @@
                 }
             };
             http.send(JSON.stringify(dto));
+        }
+
+        function copyUrlToClipboard() {
+            var aux = document.createElement("input");
+            aux.setAttribute("value", document.getElementById("swoshurl").href);
+            document.body.appendChild(aux);
+            aux.select();
+            document.execCommand("copy");
+            document.body.removeChild(aux);
         }
     </script>
 </head>
@@ -83,8 +94,12 @@
         <h3 class="card-header">Your swosh url</h3>
         <div class="card-block">
             <a href="#" id="swoshurl">https://swosh.me/herp</a>
+            <button style="margin-left: 1em" class="btn btn-secondary" title="Copy to clipboard" onclick="copyUrlToClipboard()">
+                <i class="fa fa-clipboard" aria-hidden="true"></i>
+            </button>
         </div>
     </div>
 </div>
+<hr>
 </body>
 </html>
