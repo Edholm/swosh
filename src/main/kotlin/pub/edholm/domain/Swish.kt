@@ -1,32 +1,36 @@
 package pub.edholm.domain
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.springframework.web.util.UriUtils
 import pub.edholm.db.Swosh
 import java.net.URI
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 
-data class Value(
+data class StringValue(
         val value: String
+)
+
+data class IntValue(
+        val value: Int
 )
 
 data class SwishDataDTO(
         val version: Int = 1,
-        val payee: Value,
-        val amount: Value,
-        val message: Value
+        val payee: StringValue,
+        val amount: IntValue,
+        val message: StringValue
 )
 
 fun SwishDataDTO.generateUri(): URI {
-    val mapper = jacksonObjectMapper()
-    val dtoAsString = UriUtils.encode(mapper.writeValueAsString(this), StandardCharsets.UTF_8)
-    return URI.create("swish://payment?data=$dtoAsString")
+    val asString = jacksonObjectMapper().writeValueAsString(this)
+    val encodedData = URLEncoder.encode(asString, StandardCharsets.UTF_8.displayName())
+    return URI.create("swish://payment?data=$encodedData")
 }
 
 fun Swosh.toSwishDataDTO(): SwishDataDTO {
     return SwishDataDTO(
-            payee = Value(this.payee),
-            amount = Value(this.amount.toString()),
-            message = Value(this.description ?: ""))
+            payee = StringValue(this.payee),
+            amount = IntValue(this.amount),
+            message = StringValue(this.description ?: ""))
 }
