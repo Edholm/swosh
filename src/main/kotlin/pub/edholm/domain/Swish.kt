@@ -25,7 +25,8 @@ fun SwishDataDTO.generateUri(): URI {
 }
 
 fun Swosh.toSwishDataDTO(): SwishDataDTO {
-    return SwishDataDTO(payee = Value(this.payee),
+    return SwishDataDTO(
+            payee = Value(this.payee),
             amount = Value(this.amount.toString()),
             message = Value(this.description ?: ""))
 }

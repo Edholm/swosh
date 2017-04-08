@@ -30,20 +30,23 @@ class SwoshHandler(val repo: SwoshRepository) {
         return req.bodyToMono(SwoshDTO::class.java)
                 .then { dto ->
                     when {
-                        dto.amount == null || dto.phone.isNullOrBlank() ->
+                        dto.amount == null || dto.phone == null || dto.phone.isBlank() ->
                             ErrorDTO(reason = "Missing input parameters. 'phone' and 'amount' is required")
+                                    .badRequestResponse()
+                        !dto.phone.matches(Regex("[0-9 +-]{10,15}")) ->
+                            ErrorDTO(reason = "Invalid phone number. Got: ${dto.phone}")
                                     .badRequestResponse()
                         dto.amount < 1 ->
                             ErrorDTO(reason = "Minimum allowed amount is 1. Got ${dto.amount}")
                                     .badRequestResponse()
-                        dto.description != null && dto.description.length > 50 ->
-                            ErrorDTO(reason = "Description is too long. Max 50 chars. Got ${dto.description.length}")
+                        dto.message != null && dto.message.length > 50 ->
+                            ErrorDTO(reason = "Description is too long. Max 50 chars. Got ${dto.message.length}")
                                     .badRequestResponse()
                         else -> constructAndInsertNewSwosh(dto)
-                                .then { s ->
+                                .then { (id) ->
                                     ok()
                                             .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                            .body(SwoshUrlDTO(s.id).toMono())
+                                            .body(SwoshUrlDTO(id).toMono())
                                 }
                                 .otherwise {
                                     status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -59,18 +62,25 @@ class SwoshHandler(val repo: SwoshRepository) {
     }
 
     private fun constructAndInsertNewSwosh(dto: SwoshDTO): Mono<Swosh> {
-        val swosh = Swosh(payee = dto.phone ?: "",
+        val swosh = Swosh(
+                payee = dto.phone?.trim()
+                        ?.replace("-", "")
+                        ?.replace(" ", "") ?: "",
                 amount = dto.amount ?: 1,
-                description = dto.description,
+                description = dto.message,
                 expiresOn = Instant.now().plusSeconds(dto.expireAfterSeconds ?: Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS))
         return repo.save(swosh)
     }
 
-    private data class SwoshUrlDTO(val url: String)
+    private data class SwoshUrlDTO(val id: String) {
+        fun getUrl(): String {
+            return "https://swosh.me/$id"
+        }
+    }
 
     private data class SwoshDTO(
             val phone: String?,
             val amount: Int?,
-            val description: String?,
+            val message: String?,
             val expireAfterSeconds: Long? = Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS)
 }

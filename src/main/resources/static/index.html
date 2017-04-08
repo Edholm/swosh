@@ -1,8 +1,89 @@
 <html>
 <head>
-    <title>Tjena</title>
+    <title>Swosh</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script>
+        function generateLink() {
+            document.getElementById("erroralert").style.visibility = 'hidden';
+            document.getElementById("cardlinkdiv").style.visibility = 'hidden';
+
+            var phone = document.getElementById("phone").value;
+            var amount = document.getElementById("amount").value;
+            var msg = document.getElementById("message").value;
+            var expire = document.getElementById("expire").value;
+
+            var dto = {phone: phone, amount: amount, message: msg, expireAfterSeconds: expire};
+            var http = new XMLHttpRequest();
+            http.open("POST", "/api/create", true);
+            http.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+            http.onreadystatechange = function () {
+                if (http.readyState === 4) {
+                    if (http.status === 200) {
+                        document.getElementById("cardlinkdiv").style.visibility = '';
+
+                        var resp = JSON.parse(http.responseText);
+                        var urlElem = document.getElementById("swoshurl");
+                        urlElem.href = resp.url;
+                        urlElem.text = resp.url;
+                    } else {
+                        console.log(http.response);
+                        document.getElementById("erroralert").style.visibility = '';
+                    }
+                }
+            };
+            http.send(JSON.stringify(dto));
+        }
+    </script>
 </head>
-<body>
-<h1>IT'S WORKING!</h1>
+<body class="container">
+<div class="row">
+    <h1>Generate link</h1>
+    <div class="card">
+        <div class="card-block">
+            Fill in the below information to generate a swosh.me link that you can share with your friends
+        </div>
+    </div>
+    <form style="margin-top: 1em">
+        <div class="form-group">
+            <label for="phone">Recipient's phone number</label>
+            <input type="text" class="form-control text-muted" id="phone" placeholder="Phone number">
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" min="1" max="125000" class="form-control" id="amount" placeholder="Amount">
+        </div>
+        <div class="form-group">
+            <label for="message">Message</label>
+            <input type="text" class="form-control" id="message" placeholder="Message (optional)">
+        </div>
+
+        <div class="form-group">
+            <label for="expire">Expires in</label>
+            <select class="form-control" id="expire">
+                <option value="">Never</option>
+                <option value="600">10 minutes</option>
+                <option value="1800">30 minutes</option>
+                <option value="3600">1 hour</option>
+                <option value="43200">12 hours</option>
+                <option value="86400">1 day</option>
+            </select>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="generateLink()">Generate link</button>
+    </form>
+</div>
+</div>
+<div class="row">
+    <div class="alert alert-danger" role="alert" id="erroralert"
+         style="float: left; position: absolute; visibility: hidden">
+        <strong>Oh snap!</strong> Change a few things up and try submitting again.
+    </div>
+    <div class="card" id="cardlinkdiv" style="visibility: hidden">
+        <h3 class="card-header">Your swosh url</h3>
+        <div class="card-block">
+            <a href="#" id="swoshurl">https://swosh.me/herp</a>
+        </div>
+    </div>
+</div>
 </body>
 </html>
