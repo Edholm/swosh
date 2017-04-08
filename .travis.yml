@@ -20,6 +20,6 @@ before_install:
 deploy:
   provider: script
   skip_cleanup: true
-  script: rsync -r --delete-after $TRAVIS_BUILD_DIR/build/libs/ swosh@swosh.me:~
+  script: rsync -r --delete-after $TRAVIS_BUILD_DIR/build/libs/ swosh@swosh.me:~/deployables
   on:
     branch: master
