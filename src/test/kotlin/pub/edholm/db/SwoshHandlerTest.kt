@@ -31,7 +31,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun redirectToSwishIdDoesNotExist() {
+    fun `Redirect to Swish when id does not exist`() {
         Mockito.`when`(swoshRepo.findOne("asdfg")).thenReturn(Mono.empty())
         webTestClient.get()
                 .uri("/asdfg")
@@ -42,7 +42,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun redirectToSwish() {
+    fun `Redirect to Swish`() {
         val swoshId = "asdf123"
         Mockito.`when`(swoshRepo.findOne(swoshId)).thenReturn(Mono.just(Swosh(swoshId)))
         webTestClient.get()
@@ -54,7 +54,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithInvalidBody() {
+    fun `Create Swosh with invalid body`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwishDataDTO(1, StringValue("herp"), IntValue(1), StringValue("derp"))) // Just a data class with "wrong" body
@@ -64,7 +64,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithMissingAmount() {
+    fun `Create Swosh with missing amount`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO("0700000000", null, "msg", 100))
@@ -75,7 +75,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithMissingPhone() {
+    fun `Create Swosh with missing phone number`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO(null, 100, "msg", 100))
@@ -86,7 +86,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithBlankPhone() {
+    fun `Create Swosh with blank phone`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO("          ", 100, "msg", 100))
@@ -97,7 +97,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithZeroAmount() {
+    fun `Create Swosh with zero amount`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO("0700000000", 0, "msg", 100))
@@ -108,7 +108,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithNegativeAmount() {
+    fun `Create Swosh with negative amount`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO("0700000000", -1, "msg", 100))
@@ -119,7 +119,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithTooLongDescription() {
+    fun `Create Swosh with too long description`() {
         val longMsg = "a" * 51
         webTestClient.post()
                 .uri("/api/create")
@@ -131,7 +131,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithMaxLengthDescription() {
+    fun `Create Swosh with max length description`() {
         Mockito.`when`(swoshRepo.save(Mockito.any(Swosh::class.java)))
                 .thenReturn(Swosh(id = "edaeda1").toMono())
 
@@ -147,7 +147,7 @@ class SwoshHandlerTest {
 
 
     @Test
-    fun createSwoshWithInvalidPhoneNumber() {
+    fun `Create Swosh with invalid phone number`() {
         webTestClient.post()
                 .uri("/api/create")
                 .body(SwoshDTO("070000000a", 100, "msg", 100))
@@ -158,7 +158,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithCorrectPhoneNumbers() {
+    fun `Create Swosh with correct phone number`() {
         Mockito.`when`(swoshRepo.save(Mockito.any(Swosh::class.java)))
                 .thenReturn(Swosh(id = "validphone").toMono())
 
@@ -177,7 +177,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithMissingMessage() {
+    fun `Create Swosh with missing message`() {
         Mockito.`when`(swoshRepo.save(Mockito.any(Swosh::class.java)))
                 .thenReturn(Swosh(id = "nomsg").toMono())
         webTestClient.post()
@@ -190,7 +190,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun createSwoshWithMissingExpiryTime() {
+    fun `Create Swosh with missing expiry time`() {
         Mockito.`when`(swoshRepo.save(Mockito.any(Swosh::class.java)))
                 .thenReturn(Swosh(id = "noexpire").toMono())
         webTestClient.post()
@@ -203,7 +203,7 @@ class SwoshHandlerTest {
     }
 
     @Test
-    fun toSwoshExtensionWithExpireNever() {
+    fun `toSwosh extension with expiry never`() {
         val swoshExpire0 = SwoshDTO("0700000000", 100, "msg", 0)
         val swoshExpireNull = SwoshDTO("0700000000", 100, "msg", null)
 
