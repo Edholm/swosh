@@ -21,3 +21,6 @@ Accepts `application/json` and the body is as follows:
 	}
 ```
 
+## License
+
+See the [LICENSE](LICENSE.md) file for license rights and limitations (MIT).
