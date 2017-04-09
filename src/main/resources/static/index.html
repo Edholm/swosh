@@ -21,16 +21,17 @@
             http.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
             http.onreadystatechange = function () {
                 if (http.readyState === 4) {
+                    var resp = JSON.parse(http.responseText);
                     if (http.status === 200) {
                         document.getElementById("cardlinkdiv").style.visibility = '';
 
-                        var resp = JSON.parse(http.responseText);
                         var urlElem = document.getElementById("swoshurl");
                         urlElem.href = resp.url;
                         urlElem.text = resp.url;
                     } else {
-                        console.log(http.response);
+                        console.log("Error response: ", resp);
                         document.getElementById("erroralert").style.visibility = '';
+                        document.getElementById("errortxt").innerHTML = resp.reason
                     }
                 }
             };
@@ -90,6 +91,8 @@
     <div class="alert alert-danger" role="alert" id="erroralert"
          style="float: left; position: absolute; visibility: hidden">
         <strong>Oh snap!</strong> Change a few things up and try submitting again.
+        <br />
+        <i id="errortxt"></i>
     </div>
     <div class="card" id="cardlinkdiv" style="visibility: hidden">
         <h3 class="card-header">Your swosh url</h3>
