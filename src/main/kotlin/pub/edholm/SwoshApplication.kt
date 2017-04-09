@@ -1,38 +1,29 @@
 package pub.edholm
 
+import com.samskivert.mustache.Mustache
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.mustache.MustacheProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.web.reactive.config.ResourceHandlerRegistry
 import org.springframework.web.reactive.config.WebFluxConfigurer
-import org.springframework.web.server.ServerWebExchange
-import org.springframework.web.server.WebFilter
-import org.springframework.web.server.WebFilterChain
-import reactor.core.publisher.Mono
+import pub.edholm.support.MustacheResourceTemplateLoader
+import pub.edholm.support.MustacheViewResolver
+
 
 @SpringBootApplication
 @EnableScheduling
 @Configuration
 class SwoshApplication : WebFluxConfigurer {
-    override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
-    }
-
     @Bean
-    fun filter() = IndexWebFilter()
-}
-
-class IndexWebFilter : WebFilter {
-    override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
-        val request = exchange.request
-        val path = request.uri.path
-        return when (path.endsWith("/")) {
-            true -> chain.filter(exchange.mutate().request { b -> b.path(path + "index.html") }.build())
-            else -> chain.filter(exchange)
-        }
+    fun mustacheViewResolver(props: MustacheProperties): MustacheViewResolver {
+        val viewResolver = MustacheViewResolver()
+        viewResolver.setPrefix(props.prefix)
+        viewResolver.setSuffix(props.suffix)
+        val loader = MustacheResourceTemplateLoader(props.prefix, props.suffix)
+        viewResolver.setCompiler(Mustache.compiler().escapeHTML(false).withLoader(loader))
+        return viewResolver
     }
 }
 

@@ -1,7 +1,6 @@
 package pub.edholm.web
 
 import org.springframework.context.annotation.Bean
-import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.router
@@ -12,7 +11,7 @@ class Router(val swoshHandler: SwoshHandler) {
     @Bean
     fun route() = router {
         accept(MediaType.TEXT_HTML).nest {
-            resources("/*", ClassPathResource("/static/"))
+            GET("/", swoshHandler::renderIndex)
             GET("/{id}", swoshHandler::redirectToSwish)
         }
 

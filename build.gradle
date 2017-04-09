@@ -50,4 +50,5 @@ dependencies {
     compile("io.projectreactor:reactor-kotlin-extensions:1.0.0.M1")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    compile("com.samskivert:jmustache:1.13")
 }
