@@ -8,13 +8,10 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import org.springframework.web.reactive.function.server.body
 import pub.edholm.badRequestResponse
-import pub.edholm.domain.ErrorDTO
-import pub.edholm.domain.generateUri
-import pub.edholm.domain.toSwishDataDTO
+import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.net.URI
-import java.time.Instant
 
 @Component
 class SwoshHandler(private val repo: SwoshRepository) {
@@ -66,30 +63,6 @@ class SwoshHandler(private val repo: SwoshRepository) {
             }
 
     private fun constructAndInsertNewSwosh(dto: SwoshDTO): Mono<Swosh> {
-        val expireOn: Instant?
-        when {
-            dto.expireAfterSeconds == null || dto.expireAfterSeconds == 0L -> expireOn = null
-            else -> expireOn = Instant.now().plusSeconds(dto.expireAfterSeconds)
-        }
-        val swosh = Swosh(
-                payee = dto.phone?.trim()
-                        ?.replace("-", "")
-                        ?.replace(" ", "") ?: "",
-                amount = dto.amount ?: 1,
-                description = dto.message,
-                expiresOn = expireOn)
-        return repo.save(swosh)
+        return repo.save(dto.toSwosh())
     }
-
-    private data class SwoshUrlDTO(val id: String) {
-        fun getUrl(): String {
-            return "https://swosh.me/$id"
-        }
-    }
-
-    private data class SwoshDTO(
-            val phone: String?,
-            val amount: Int?,
-            val message: String?,
-            val expireAfterSeconds: Long? = Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS)
 }
