@@ -12,12 +12,14 @@ class Router(val swoshHandler: SwoshHandler) {
     fun route() = router {
         accept(MediaType.TEXT_HTML).nest {
             GET("/", swoshHandler::renderIndex)
-            GET("/{id}", swoshHandler::redirectToSwish)
+            GET("/{id}", swoshHandler::renderPreview)
+            GET("/{id}/redir", swoshHandler::redirectToSwish)
         }
 
         // API-routes
         (accept(MediaType.APPLICATION_JSON_UTF8) and "/api").nest {
             POST("/create", swoshHandler::createSwosh)
+            //GET("/preview/{id}", swoshHandler::previewSwosh)
         }
     }
 }

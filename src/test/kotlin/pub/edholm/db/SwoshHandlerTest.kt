@@ -46,7 +46,7 @@ class SwoshHandlerTest {
         val swoshId = "asdf123"
         Mockito.`when`(swoshRepo.findOne(swoshId)).thenReturn(Mono.just(Swosh(swoshId)))
         webTestClient.get()
-                .uri("/$swoshId")
+                .uri("/$swoshId/redir")
                 .exchange()
                 .expectStatus().is3xxRedirection
                 .expectHeader().valueMatches("location", "swish://payment\\?data=.+")

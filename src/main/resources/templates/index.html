@@ -1,5 +1,7 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Swosh</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
@@ -71,7 +73,7 @@
                     <label for="phone">Swish number</label>
                     <div class="input-group">
                         <span class="input-group-addon"><i class="fa fa-mobile" aria-hidden="true"></i></span>
-                        <input type="text" class="form-control text-muted" id="phone" placeholder="1230000000">
+                        <input type="text" class="form-control text-muted" maxlength="15" id="phone" placeholder="1230000000">
                     </div>
                 </div>
                 <div class="form-group col-lg-6">
@@ -113,7 +115,8 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" class="btn btn-success pull-right" onclick="generateLink()">Give me my link!</button>
+                    <button type="button" class="btn btn-success pull-right" onclick="generateLink()">Give me my link!
+                    </button>
                 </div>
             </div>
         </form>

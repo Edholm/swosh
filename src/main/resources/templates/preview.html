@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Swosh preview</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+</head>
+<body class="container">
+<div class="row justify-content-center">
+    <div class="col-sm-5">
+        <h1>Preview</h1>
+        <dl>
+            <dt>Payee</dt>
+            <dd>{{swosh.payee}}</dd>
+            <dt>Amount</dt>
+            <dd>{{swosh.amount}} kr</dd>
+            {{#swosh.description}}
+            <dt>Description</dt>
+            <dd>{{swosh.description}}</dd>
+            {{/swosh.description}}
+            <dt>Expires on</dt>
+            <dd>{{swosh.expiresOn}}</dd>
+        </dl>
+        <a href="/{{swosh.id}}/redir" class="btn btn-primary">Looks good, open Swish</a>
+    </div>
+</div>
+</body>
+</html>
