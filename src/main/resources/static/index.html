@@ -49,67 +49,108 @@
     </script>
 </head>
 <body class="container">
-<div class="row" style="margin-top: 2em">
-    <h1>Generate link</h1>
-    <div class="card">
-        <div class="card-block">
-            Fill in the information below to generate a link that you can send to your friends, that when clicked opens
-            <a href="https://www.getswish.se" target="_blank">Swish</a> with these values prefilled
-        </div>
-    </div>
-    <form style="margin-top: 1em">
-        <div class="form-group">
-            <label for="phone">Recipient's phone number</label>
-            <input type="text" class="form-control text-muted" id="phone" placeholder="Phone number">
-        </div>
-        <div class="form-group">
-            <label for="amount">Amount</label>
-            <input type="number" min="1" max="125000" class="form-control" id="amount" placeholder="Amount">
-        </div>
-        <div class="form-group">
-            <label for="message">Message</label>
-            <input type="text" class="form-control" id="message" placeholder="Message (optional)">
-        </div>
-
-        <div class="form-group">
-            <label title="The link will stop working after the selected amount of time" for="expire">Expires in</label>
-            <select class="form-control" id="expire">
-                <option value="604800">1 week</option>
-                <option value="86400">1 day</option>
-                <option value="43200">12 hours</option>
-                <option value="3600">1 hour</option>
-                <option value="1800">30 minutes</option>
-                <option value="600">10 minutes</option>
-                <option value="">Never</option>
-            </select>
-        </div>
-        <button type="button" class="btn btn-primary" onclick="generateLink()">Generate link</button>
-    </form>
-</div>
-</div>
-<div class="row">
-    <div class="alert alert-danger" role="alert" id="erroralert"
-         style="float: left; position: absolute; visibility: hidden">
-        <strong>Oh snap!</strong> Change a few things up and try submitting again.
-        <br />
-        <i id="errortxt"></i>
-    </div>
-    <div class="card" id="cardlinkdiv" style="visibility: hidden">
-        <h3 class="card-header">Your swosh url</h3>
-        <div class="card-block">
-            <a href="#" id="swoshurl">https://swosh.me/herp</a>
-            <button style="margin-left: 1em" class="btn btn-secondary" title="Copy to clipboard"
-                    onclick="copyUrlToClipboard()">
-                <i class="fa fa-clipboard" aria-hidden="true"></i>
-            </button>
+<div class="row justify-content-center" style="margin-top: 2em">
+    <div class="col-lg-7">
+        <h1>Generate Swosh link</h1>
+        <div class="card">
+            <div class="card-block">
+                Fill in the information below to generate a link that you can send to your friends, that when clicked
+                opens
+                <a href="https://www.getswish.se" target="_blank">Swish</a> with these values prefilled
+                <br>
+                <i>Note: the links only work on devices where the Swish app is installed</i>
+            </div>
         </div>
     </div>
 </div>
-<hr>
-<div class="row justify-content-left">
-    <div class="col">
-        <a href="https://github.com/Edholm/swosh" class="btn btn-secondary"><i class="fa fa-github" aria-hidden="true">
-            Swosh on Github</i></a>
+<div class="row justify-content-center" style="margin-top: 1em">
+    <div class="col-lg-7">
+        <form style="margin-top: 1em">
+            <div class="row">
+                <div class="form-group col-lg-6">
+                    <label for="phone">Swish number</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-mobile" aria-hidden="true"></i></span>
+                        <input type="text" class="form-control text-muted" id="phone" placeholder="1230000000">
+                    </div>
+                </div>
+                <div class="form-group col-lg-6">
+                    <label for="amount">Amount you want</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-money" aria-hidden="true"></i></span>
+                        <input type="number" min="1" max="125000" class="form-control" id="amount"
+                               placeholder="Amount">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-12">
+                    <label for="message">Message</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-envelope-o" aria-hidden="true"></i></span>
+                        <input type="text" class="form-control" id="message" placeholder="Message (optional)">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-12">
+                    <label title="The link will stop working after the selected amount of time" for="expire">Expires
+                        in</label>
+                    <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-calendar-times-o"
+                                                   aria-hidden="true"></i></span>
+                        <select class="form-control" id="expire">
+                            <option value="604800">1 week</option>
+                            <option value="86400">1 day</option>
+                            <option value="43200">12 hours</option>
+                            <option value="3600">1 hour</option>
+                            <option value="1800">30 minutes</option>
+                            <option value="600">10 minutes</option>
+                            <option value="">Never</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-success pull-right" onclick="generateLink()">Give me my link!</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="alert alert-danger" role="alert" id="erroralert"
+             style="float: left; position: absolute; visibility: hidden">
+            <strong>Oh snap!</strong> Change a few things up and try submitting again.
+            <br/>
+            <i id="errortxt"></i>
+        </div>
+        <div class="card" id="cardlinkdiv" style="visibility: hidden">
+            <h3 class="card-header">Your swosh url</h3>
+            <div class="card-block">
+                <div class="col-lg-12">
+                    <a href="#" id="swoshurl">https://swosh.me/herp</a>
+                    <button style="margin-left: 1em" class="btn btn-secondary" title="Copy to clipboard"
+                            onclick="copyUrlToClipboard()">
+                        <i class="fa fa-clipboard" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <hr>
+        <div class="row justify-content-left">
+            <div class="col">
+                <a href="https://github.com/Edholm/swosh" target="_blank" class="btn btn-secondary">
+                    <i class="fa fa-github" aria-hidden="true"> Swosh on Github</i>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 </body>
