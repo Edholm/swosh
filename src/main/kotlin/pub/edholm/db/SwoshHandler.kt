@@ -18,43 +18,42 @@ class SwoshHandler(private val repo: SwoshRepository) {
     fun renderIndex(req: ServerRequest) = ok().render("index")
     fun renderPreview(req: ServerRequest) =
             repo.findOne(req.pathVariable("id"))
-                    .then { swosh ->
+                    .flatMap { swosh ->
                         ok().render("preview", swosh)
                     }
-                    .otherwiseIfEmpty(temporaryRedirect(URI.create("/")).build())
+                    .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
 
     fun redirectToSwish(req: ServerRequest) =
             repo.findOne(req.pathVariable("id"))
-                    .then { s ->
+                    .flatMap { s ->
                         temporaryRedirect(s.toSwishDataDTO().generateUri())
                                 .build()
                     }
-                    .otherwiseIfEmpty(temporaryRedirect(URI.create("/")).build())
+                    .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
     fun createSwosh(req: ServerRequest): Mono<ServerResponse> {
         return req.bodyToMono(SwoshDTO::class.java)
-                .then { dto ->
+                .flatMap { dto ->
                     val swoshErrorDTO = validateSwoshDTO(dto)
                     when {
                         swoshErrorDTO != null -> swoshErrorDTO.badRequestResponse()
                         else ->
                             constructAndInsertNewSwosh(dto)
-                                    .then { (id) ->
+                                    .flatMap { (id) ->
                                         ok()
                                                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                                                 .body(SwoshUrlDTO(id).toMono())
                                     }
-                                    .otherwise {
+                                    .onErrorResume {
                                         status(HttpStatus.INTERNAL_SERVER_ERROR)
                                                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                                                 .body(ErrorDTO(reason = "Unable to generate Swosh!").toMono())
                                     }
                     }
                 }
-                .otherwise { _ ->
-                    ErrorDTO(reason = "Invalid input format!")
-                            .badRequestResponse()
+                .onErrorResume {
+                    ErrorDTO(reason = "Invalid input format!").badRequestResponse()
                 }
     }
 
