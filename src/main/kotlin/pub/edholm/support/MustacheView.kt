@@ -50,7 +50,7 @@ class MustacheView : AbstractUrlBasedView {
         this.template = template
     }
 
-    override fun renderInternal(model: Map<String, Any>, contentType: MediaType, exchange: ServerWebExchange): Mono<Void> {
+    override fun renderInternal(model: Map<String, Any>, contentType: MediaType?, exchange: ServerWebExchange): Mono<Void> {
         if (this.template != null) {
 
             val dataBuffer = exchange.response.bufferFactory().allocateBuffer()
