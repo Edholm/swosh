@@ -15,11 +15,11 @@ import java.net.URI
 
 @Component
 class SwoshHandler(private val repo: SwoshRepository) {
-    fun renderIndex(req: ServerRequest) = ok().render("index")
+    fun renderIndex(req: ServerRequest) = ok().contentType(MediaType.TEXT_HTML).render("index")
     fun renderPreview(req: ServerRequest) =
             repo.findById(req.pathVariable("id"))
                     .flatMap { swosh ->
-                        ok().render("preview", swosh)
+                        ok().contentType(MediaType.TEXT_HTML).render("preview", swosh)
                     }
                     .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
