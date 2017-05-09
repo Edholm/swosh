@@ -27,7 +27,6 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
         setPrefix(props.prefix)
         setSuffix(props.suffix)
     }
-
 }
 
 fun main(args: Array<String>) {
