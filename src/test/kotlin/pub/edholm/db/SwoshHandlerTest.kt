@@ -32,7 +32,7 @@ class SwoshHandlerTest {
 
     @Test
     fun `Redirect to Swish when id does not exist`() {
-        Mockito.`when`(swoshRepo.findOne("asdfg")).thenReturn(Mono.empty())
+        Mockito.`when`(swoshRepo.findById("asdfg")).thenReturn(Mono.empty())
         webTestClient.get()
                 .uri("/asdfg")
                 .exchange()
@@ -44,7 +44,7 @@ class SwoshHandlerTest {
     @Test
     fun `Redirect to Swish`() {
         val swoshId = "asdf123"
-        Mockito.`when`(swoshRepo.findOne(swoshId)).thenReturn(Mono.just(Swosh(swoshId)))
+        Mockito.`when`(swoshRepo.findById(swoshId)).thenReturn(Mono.just(Swosh(swoshId)))
         webTestClient.get()
                 .uri("/$swoshId/redir")
                 .exchange()
@@ -57,65 +57,66 @@ class SwoshHandlerTest {
     fun `Create Swosh with invalid body`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwishDataDTO(1, StringValue("herp"), IntValue(1), StringValue("derp"))) // Just a data class with "wrong" body
+                .syncBody(SwishDataDTO(1, StringValue("herp"), IntValue(1), StringValue("derp"))) // Just a data class with "wrong" body
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value().isEqualTo(ErrorDTO(error = true, reason = "Invalid input format!"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Invalid input format!"))
     }
 
     @Test
     fun `Create Swosh with missing amount`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", null, "msg", 100))
+                .syncBody(SwoshDTO("0700000000", null, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
     }
 
     @Test
     fun `Create Swosh with missing phone number`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO(null, 100, "msg", 100))
+                .syncBody(SwoshDTO(null, 100, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
     }
 
     @Test
     fun `Create Swosh with blank phone`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("          ", 100, "msg", 100))
+                .syncBody(SwoshDTO("          ", 100, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Missing input parameters. 'phone' and 'amount' is required"))
     }
 
     @Test
     fun `Create Swosh with zero amount`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", 0, "msg", 100))
+                .syncBody(SwoshDTO("0700000000", 0, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Minimum allowed amount is 1. Got 0"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Minimum allowed amount is 1. Got 0"))
     }
 
     @Test
     fun `Create Swosh with negative amount`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", -1, "msg", 100))
+                .syncBody(SwoshDTO("0700000000", -1, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Minimum allowed amount is 1. Got -1"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Minimum allowed amount is 1. Got -1"))
     }
 
     @Test
@@ -123,11 +124,11 @@ class SwoshHandlerTest {
         val longMsg = "a" * 51
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", 100, longMsg, 100))
+                .syncBody(SwoshDTO("0700000000", 100, longMsg, 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Description is too long. Max 50 chars. Got 51"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Description is too long. Max 50 chars. Got 51"))
     }
 
     @Test
@@ -138,11 +139,11 @@ class SwoshHandlerTest {
         val longMsg = "b" * 50
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", 100, longMsg, 100))
+                .syncBody(SwoshDTO("0700000000", 100, longMsg, 100))
                 .exchange()
                 .expectStatus().isOk
-                .expectBody(SwoshUrlDTO::class.java).value()
-                .isEqualTo(SwoshUrlDTO("edaeda1"))
+                .expectBody(SwoshUrlDTO::class.java)
+                .isEqualTo<Nothing>(SwoshUrlDTO("edaeda1"))
     }
 
 
@@ -150,11 +151,11 @@ class SwoshHandlerTest {
     fun `Create Swosh with invalid phone number`() {
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("070000000a", 100, "msg", 100))
+                .syncBody(SwoshDTO("070000000a", 100, "msg", 100))
                 .exchange()
                 .expectStatus().isBadRequest
-                .expectBody(ErrorDTO::class.java).value()
-                .isEqualTo(ErrorDTO(error = true, reason = "Invalid phone number. Got: 070000000a"))
+                .expectBody(ErrorDTO::class.java)
+                .isEqualTo<Nothing>(ErrorDTO(error = true, reason = "Invalid phone number. Got: 070000000a"))
     }
 
     @Test
@@ -168,11 +169,11 @@ class SwoshHandlerTest {
         validPhoneNumbers.forEach { phone ->
             webTestClient.post()
                     .uri("/api/create")
-                    .body(SwoshDTO(phone, 100, "msg", 100))
+                    .syncBody(SwoshDTO(phone, 100, "msg", 100))
                     .exchange()
                     .expectStatus().isOk
-                    .expectBody(SwoshUrlDTO::class.java).value()
-                    .isEqualTo(SwoshUrlDTO("validphone"))
+                    .expectBody(SwoshUrlDTO::class.java)
+                    .isEqualTo<Nothing>(SwoshUrlDTO("validphone"))
         }
     }
 
@@ -182,11 +183,11 @@ class SwoshHandlerTest {
                 .thenReturn(Swosh(id = "nomsg").toMono())
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", 100, null, 100))
+                .syncBody(SwoshDTO("0700000000", 100, null, 100))
                 .exchange()
                 .expectStatus().isOk
-                .expectBody(SwoshUrlDTO::class.java).value()
-                .isEqualTo(SwoshUrlDTO("nomsg"))
+                .expectBody(SwoshUrlDTO::class.java)
+                .isEqualTo<Nothing>(SwoshUrlDTO("nomsg"))
     }
 
     @Test
@@ -195,11 +196,11 @@ class SwoshHandlerTest {
                 .thenReturn(Swosh(id = "noexpire").toMono())
         webTestClient.post()
                 .uri("/api/create")
-                .body(SwoshDTO("0700000000", 100, "msg", null))
+                .syncBody(SwoshDTO("0700000000", 100, "msg", null))
                 .exchange()
                 .expectStatus().isOk
-                .expectBody(SwoshUrlDTO::class.java).value()
-                .isEqualTo(SwoshUrlDTO("noexpire"))
+                .expectBody(SwoshUrlDTO::class.java)
+                .isEqualTo<Nothing>(SwoshUrlDTO("noexpire"))
     }
 
     @Test

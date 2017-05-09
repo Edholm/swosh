@@ -4,27 +4,30 @@ import com.samskivert.mustache.Mustache
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.mustache.MustacheProperties
+import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader
+import org.springframework.boot.web.reactive.result.view.MustacheViewResolver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.reactive.config.WebFluxConfigurer
-import pub.edholm.support.MustacheResourceTemplateLoader
-import pub.edholm.support.MustacheViewResolver
 
 
 @SpringBootApplication
 @EnableScheduling
 @Configuration
-class SwoshApplication : WebFluxConfigurer {
+class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigurer {
+
+    private val mustacheCompiler = Mustache
+            .compiler()
+            .escapeHTML(false)
+            .withLoader(MustacheResourceTemplateLoader(props.prefix, props.suffix))
+
     @Bean
-    fun mustacheViewResolver(props: MustacheProperties): MustacheViewResolver {
-        val viewResolver = MustacheViewResolver()
-        viewResolver.setPrefix(props.prefix)
-        viewResolver.setSuffix(props.suffix)
-        val loader = MustacheResourceTemplateLoader(props.prefix, props.suffix)
-        viewResolver.setCompiler(Mustache.compiler().escapeHTML(false).withLoader(loader))
-        return viewResolver
+    fun viewResolver() = MustacheViewResolver(mustacheCompiler).apply {
+        setPrefix(props.prefix)
+        setSuffix(props.suffix)
     }
+
 }
 
 fun main(args: Array<String>) {

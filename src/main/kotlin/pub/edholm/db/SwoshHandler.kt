@@ -17,7 +17,7 @@ import java.net.URI
 class SwoshHandler(private val repo: SwoshRepository) {
     fun renderIndex(req: ServerRequest) = ok().render("index")
     fun renderPreview(req: ServerRequest) =
-            repo.findOne(req.pathVariable("id"))
+            repo.findById(req.pathVariable("id"))
                     .flatMap { swosh ->
                         ok().render("preview", swosh)
                     }
@@ -25,7 +25,7 @@ class SwoshHandler(private val repo: SwoshRepository) {
 
 
     fun redirectToSwish(req: ServerRequest) =
-            repo.findOne(req.pathVariable("id"))
+            repo.findById(req.pathVariable("id"))
                     .flatMap { s ->
                         temporaryRedirect(s.toSwishDataDTO().generateUri())
                                 .build()

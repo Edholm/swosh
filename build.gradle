@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.2-2'
     ext {
         springBootVersion = '2.0.0.BUILD-SNAPSHOT'
     }
@@ -47,7 +47,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-webflux')
     runtime('org.springframework.boot:spring-boot-devtools')
     testCompile('org.springframework.boot:spring-boot-starter-test')
-    compile("io.projectreactor:reactor-kotlin-extensions:1.0.0.M1")
+    compile("io.projectreactor:reactor-kotlin-extensions:1.0.0.M2")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     compile("com.samskivert:jmustache:1.13")
