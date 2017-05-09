@@ -22,7 +22,7 @@
             <dd>{{swosh.description}}</dd>
             {{/swosh.description}}
             <dt>Expires on</dt>
-            <dd>{{swosh.expiresOn}}</dd>
+            <dd>{{#swosh.expiresOn}}{{swosh.expiresOn}}{{/swosh.expiresOn}}{{^swosh.expiresOn}}never!{{/swosh.expiresOn}}</dd>
         </dl>
         <a href="/{{swosh.id}}/redir" class="btn btn-primary">Looks good, open Swish</a>
     </div>

@@ -13,7 +13,7 @@ data class Swosh(
         val payee: String = "N/A",
         val amount: Int = 1,
         val description: String? = null,
-        val expiresOn: Instant? = Instant.now().plusSeconds(Swosh.DEFAULT_EXPIRY_TIME_IN_SECONDS)) {
+        val expiresOn: Instant? = null) {
     companion object {
         const val DEFAULT_EXPIRY_TIME_IN_SECONDS: Long = 172800 // 2 days
         const val ID_LENGTH = 6
