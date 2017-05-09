@@ -10,21 +10,29 @@
 </head>
 <body class="container">
 <div class="row justify-content-center">
-    <div class="col-sm-5">
+    <div class="col-sm-6">
         <h1>Preview</h1>
         <dl>
             <dt>Payee</dt>
-            <dd>{{swosh.payee}}</dd>
+            <dd>{{swoshPreviewDTO.payee}}</dd>
             <dt>Amount</dt>
-            <dd>{{swosh.amount}} kr</dd>
-            {{#swosh.description}}
+            <dd>{{swoshPreviewDTO.amount}} kr</dd>
+            {{#swoshPreviewDTO.description}}
             <dt>Description</dt>
-            <dd>{{swosh.description}}</dd>
-            {{/swosh.description}}
+            <dd>{{swoshPreviewDTO.description}}</dd>
+            {{/swoshPreviewDTO.description}}
             <dt>Expires on</dt>
-            <dd>{{#swosh.expiresOn}}{{swosh.expiresOn}}{{/swosh.expiresOn}}{{^swosh.expiresOn}}never!{{/swosh.expiresOn}}</dd>
+            <dd>
+                {{#swoshPreviewDTO.expiresOn}}{{swoshPreviewDTO.expiresOn}}{{/swoshPreviewDTO.expiresOn}}{{^swoshPreviewDTO.expiresOn}}never!{{/swoshPreviewDTO.expiresOn}}
+            </dd>
         </dl>
-        <a href="/{{swosh.id}}/redir" class="btn btn-primary">Looks good, open Swish</a>
+        <a href="/{{swoshPreviewDTO.id}}/redir" class="btn btn-primary">Looks good, open Swish</a>
+
+        <h4 style="margin-top: 2em;">Or scan the QR-code</h4>
+        <div title="{{swoshPreviewDTO.swishUri}}">
+            <canvas width="256" height="256" style="display: none;"></canvas>
+            <img alt="Scan me!" style="display: block;" src="data:image/png;base64,{{swoshPreviewDTO.qrCode}}">
+        </div>
     </div>
 </div>
 </body>
