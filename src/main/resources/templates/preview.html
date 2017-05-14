@@ -26,7 +26,7 @@
                 {{#swoshPreviewDTO.expiresOn}}{{swoshPreviewDTO.expiresOn}}{{/swoshPreviewDTO.expiresOn}}{{^swoshPreviewDTO.expiresOn}}never!{{/swoshPreviewDTO.expiresOn}}
             </dd>
         </dl>
-        <a href="/{{swoshPreviewDTO.id}}/redir" class="btn btn-primary">Looks good, open Swish</a>
+        <a href="{{swoshPreviewDTO.swishUri}}" class="btn btn-primary">Looks good, open Swish</a>
 
         <h4 style="margin-top: 2em;">Or scan the QR-code</h4>
         <div title="{{swoshPreviewDTO.swishUri}}">
