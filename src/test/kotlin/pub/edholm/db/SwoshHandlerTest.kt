@@ -172,7 +172,7 @@ class SwoshHandlerTest {
                 .expectBody(ErrorDTO::class.java)
                 .returnResult().responseBody
         assertThat(responseBody)
-                .isEqualTo(ErrorDTO(error = true, reason = "Invalid phone number. Got: 070000000a"))
+                .isEqualTo(ErrorDTO(error = true, reason = "'070000000a' is not a mobile number"))
     }
 
     @Test
@@ -231,11 +231,11 @@ class SwoshHandlerTest {
 
         assertThat(swoshExpire0.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("0700000000", 100, "msg", null)
+                .containsExactly("+46 70 000 00 00", 100, "msg", null)
 
         assertThat(swoshExpireNull.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("0700000000", 100, "msg", null)
+                .containsExactly("+46 70 000 00 00", 100, "msg", null)
 
     }
 
@@ -244,7 +244,7 @@ class SwoshHandlerTest {
         val swoshDTO = SwoshDTO(" 070-000 00 00 ", 100, "msg", 0)
         assertThat(swoshDTO.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("0700000000", 100, "msg", null)
+                .containsExactly("+46 70 000 00 00", 100, "msg", null)
     }
 
     private operator fun String.times(i: Int): String {
