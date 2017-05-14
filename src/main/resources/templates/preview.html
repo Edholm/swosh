@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Swosh preview</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
@@ -9,9 +10,9 @@
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 </head>
 <body class="container">
-<div class="row justify-content-center">
-    <div class="col-sm-6">
-        <h1>Preview</h1>
+<div class="row justify-content-center" style="margin-top: 1em;">
+    <div class="col col-md-auto">
+        <h1>Swosh preview</h1>
         <dl>
             <dt>Payee</dt>
             <dd>{{swoshPreviewDTO.payee}}</dd>
@@ -21,14 +22,15 @@
             <dt>Description</dt>
             <dd>{{swoshPreviewDTO.description}}</dd>
             {{/swoshPreviewDTO.description}}
-            <dt>Expires on</dt>
+            <dt>Link expires on</dt>
             <dd>
                 {{#swoshPreviewDTO.expiresOn}}{{swoshPreviewDTO.expiresOn}}{{/swoshPreviewDTO.expiresOn}}{{^swoshPreviewDTO.expiresOn}}never!{{/swoshPreviewDTO.expiresOn}}
             </dd>
         </dl>
         <a href="{{swoshPreviewDTO.swishUri}}" class="btn btn-primary">Looks good, open Swish</a>
-
-        <h4 style="margin-top: 2em;">Or scan the QR-code</h4>
+    </div>
+    <div class="col col-md-auto" style="margin-top: 1em;">
+        <h4>Or scan the QR-code</h4>
         <div title="{{swoshPreviewDTO.swishUri}}">
             <canvas width="256" height="256" style="display: none;"></canvas>
             <img alt="Scan me!" style="display: block;" src="data:image/png;base64,{{swoshPreviewDTO.qrCode}}">
