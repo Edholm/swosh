@@ -53,4 +53,5 @@ dependencies {
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     compile("com.samskivert:jmustache:1.13")
     compile("com.github.kenglxn.QRGen:javase:2.2.0")
+    compile("com.googlecode.libphonenumber:libphonenumber:8.4.2")
 }

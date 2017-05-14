@@ -1,5 +1,8 @@
 package pub.edholm.db
 
+import com.google.i18n.phonenumbers.NumberParseException
+import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.google.i18n.phonenumbers.Phonenumber
 import com.google.zxing.EncodeHintType
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
@@ -68,14 +71,30 @@ class SwoshHandler(private val repo: SwoshRepository) {
             when {
                 dto.amount == null || dto.phone == null || dto.phone.isBlank() ->
                     ErrorDTO(reason = "Missing input parameters. 'phone' and 'amount' is required")
-                !dto.phone.matches(Regex("[0-9 +-]{10,15}")) ->
-                    ErrorDTO(reason = "Invalid phone number. Got: ${dto.phone}")
                 dto.amount < 1 ->
                     ErrorDTO(reason = "Minimum allowed amount is 1. Got ${dto.amount}")
                 dto.message != null && dto.message.length > 50 ->
                     ErrorDTO(reason = "Description is too long. Max 50 chars. Got ${dto.message.length}")
-                else -> null
+                else -> validatePhoneNumber(dto.phone)
             }
+
+    private fun validatePhoneNumber(phone: String): ErrorDTO? {
+        // Seems to be a valid swish number.
+        if (phone.startsWith("123") && phone.length == 10) return null
+
+        val phoneUtil = PhoneNumberUtil.getInstance()
+        val parsedNumber: Phonenumber.PhoneNumber?
+        try {
+            parsedNumber = phoneUtil.parse(phone, "SE")
+        } catch(e: NumberParseException) {
+            return ErrorDTO(reason = "'$phone' is not a valid phone number")
+        }
+        if (phoneUtil.getNumberType(parsedNumber) != PhoneNumberUtil.PhoneNumberType.MOBILE) {
+            return ErrorDTO(reason = "'$phone' is not a mobile number")
+        }
+
+        return null
+    }
 
     private fun constructAndInsertNewSwosh(dto: SwoshDTO): Mono<Swosh> {
         return repo.save(dto.toSwosh())

@@ -1,5 +1,6 @@
 package pub.edholm.domain
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import pub.edholm.db.Swosh
 import java.time.Instant
 
@@ -21,10 +22,11 @@ fun SwoshDTO.toSwosh(): Swosh {
         this.expireAfterSeconds == null || this.expireAfterSeconds == 0L -> expireOn = null
         else -> expireOn = Instant.now().plusSeconds(this.expireAfterSeconds)
     }
+    val phoneUtil = PhoneNumberUtil.getInstance()
+    val parsedNumber = phoneUtil.parse(this.phone, "SE")
+    val formattedNumber = phoneUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)
     return Swosh(
-            payee = this.phone?.trim()
-                    ?.replace("-", "")
-                    ?.replace(" ", "") ?: "",
+            payee = formattedNumber,
             amount = this.amount ?: 1,
             description = this.message,
             expiresOn = expireOn)
