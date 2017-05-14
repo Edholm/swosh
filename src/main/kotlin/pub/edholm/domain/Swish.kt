@@ -1,10 +1,9 @@
 package pub.edholm.domain
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.common.net.UrlEscapers
 import pub.edholm.db.Swosh
 import java.net.URI
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 
 data class StringValue(
@@ -26,7 +25,7 @@ data class SwishDataDTO(
 
 fun SwishDataDTO.generateUri(): URI {
     val asString = jacksonObjectMapper().writeValueAsString(this)
-    val encodedData = URLEncoder.encode(asString, StandardCharsets.UTF_8.displayName())
+    val encodedData = UrlEscapers.urlFragmentEscaper().escape(asString)
     return URI.create("swish://payment?data=$encodedData")
 }
 

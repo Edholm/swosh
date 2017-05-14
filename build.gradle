@@ -54,4 +54,5 @@ dependencies {
     compile("com.samskivert:jmustache:1.13")
     compile("com.github.kenglxn.QRGen:javase:2.2.0")
     compile("com.googlecode.libphonenumber:libphonenumber:8.4.2")
+    compile("com.google.guava:guava:21.0")
 }
