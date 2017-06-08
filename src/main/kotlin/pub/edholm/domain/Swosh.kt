@@ -24,7 +24,7 @@ fun SwoshDTO.toSwosh(): Swosh {
     }
     val phoneUtil = PhoneNumberUtil.getInstance()
     val parsedNumber = phoneUtil.parse(this.phone, "SE")
-    val formattedNumber = phoneUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)
+    val formattedNumber = phoneUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL)
     return Swosh(
             payee = formattedNumber,
             amount = this.amount ?: 1,

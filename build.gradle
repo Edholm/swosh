@@ -7,10 +7,9 @@ buildscript {
         mavenCentral()
         maven { url "https://repo.spring.io/snapshot" }
         maven { url "https://repo.spring.io/milestone" }
-        maven { url 'https://repo.spring.io/libs-snapshot' }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.0.M1")
         classpath("org.jetbrains.kotlin:kotlin-noarg:$kotlin_version")
         classpath("org.jetbrains.kotlin:kotlin-allopen:$kotlin_version")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

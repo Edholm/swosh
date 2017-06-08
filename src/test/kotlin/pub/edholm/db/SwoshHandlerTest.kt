@@ -231,11 +231,11 @@ class SwoshHandlerTest {
 
         assertThat(swoshExpire0.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("+46 70 000 00 00", 100, "msg", null)
+                .containsExactly("070-000 00 00", 100, "msg", null)
 
         assertThat(swoshExpireNull.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("+46 70 000 00 00", 100, "msg", null)
+                .containsExactly("070-000 00 00", 100, "msg", null)
 
     }
 
@@ -244,7 +244,7 @@ class SwoshHandlerTest {
         val swoshDTO = SwoshDTO(" 070-000 00 00 ", 100, "msg", 0)
         assertThat(swoshDTO.toSwosh())
                 .extracting("payee", "amount", "description", "expiresOn")
-                .containsExactly("+46 70 000 00 00", 100, "msg", null)
+                .containsExactly("070-000 00 00", 100, "msg", null)
     }
 
     private operator fun String.times(i: Int): String {
