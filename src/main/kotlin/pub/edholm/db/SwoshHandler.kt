@@ -27,8 +27,9 @@ class SwoshHandler(private val repo: SwoshRepository) {
             repo.findById(req.pathVariable("id"))
                     .flatMap { swosh ->
                         val swishUri = swosh.toSwishDataDTO().generateUri()
+                        val swishQRString = swosh.toSwishDataDTO().generateSwishQRString()
                         val swoshPreviewDTO = SwoshPreviewDTO(swosh.id, swosh.payee, swosh.amount, swosh.description,
-                                swosh.expiresOn, swishUri.toASCIIString(), generateQrCode(swishUri))
+                                swosh.expiresOn, swishUri.toASCIIString(), generateQrCode(swishQRString))
                         ok().contentType(MediaType.TEXT_HTML).render("preview", swoshPreviewDTO)
                     }
                     .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
@@ -100,9 +101,9 @@ class SwoshHandler(private val repo: SwoshRepository) {
         return repo.save(dto.toSwosh())
     }
 
-    private fun generateQrCode(swishUri: URI): String {
+    private fun generateQrCode(qrText: String): String {
         val qrCode = QRCode
-                .from(swishUri.toASCIIString())
+                .from(qrText)
                 .withSize(256, 256)
                 .withCharset("UTF-8")
                 .withHint(EncodeHintType.MARGIN, 0)
