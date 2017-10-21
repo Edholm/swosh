@@ -1,7 +1,8 @@
 buildscript {
-    ext.kotlin_version = '1.1.2-2'
+    ext.kotlin_version = '1.1.51'
+
     ext {
-        springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+        springBootVersion = '2.0.0.M5'
     }
     repositories {
         mavenCentral()
@@ -9,7 +10,7 @@ buildscript {
         maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.0.M1")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.0.M5")
         classpath("org.jetbrains.kotlin:kotlin-noarg:$kotlin_version")
         classpath("org.jetbrains.kotlin:kotlin-allopen:$kotlin_version")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -22,7 +23,7 @@ apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

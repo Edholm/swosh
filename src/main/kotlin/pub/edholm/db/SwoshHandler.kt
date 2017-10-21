@@ -11,14 +11,16 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.*
+import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.status
+import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
 import pub.edholm.badRequestResponse
 import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.net.URI
-import javax.xml.bind.DatatypeConverter
+import java.util.*
 
 @Component
 class SwoshHandler(private val repo: SwoshRepository) {
@@ -108,6 +110,6 @@ class SwoshHandler(private val repo: SwoshRepository) {
                 .withHint(EncodeHintType.MARGIN, 0)
                 .to(ImageType.PNG)
                 .stream()
-        return DatatypeConverter.printBase64Binary(qrCode.toByteArray())
+        return Base64.getEncoder().encodeToString(qrCode.toByteArray())
     }
 }
