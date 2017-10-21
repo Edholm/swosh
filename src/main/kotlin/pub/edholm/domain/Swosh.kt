@@ -28,7 +28,7 @@ fun SwoshDTO.toSwosh(): Swosh {
     return Swosh(
             payee = formattedNumber,
             amount = this.amount ?: 1,
-            description = this.message,
+            description = if(message.isNullOrBlank()) null else this.message,
             expiresOn = expireOn)
 
 }

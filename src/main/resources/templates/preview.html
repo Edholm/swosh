@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta property="og:title" content="Swish {{ swoshPreviewDTO.amount}}kr to {{ swoshPreviewDTO.payee }}" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="{{ swoshPreviewDTO.swishUri }}" />
-    <meta property="og:image" content="https://swosh.me/pics/swosh.png" />
-    <meta property="og:description" content="Message: {{ swoshPreviewDTO.description }}" />
+    <meta property="og:url" content="https://swosh.me/{{ swoshPreviewDTO.id }}" />
+    <meta property="og:description" content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}" />
     <title>Swosh preview</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">

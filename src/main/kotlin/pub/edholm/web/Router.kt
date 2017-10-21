@@ -1,7 +1,6 @@
 package pub.edholm.web
 
 import org.springframework.context.annotation.Bean
-import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.router
@@ -20,8 +19,6 @@ class Router(val swoshHandler: SwoshHandler) {
         // API-routes
         (accept(MediaType.APPLICATION_JSON_UTF8) and "/api").nest {
             POST("/create", swoshHandler::createSwosh)
-            //GET("/preview/{id}", swoshHandler::previewSwosh)
         }
-        resources("/pics/**", ClassPathResource("pics/"))
     }
 }
