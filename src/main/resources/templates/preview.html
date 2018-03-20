@@ -3,15 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="Swish {{ swoshPreviewDTO.amount}}kr to {{ swoshPreviewDTO.payee }}" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://swosh.me/{{ swoshPreviewDTO.id }}" />
-    <meta property="og:description" content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}" />
+    <meta property="og:title" content="Swish {{ swoshPreviewDTO.amount}}kr to {{ swoshPreviewDTO.payee }}"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://swosh.me/{{ swoshPreviewDTO.id }}"/>
+    <meta property="og:description"
+          content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}"/>
     <title>Swosh preview</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js"
+            integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l"
+            crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/regular.js"
+            integrity="sha384-t7yHmUlwFrLxHXNLstawVRBMeSLcXTbQ5hsd0ifzwGtN7ZF7RZ8ppM7Ldinuoiif"
+            crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js"
+            integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c"
+            crossorigin="anonymous"></script>
 </head>
 <body class="container">
 <div class="row justify-content-center" style="margin-top: 1em;">
@@ -42,7 +50,7 @@
     </div>
 </div>
 <script>
-    window.location = "{{swoshPreviewDTO.swishUri}}"
+  window.location = "{{swoshPreviewDTO.swishUri}}"
 </script>
 </body>
 </html>
