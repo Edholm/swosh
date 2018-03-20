@@ -1,16 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.1.51'
+    ext.kotlin_version = '1.2.30'
 
     ext {
-        springBootVersion = '2.0.0.M5'
+        springBootVersion = '2.0.0.RELEASE'
     }
     repositories {
         mavenCentral()
-        maven { url "https://repo.spring.io/snapshot" }
-        maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.0.M5")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
         classpath("org.jetbrains.kotlin:kotlin-noarg:$kotlin_version")
         classpath("org.jetbrains.kotlin:kotlin-allopen:$kotlin_version")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -34,25 +32,22 @@ compileTestKotlin {
 
 repositories {
     mavenCentral()
-    maven { url "https://repo.spring.io/snapshot" }
-    maven { url "https://repo.spring.io/milestone" }
     maven { url "https://jitpack.io" }
 }
 
 
 dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version")
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     compile("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
     compile('org.springframework.boot:spring-boot-starter-webflux')
     runtime('org.springframework.boot:spring-boot-devtools')
     testCompile('org.springframework.boot:spring-boot-starter-test')
-    compile("io.projectreactor:reactor-kotlin-extensions:1.0.0.M2")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    compile("com.samskivert:jmustache:1.13")
+    compile("com.samskivert:jmustache:1.14")
     compile("com.github.kenglxn.QRGen:javase:2.2.0")
-    compile("com.googlecode.libphonenumber:libphonenumber:8.4.2")
-    compile("com.google.guava:guava:21.0")
+    compile("com.googlecode.libphonenumber:libphonenumber:8.9.2")
+    compile("com.google.guava:guava:24.1-jre")
 }
