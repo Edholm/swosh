@@ -7,6 +7,6 @@ import pub.edholm.domain.ErrorDTO
 import reactor.core.publisher.toMono
 
 fun ErrorDTO.badRequestResponse() =
-        badRequest()
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .body(this.toMono())
+  badRequest()
+    .contentType(MediaType.APPLICATION_JSON_UTF8)
+    .body(this.toMono())

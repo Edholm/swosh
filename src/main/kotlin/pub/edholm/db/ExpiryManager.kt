@@ -6,10 +6,11 @@ import java.time.Instant
 
 @Component
 class ExpiryManager(private val swoshRepo: SwoshRepository) {
-    @Scheduled(fixedRateString = "\${swosh.expire.rate}", initialDelay = 1337)
-    fun expireOldLinks() {
-        swoshRepo.deleteAll(
-                swoshRepo.findByExpiresOnBefore(Instant.now()))
-                .subscribe()
-    }
+  @Scheduled(fixedRateString = "\${swosh.expire.rate}", initialDelay = 1337)
+  fun expireOldLinks() {
+    swoshRepo.deleteAll(
+      swoshRepo.findByExpiresOnBefore(Instant.now())
+    )
+      .subscribe()
+  }
 }

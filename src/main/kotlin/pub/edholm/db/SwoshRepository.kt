@@ -7,5 +7,5 @@ import java.time.Instant
 
 @Repository
 interface SwoshRepository : ReactiveMongoRepository<Swosh, String> {
-    fun findByExpiresOnBefore(now: Instant): Flux<Swosh>
+  fun findByExpiresOnBefore(now: Instant): Flux<Swosh>
 }
