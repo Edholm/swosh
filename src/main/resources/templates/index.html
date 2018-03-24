@@ -1,14 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Swosh</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"
-            integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ"
-            crossorigin="anonymous"></script>
+    {{>head}}
     <script>
       function generateLink() {
         document.getElementById("erroralert").style.visibility = 'hidden';
@@ -60,7 +54,7 @@
             <div class="card-body">
                 Fill in the information below to generate a link that you can send to your friends, that when clicked
                 opens
-                <a href="https://www.getswish.se" target="_blank">Swish</a> with these values prefilled
+                <a href="https://www.getswish.se" target="_blank" rel="noopener">Swish</a> with these values prefilled
                 <br>
                 <i>Note: the links only work on devices where the Swish app is installed</i>
             </div>
@@ -161,7 +155,7 @@
         <hr>
         <div class="row justify-content-left">
             <div class="col">
-                <a href="https://github.com/Edholm/swosh" target="_blank" class="btn btn-secondary">
+                <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-secondary">
                     <span><i class="fab fa-github"></i> Swosh on Github</span>
                 </a>
             </div>

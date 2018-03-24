@@ -1,5 +1,6 @@
 package pub.edholm.domain
 
+import pub.edholm.db.Swosh
 import java.time.Instant
 
 data class SwoshPreviewDTO(
@@ -10,4 +11,14 @@ data class SwoshPreviewDTO(
   val expiresOn: Instant?,
   val swishUri: String,
   val qrCode: String
-)
+) {
+  companion object {
+    fun valueOf(swosh: Swosh): SwoshPreviewDTO {
+      val swishUri = swosh.toSwishDataDTO().generateUri()
+      return SwoshPreviewDTO(
+        swosh.id, swosh.payee, swosh.amount, swosh.description,
+        swosh.expiresOn, swishUri.toASCIIString(), swosh.generateQrCode(swishUri)
+      )
+    }
+  }
+}

@@ -3,9 +3,6 @@ package pub.edholm.db
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.google.zxing.EncodeHintType
-import net.glxn.qrgen.core.image.ImageType
-import net.glxn.qrgen.javase.QRCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -20,7 +17,6 @@ import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.net.URI
-import java.util.*
 
 @Component
 class SwoshHandler(private val repo: SwoshRepository) {
@@ -28,11 +24,7 @@ class SwoshHandler(private val repo: SwoshRepository) {
   fun renderPreview(req: ServerRequest) =
     repo.findById(req.pathVariable("id"))
       .flatMap { swosh ->
-        val swishUri = swosh.toSwishDataDTO().generateUri()
-        val swoshPreviewDTO = SwoshPreviewDTO(
-          swosh.id, swosh.payee, swosh.amount, swosh.description,
-          swosh.expiresOn, swishUri.toASCIIString(), generateQrCode(swishUri)
-        )
+        val swoshPreviewDTO = SwoshPreviewDTO.valueOf(swosh)
         ok().contentType(MediaType.TEXT_HTML).render("preview", swoshPreviewDTO)
       }
       .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
@@ -103,14 +95,4 @@ class SwoshHandler(private val repo: SwoshRepository) {
     return repo.save(dto.toSwosh())
   }
 
-  private fun generateQrCode(swishUri: URI): String {
-    val qrCode = QRCode
-      .from(swishUri.toASCIIString())
-      .withSize(256, 256)
-      .withCharset("UTF-8")
-      .withHint(EncodeHintType.MARGIN, 0)
-      .to(ImageType.PNG)
-      .stream()
-    return Base64.getEncoder().encodeToString(qrCode.toByteArray())
-  }
 }

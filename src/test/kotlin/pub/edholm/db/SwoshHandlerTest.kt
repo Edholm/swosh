@@ -7,6 +7,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.test.web.reactive.server.WebTestClient
 import pub.edholm.domain.*
+import pub.edholm.web.AdminHandler
 import pub.edholm.web.Router
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
@@ -15,6 +16,9 @@ class SwoshHandlerTest {
 
     @Mock
     private lateinit var swoshRepo: SwoshRepository
+
+    @Mock
+    private lateinit var adminHandler: AdminHandler
 
     private lateinit var swoshHandler: SwoshHandler
 
@@ -25,8 +29,9 @@ class SwoshHandlerTest {
     @Before
     fun setUp() {
         swoshRepo = Mockito.mock(SwoshRepository::class.java)
+        adminHandler = Mockito.mock(AdminHandler::class.java)
         swoshHandler = SwoshHandler(swoshRepo)
-        router = Router(swoshHandler)
+        router = Router(swoshHandler, adminHandler)
         webTestClient = WebTestClient.bindToRouterFunction(router.route()).build()
     }
 

@@ -7,10 +7,19 @@ import org.springframework.web.reactive.function.server.router
 import pub.edholm.db.SwoshHandler
 
 @Component
-class Router(val swoshHandler: SwoshHandler) {
+class Router(
+  private val swoshHandler: SwoshHandler,
+  private val adminHandler: AdminHandler
+) {
   @Bean
   fun route() = router {
     accept(MediaType.TEXT_HTML).nest {
+      "/admin".nest {
+        GET("/", adminHandler::renderAdmin)
+        POST("/{id}", adminHandler::update)
+        DELETE("/{id}", adminHandler::delete)
+      }
+
       GET("/", swoshHandler::renderIndex)
       GET("/{id}", swoshHandler::renderPreview)
       GET("/{id}/redir", swoshHandler::redirectToSwish)
