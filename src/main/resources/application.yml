@@ -1,0 +1,36 @@
+spring:
+  data:
+    mongodb:
+      uri: ${SWOSH_MONGODB_URI:mongodb://localhost/swosh}
+      repositories:
+        enabled: true
+  mustache:
+    suffix: .html
+  output:
+    ansi:
+      enabled: ALWAYS
+
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [health, prometheus]
+  metrics:
+    export:
+      prometheus:
+        enabled: ${PROMETHEUS_ENABLED:true}
+
+
+# The interval between checking/deleting for old urls in milliseconds
+swosh:
+  expire:
+    rate: ${SWOSH_EXPIRE_RATE:60000}
+
+logging:
+  level:
+    pub.edholm: ${LOG_LEVEL:TRACE}

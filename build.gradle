@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.30'
+    ext.kotlin_version = '1.2.31'
 
     ext {
         springBootVersion = '2.0.0.RELEASE'
@@ -42,6 +42,9 @@ dependencies {
     compile("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
     compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
     compile('org.springframework.boot:spring-boot-starter-webflux')
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('io.micrometer:micrometer-registry-prometheus:1.0.2')
     runtime('org.springframework.boot:spring-boot-devtools')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")

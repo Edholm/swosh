@@ -26,6 +26,18 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
     setPrefix(props.prefix)
     setSuffix(props.suffix)
   }
+  /*
+    @Bean
+    fun createUsers(userRepository: UserRepository) = ApplicationRunner {
+      val pwdEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
+      val user = User(
+        username = "<username>",
+        password = pwdEncoder.encode("<password>"),
+        authorities = AuthorityUtils.createAuthorityList("USER", "ADMIN")
+      )
+      userRepository.saveAll(listOf(user)).subscribe()
+    }
+  */
 }
 
 fun main(args: Array<String>) {
