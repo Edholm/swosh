@@ -62,7 +62,7 @@
                     <div class="form-row">
                         <div class="form-group col-md-12">
                             <label for="swosh-expiry">Link expires at</label>
-                            <input name="expiry" readonly type="datetime-local" value="{{expiresOn}}" id="swosh-expiry"
+                            <input name="expiry" readonly type="datetime-local" value="{{#expiresOn}}{{expiresOn}}{{/expiresOn}}" id="swosh-expiry"
                                    class="form-control-plaintext">
 
                         </div>
