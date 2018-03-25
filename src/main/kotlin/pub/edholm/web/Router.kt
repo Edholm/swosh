@@ -17,6 +17,7 @@ class Router(
     accept(MediaType.TEXT_HTML).nest {
       "/admin".nest {
         GET("/", adminHandler::renderAdmin)
+        GET("/{id}", adminHandler::renderSingle)
         POST("/{id}", adminHandler::update)
         DELETE("/{id}", adminHandler::delete)
       }

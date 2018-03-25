@@ -1,0 +1,67 @@
+<div class="card">
+    <div class="card-header">
+        <h4><a style="color: #000;" href="/admin/{{id}}">Swosh</a> <a href="/{{id}}" target="_blank" rel="noopener" class="btn btn-secondary float-right"><i
+                class="fas fa-external-link-square-alt"></i></a>
+        </h4>
+    </div>
+    <div class="card-body">
+        <form action="/admin/{{id}}" method="post">
+            <input name="originalId" value="{{id}}" hidden>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="swosh-id">ID</label>
+                    <input name="id" type="text" value="{{id}}" id="swosh-id" class="form-control"
+                           placeholder="swosh id goes here">
+
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-8">
+                    <label for="swosh-payee">Phone number</label>
+                    <input name="payee" type="text" value="{{payee}}" id="swosh-payee" class="form-control"
+                           placeholder="phone goes here">
+
+                </div>
+                <div class="form-group col-md-4">
+                    <label>Sök på hitta</label>
+                    <a href="https://www.hitta.se/s%C3%B6k?vad={{payee}}" target="_blank"
+                       rel="noopener" class="btn btn-info form-control pull-right">Sök</a>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-2">
+                    <label for="swosh-amount">Amount</label>
+                    <input name="amount" type="number" value="{{amount}}" id="swosh-amount" class="form-control"
+                           placeholder="100" min="0">
+
+                </div>
+                <div class="form-group col-md-10">
+                    <label for="swosh-message">Message</label>
+                    <input name="description" type="text"
+                           value="{{#description}}{{description}}{{/description}}"
+                           id="swosh-message" class="form-control"
+                           placeholder="message goes here">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="swosh-expiry">Link expires at</label>
+                    <input name="expiry" readonly type="datetime-local"
+                           value="{{#expiresOn}}{{expiresOn}}{{/expiresOn}}" id="swosh-expiry"
+                           class="form-control-plaintext">
+
+                </div>
+            </div>
+            {{#canUpdate}}
+            <button type="submit" class="btn btn-success float-right"><i
+                    class="far fa-edit"></i> Update
+            </button>
+            {{/canUpdate}}
+            {{#canDelete}}
+            <button type="button" class="btn btn-danger float-left" onclick="deleteSwosh('{{id}}')"><i
+                    class="fa fa-trash"></i> Delete
+            </button>
+            {{/canDelete}}
+        </form>
+    </div>
+</div>

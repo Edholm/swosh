@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.ServerResponse.seeOther
-import pub.edholm.web.handlers.SwoshRepository
 import pub.edholm.domain.SwoshPreviewDTO
 import reactor.core.publisher.Mono
 import java.net.URI
@@ -30,9 +29,27 @@ class AdminHandler(private val repo: SwoshRepository) {
       .collectList()
       .flatMap {
         ok().contentType(MediaType.TEXT_HTML).render(
-          "admin",
+          "admin/admin",
           mapOf(
             Pair("all", it),
+            Pair("count", it.size),
+            Pair("user", req.principal()),
+            Pair("canUpdate", req.hasAuthority("UPDATE")),
+            Pair("canDelete", req.hasAuthority("DELETE"))
+          )
+        )
+      }
+  }
+
+  fun renderSingle(req: ServerRequest): Mono<ServerResponse> {
+    return repo
+      .findById(req.pathVariable("id"))
+      .flatMap {
+        SwoshPreviewDTO.valueOf(it)
+        ok().contentType(MediaType.TEXT_HTML).render(
+          "admin/admin-single",
+          mapOf(
+            Pair("all", listOf(SwoshPreviewDTO.valueOf(it))),
             Pair("user", req.principal()),
             Pair("canUpdate", req.hasAuthority("UPDATE")),
             Pair("canDelete", req.hasAuthority("DELETE"))
@@ -63,6 +80,7 @@ class AdminHandler(private val repo: SwoshRepository) {
             )
           }
           .flatMap { swosh ->
+            println(req.headers())
             if (originalId != swosh.id) {
               logger.info("Renaming $originalId -> ${swosh.id}")
               repo.save(swosh)
