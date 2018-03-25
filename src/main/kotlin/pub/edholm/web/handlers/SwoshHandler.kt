@@ -1,4 +1,4 @@
-package pub.edholm.db
+package pub.edholm.web.handlers
 
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
 import pub.edholm.badRequestResponse
+import pub.edholm.web.handlers.Swosh
+import pub.edholm.web.handlers.SwoshRepository
 import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono

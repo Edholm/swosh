@@ -1,4 +1,4 @@
-package pub.edholm.db
+package pub.edholm.web.handlers
 
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

@@ -1,4 +1,4 @@
-package pub.edholm.db
+package pub.edholm.web.handlers
 
 import com.google.zxing.EncodeHintType
 import net.glxn.qrgen.core.image.ImageType
@@ -14,7 +14,7 @@ import java.util.*
 @Document
 data class Swosh(
   @Id
-  val id: String = Swosh.generateRandomId(),
+  val id: String = generateRandomId(),
   val payee: String = "N/A",
   val amount: Int = 1,
   val description: String? = null,
@@ -25,7 +25,7 @@ data class Swosh(
     private const val ID_LENGTH = 6
 
     internal fun generateRandomId(): String =
-      BigInteger(130, SecureRandom()).toString(32).substring(0, Swosh.ID_LENGTH)
+      BigInteger(130, SecureRandom()).toString(32).substring(0, ID_LENGTH)
   }
 
   fun generateQrCode(swishUri: URI): String {

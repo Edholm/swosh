@@ -1,4 +1,4 @@
-package pub.edholm.db
+package pub.edholm.web.handlers
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository

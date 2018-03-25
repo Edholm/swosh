@@ -1,7 +1,7 @@
 package pub.edholm.domain
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import pub.edholm.db.Swosh
+import pub.edholm.web.handlers.Swosh
 import java.time.Instant
 
 data class SwoshUrlDTO(val id: String) {

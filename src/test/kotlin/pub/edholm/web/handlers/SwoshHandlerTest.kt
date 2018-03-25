@@ -1,4 +1,4 @@
-package pub.edholm.db
+package pub.edholm.web.handlers
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -7,8 +7,9 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.test.web.reactive.server.WebTestClient
 import pub.edholm.domain.*
-import pub.edholm.web.AdminHandler
+import pub.edholm.web.handlers.AdminHandler
 import pub.edholm.web.Router
+import pub.edholm.web.handlers.SwoshHandler
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 

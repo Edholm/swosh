@@ -4,7 +4,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.router
-import pub.edholm.db.SwoshHandler
+import pub.edholm.web.handlers.AdminHandler
+import pub.edholm.web.handlers.SwoshHandler
 
 @Component
 class Router(
