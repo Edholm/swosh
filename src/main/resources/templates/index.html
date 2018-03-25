@@ -121,7 +121,8 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" class="btn btn-success float-right" onclick="generateLink()"><i class="fas fa-check"></i> Give me my link!
+                    <button type="button" class="btn btn-success float-right" onclick="generateLink()"><i
+                            class="fas fa-check"></i> Give me my link!
                     </button>
                 </div>
             </div>
@@ -158,6 +159,11 @@
                 <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-secondary">
                     <span><i class="fab fa-github"></i> Swosh on Github</span>
                 </a>
+                {{#user}}
+                <a href="/admin" class="btn btn-light float-right">
+                    <span><i class="fas fa-unlock-alt"></i> Admin</span>
+                </a>
+                {{/user}}
             </div>
         </div>
     </div>

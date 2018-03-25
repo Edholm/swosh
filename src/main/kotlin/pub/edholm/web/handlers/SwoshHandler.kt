@@ -13,8 +13,6 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
 import pub.edholm.badRequestResponse
-import pub.edholm.web.handlers.Swosh
-import pub.edholm.web.handlers.SwoshRepository
 import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
@@ -22,7 +20,10 @@ import java.net.URI
 
 @Component
 class SwoshHandler(private val repo: SwoshRepository) {
-  fun renderIndex(req: ServerRequest) = ok().contentType(MediaType.TEXT_HTML).render("index")
+  fun renderIndex(req: ServerRequest): Mono<ServerResponse> =
+    ok().contentType(MediaType.TEXT_HTML)
+      .render("index", mapOf(Pair("user", req.principal())))
+
   fun renderPreview(req: ServerRequest) =
     repo.findById(req.pathVariable("id"))
       .flatMap { swosh ->
