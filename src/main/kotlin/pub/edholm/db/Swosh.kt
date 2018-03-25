@@ -1,4 +1,4 @@
-package pub.edholm.web.handlers
+package pub.edholm.db
 
 import com.google.zxing.EncodeHintType
 import net.glxn.qrgen.core.image.ImageType

@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
 import pub.edholm.badRequestResponse
+import pub.edholm.db.Swosh
+import pub.edholm.db.SwoshRepository
 import pub.edholm.domain.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono

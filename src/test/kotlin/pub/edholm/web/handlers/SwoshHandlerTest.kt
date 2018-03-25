@@ -6,10 +6,10 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.test.web.reactive.server.WebTestClient
+import pub.edholm.db.Swosh
+import pub.edholm.db.SwoshRepository
 import pub.edholm.domain.*
-import pub.edholm.web.handlers.AdminHandler
 import pub.edholm.web.Router
-import pub.edholm.web.handlers.SwoshHandler
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 

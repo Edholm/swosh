@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.ServerResponse.seeOther
+import pub.edholm.db.SwoshRepository
 import pub.edholm.domain.SwoshPreviewDTO
 import reactor.core.publisher.Mono
 import java.net.URI

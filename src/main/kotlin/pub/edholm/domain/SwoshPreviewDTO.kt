@@ -1,6 +1,6 @@
 package pub.edholm.domain
 
-import pub.edholm.web.handlers.Swosh
+import pub.edholm.db.Swosh
 import java.time.Instant
 
 data class SwoshPreviewDTO(

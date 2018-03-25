@@ -2,7 +2,7 @@ package pub.edholm.domain
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.net.UrlEscapers
-import pub.edholm.web.handlers.Swosh
+import pub.edholm.db.Swosh
 import java.net.URI
 
 data class StringValue(

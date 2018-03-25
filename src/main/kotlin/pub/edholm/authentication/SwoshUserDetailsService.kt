@@ -3,6 +3,7 @@ package pub.edholm.authentication
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import pub.edholm.db.UserRepository
 import reactor.core.publisher.Mono
 
 @Service
