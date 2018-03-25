@@ -3,6 +3,7 @@ package pub.edholm.db
 import com.google.zxing.EncodeHintType
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
@@ -18,7 +19,9 @@ data class Swosh(
   val payee: String = "N/A",
   val amount: Int = 1,
   val description: String? = null,
-  val expiresOn: Instant? = null
+  val expiresOn: Instant? = null,
+  @CreatedDate
+  val createdAt: Instant = Instant.now()
 ) {
   companion object {
     const val DEFAULT_EXPIRY_TIME_IN_SECONDS: Long = 172800 // 2 days

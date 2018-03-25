@@ -44,10 +44,17 @@
                 </div>
             </div>
             <div class="form-row">
-                <div class="form-group col-md-12">
+                <div class="form-group col-md-6">
                     <label for="swosh-expiry">Link expires at</label>
                     <input name="expiry" readonly type="datetime-local"
                            value="{{#expiresOn}}{{expiresOn}}{{/expiresOn}}" id="swosh-expiry"
+                           class="form-control-plaintext">
+
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="swosh-createdAt">Created at</label>
+                    <input readonly type="datetime-local"
+                           value="{{#createdAt}}{{createdAt}}{{/createdAt}}" id="swosh-createdAt"
                            class="form-control-plaintext">
 
                 </div>

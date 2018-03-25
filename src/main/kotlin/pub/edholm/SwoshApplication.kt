@@ -8,11 +8,13 @@ import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateL
 import org.springframework.boot.web.reactive.result.view.MustacheViewResolver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.mongodb.config.EnableMongoAuditing
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.reactive.config.WebFluxConfigurer
 
 @SpringBootApplication
 @EnableScheduling
+@EnableMongoAuditing
 @Configuration
 class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigurer {
 
