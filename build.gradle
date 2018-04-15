@@ -2,7 +2,7 @@ buildscript {
     ext.kotlin_version = '1.2.31'
 
     ext {
-        springBootVersion = '2.0.0.RELEASE'
+        springBootVersion = '2.0.1.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -45,13 +45,13 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-security')
     compile 'org.springframework.session:spring-session-data-mongodb:2.0.2.RELEASE'
-    compile('io.micrometer:micrometer-registry-prometheus:1.0.2')
+    compile('io.micrometer:micrometer-registry-prometheus:1.0.3')
     runtime('org.springframework.boot:spring-boot-devtools')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     compile("com.samskivert:jmustache:1.14")
-    compile("com.github.kenglxn.QRGen:javase:2.2.0")
-    compile("com.googlecode.libphonenumber:libphonenumber:8.9.2")
+    compile("com.github.kenglxn.QRGen:javase:2.4.0")
+    compile("com.googlecode.libphonenumber:libphonenumber:8.9.3")
     compile("com.google.guava:guava:24.1-jre")
 }

@@ -18,10 +18,9 @@ data class SwoshDTO(
 )
 
 fun SwoshDTO.toSwosh(): Swosh {
-  val expireOn: Instant?
-  when {
-    this.expireAfterSeconds == null || this.expireAfterSeconds == 0L -> expireOn = null
-    else -> expireOn = Instant.now().plusSeconds(this.expireAfterSeconds)
+  val expireOn: Instant? = when {
+    this.expireAfterSeconds == null || this.expireAfterSeconds == 0L -> null
+    else -> Instant.now().plusSeconds(this.expireAfterSeconds)
   }
   val phoneUtil = PhoneNumberUtil.getInstance()
   val parsedNumber = phoneUtil.parse(this.phone, "SE")
