@@ -1,0 +1,27 @@
+version: '3'
+services:
+    backend:
+        container_name: 'swosh'
+        image: edholm/swosh:latest
+        restart: always
+        environment:
+            - SWOSH_MONGODB_URI=mongodb://mongodb/swosh
+            - SERVER_PORT=7070
+        ports:
+            - 7070:7070
+        depends_on: 
+            - mongodb
+
+    mongodb:
+        container_name: 'swosh-mongodb'
+        image: mongo:4
+        restart: always
+        volumes:
+            - mongo-data:/data/db
+            - mongo-config:/data/configdb
+        ports:
+            - 27015:27017
+
+volumes:
+    mongo-data:
+    mongo-config:
