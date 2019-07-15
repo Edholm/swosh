@@ -61,18 +61,3 @@ dependencies {
     compile("com.googlecode.libphonenumber:libphonenumber:8.10.14")
     compile("com.google.guava:guava:28.0-jre")
 }
-
-
-jib {
-    container {
-        jvmFlags = ['-Duser.language=sv-SE', '-Dfile.encoding=UTF-8', '-Duser.timezon=UTC']
-        ports = ['8080']
-    }
-    from {
-        image = 'openjdk:alpine'
-    }
-    to {
-        image = 'edholm/swosh'
-        tags = ['latest', "${version}"]
-    }
-}
