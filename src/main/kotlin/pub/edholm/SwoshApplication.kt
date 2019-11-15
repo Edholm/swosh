@@ -1,10 +1,11 @@
 package pub.edholm
 
 import com.samskivert.mustache.Mustache
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.mustache.MustacheProperties
 import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.runApplication
 import org.springframework.boot.web.reactive.result.view.MustacheViewResolver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.reactive.config.WebFluxConfigurer
 
 @SpringBootApplication
+@EnableConfigurationProperties(Properties::class)
 @EnableScheduling
 @EnableMongoAuditing
 @Configuration
@@ -43,6 +45,6 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
 }
 
 fun main(args: Array<String>) {
-  SpringApplication.run(SwoshApplication::class.java, *args)
+  runApplication<SwoshApplication>(*args)
 }
 

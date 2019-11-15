@@ -6,12 +6,19 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.test.web.reactive.server.WebTestClient
+import pub.edholm.Properties
 import pub.edholm.db.Swosh
 import pub.edholm.db.SwoshRepository
-import pub.edholm.domain.*
+import pub.edholm.domain.ErrorDTO
+import pub.edholm.domain.IntValue
+import pub.edholm.domain.StringValue
+import pub.edholm.domain.SwishDataDTO
+import pub.edholm.domain.SwoshDTO
+import pub.edholm.domain.SwoshUrlDTO
+import pub.edholm.domain.toSwosh
 import pub.edholm.web.Router
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 
 class SwoshHandlerTest {
 
@@ -27,11 +34,14 @@ class SwoshHandlerTest {
 
   private lateinit var webTestClient: WebTestClient
 
+  private lateinit var properties: Properties
+
   @Before
   fun setUp() {
     swoshRepo = Mockito.mock(SwoshRepository::class.java)
     adminHandler = Mockito.mock(AdminHandler::class.java)
-    swoshHandler = SwoshHandler(swoshRepo)
+    properties = Properties("test.swosh.me", "https")
+    swoshHandler = SwoshHandler(swoshRepo, properties)
     router = Router(swoshHandler, adminHandler)
     webTestClient = WebTestClient.bindToRouterFunction(router.route()).build()
   }
@@ -63,7 +73,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with invalid body`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(
+      .bodyValue(
         SwishDataDTO(
           1,
           StringValue("herp"),
@@ -83,7 +93,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with missing amount`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", null, "msg", 100))
+      .bodyValue(SwoshDTO("0700000000", null, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -96,7 +106,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with missing phone number`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO(null, 100, "msg", 100))
+      .bodyValue(SwoshDTO(null, 100, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -109,7 +119,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with blank phone`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("          ", 100, "msg", 100))
+      .bodyValue(SwoshDTO("          ", 100, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -122,7 +132,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with zero amount`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", 0, "msg", 100))
+      .bodyValue(SwoshDTO("0700000000", 0, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -135,7 +145,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with negative amount`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", -1, "msg", 100))
+      .bodyValue(SwoshDTO("0700000000", -1, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -148,7 +158,7 @@ class SwoshHandlerTest {
     val longMsg = "a" * 51
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", 100, longMsg, 100))
+      .bodyValue(SwoshDTO("0700000000", 100, longMsg, 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -160,12 +170,12 @@ class SwoshHandlerTest {
   @Test
   fun `Create Swosh with max length description`() {
     Mockito.`when`(swoshRepo.save(Mockito.any(Swosh::class.java)))
-      .thenReturn(Swosh(id = "edaeda1").toMono())
+      .thenReturn(Swosh(id = "edaeda1").toMono<Swosh>())
 
     val longMsg = "b" * 50
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", 100, longMsg, 100))
+      .bodyValue(SwoshDTO("0700000000", 100, longMsg, 100))
       .exchange()
       .expectStatus().isOk
       .expectBody(SwoshUrlDTO::class.java)
@@ -178,7 +188,7 @@ class SwoshHandlerTest {
   fun `Create Swosh with invalid phone number`() {
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("070000000a", 100, "msg", 100))
+      .bodyValue(SwoshDTO("070000000a", 100, "msg", 100))
       .exchange()
       .expectStatus().isBadRequest
       .expectBody(ErrorDTO::class.java)
@@ -200,7 +210,7 @@ class SwoshHandlerTest {
     validPhoneNumbers.forEach { phone ->
       val response = webTestClient.post()
         .uri("/api/create")
-        .syncBody(SwoshDTO(phone, 100, "msg", 100))
+        .bodyValue(SwoshDTO(phone, 100, "msg", 100))
         .exchange()
         .expectStatus().isOk
         .expectBody(SwoshUrlDTO::class.java)
@@ -215,7 +225,7 @@ class SwoshHandlerTest {
       .thenReturn(Swosh(id = "nomsg").toMono())
     val response = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", 100, null, 100))
+      .bodyValue(SwoshDTO("0700000000", 100, null, 100))
       .exchange()
       .expectStatus().isOk
       .expectBody(SwoshUrlDTO::class.java)
@@ -229,7 +239,7 @@ class SwoshHandlerTest {
       .thenReturn(Swosh(id = "noexpire").toMono())
     val responseBody = webTestClient.post()
       .uri("/api/create")
-      .syncBody(SwoshDTO("0700000000", 100, "msg", null))
+      .bodyValue(SwoshDTO("0700000000", 100, "msg", null))
       .exchange()
       .expectStatus().isOk
       .expectBody(SwoshUrlDTO::class.java)

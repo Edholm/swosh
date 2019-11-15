@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authorization.AuthorizationContext
 import reactor.core.publisher.Mono
-import reactor.core.publisher.switchIfEmpty
+import reactor.kotlin.core.publisher.switchIfEmpty
 
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -37,7 +37,7 @@ class SecurityConfig {
     val requesterFromLocalhost = context.exchange.request.remoteAddress?.address?.isLoopbackAddress ?: false
     return mono
       .map { AuthorizationDecision(requesterFromLocalhost || isAdmin(it.authorities)) }
-      .switchIfEmpty { Mono.just(AuthorizationDecision(requesterFromLocalhost)) }
+      .switchIfEmpty<AuthorizationDecision> { Mono.just(AuthorizationDecision(requesterFromLocalhost)) }
   }
 
   fun isAdmin(authorities: Collection<GrantedAuthority>): Boolean = authorities.any { it.authority == "ROLE_ADMIN" }

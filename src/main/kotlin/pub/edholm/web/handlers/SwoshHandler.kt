@@ -12,16 +12,23 @@ import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
+import pub.edholm.Properties
 import pub.edholm.badRequestResponse
 import pub.edholm.db.Swosh
 import pub.edholm.db.SwoshRepository
-import pub.edholm.domain.*
+import pub.edholm.domain.ErrorDTO
+import pub.edholm.domain.SwoshDTO
+import pub.edholm.domain.SwoshPreviewDTO
+import pub.edholm.domain.SwoshUrlDTO
+import pub.edholm.domain.generateUri
+import pub.edholm.domain.toSwishDataDTO
+import pub.edholm.domain.toSwosh
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import java.net.URI
 
 @Component
-class SwoshHandler(private val repo: SwoshRepository) {
+class SwoshHandler(private val repo: SwoshRepository, private val properties: Properties) {
   fun renderIndex(req: ServerRequest): Mono<ServerResponse> =
     ok().contentType(MediaType.TEXT_HTML)
       .render("index", mapOf(Pair("user", req.principal())))
@@ -52,12 +59,12 @@ class SwoshHandler(private val repo: SwoshRepository) {
             constructAndInsertNewSwosh(dto)
               .flatMap { (id) ->
                 ok()
-                  .contentType(MediaType.APPLICATION_JSON_UTF8)
-                  .body(SwoshUrlDTO(id).toMono())
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .body(SwoshUrlDTO(id, properties.hostname, properties.scheme).toMono<SwoshUrlDTO>())
               }
               .onErrorResume {
                 status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .contentType(MediaType.APPLICATION_JSON_UTF8)
+                  .contentType(MediaType.APPLICATION_JSON)
                   .body(ErrorDTO(reason = "Unable to generate Swosh!").toMono())
               }
         }

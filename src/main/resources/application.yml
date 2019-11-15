@@ -30,6 +30,8 @@ management:
 
 # The interval between checking/deleting for old urls in milliseconds
 swosh:
+  hostname: ${SWOSH_HOSTNAME:swosh.me}
+  scheme: ${SWOSH_SCHEME:https}
   expire:
     rate: ${SWOSH_EXPIRE_RATE:60000}
 

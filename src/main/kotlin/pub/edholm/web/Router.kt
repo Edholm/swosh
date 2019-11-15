@@ -28,7 +28,7 @@ class Router(
     }
 
     // API-routes
-    (accept(MediaType.APPLICATION_JSON_UTF8) and "/api").nest {
+    (accept(MediaType.APPLICATION_JSON) and "/api").nest {
       POST("/create", swoshHandler::createSwosh)
     }
   }

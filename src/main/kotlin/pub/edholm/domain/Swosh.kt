@@ -4,9 +4,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import pub.edholm.db.Swosh
 import java.time.Instant
 
-data class SwoshUrlDTO(val id: String) {
+data class SwoshUrlDTO(val id: String, private val hostname: String = "swosh.me", private val scheme: String = "https") {
   fun getUrl(): String {
-    return "https://swosh.me/$id"
+    return "$scheme://$hostname/$id"
   }
 }
 
