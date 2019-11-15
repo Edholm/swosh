@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-version=$(./gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}')
+version=$(git describe HEAD)
 repo="edholm/swosh"
 base_tag="${repo}:${version}"
 latest_tag="${repo}:latest"
@@ -16,14 +16,14 @@ function dockerbuild {
     docker push "${tag}"
 }
 
-dockerbuild arm
+dockerbuild arm64
 dockerbuild amd64
 
 docker manifest create --amend ${base_tag} \
-    ${base_tag}-arm \
+    ${base_tag}-arm64 \
     ${base_tag}-amd64
 docker manifest create --amend ${latest_tag} \
-    ${base_tag}-arm \
+    ${base_tag}-arm64 \
     ${base_tag}-amd64
 
 docker manifest push ${base_tag}
