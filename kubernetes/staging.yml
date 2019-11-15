@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: swosh-staging
+  namespace: swosh
+spec:
+  ports:
+    - name: backend
+      port: 8080
+      protocol: TCP
+  selector:
+    app: swosh
+    env: staging
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: swosh-redirect
+  env: staging
+  namespace: swosh
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`staging.swosh.me`)
+      kind: Rule
+      services:
+        - name: swosh-staging
+          port: 8080
+      middlewares:
+        - name: redirect-https
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: swosh-https
+  env: staging
+  namespace: swosh
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`staging.swosh.me`)
+      kind: Rule
+      services:
+        - name: swosh-staging
+          port: 8080
+  tls:
+    certResolver: namecheap
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swosh-staging
+  namespace: swosh
+  labels:
+    app: swosh
+    env: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swosh
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: swosh
+        env: staging
+    spec:
+      containers:
+        - name: swosh
+          image: edholm/swosh:1.2.4
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SWOSH_MONGODB_URI
+              value: mongodb://mongodb/swosh-staging
+            - name: SWOSH_HOSTNAME
+              value: staging.swosh.me
+            - name: SWOSH_SCHEME
+              value: https
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /
+            initialDelaySeconds: 20
+            periodSeconds: 8
+            timeoutSeconds: 2
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /
+            initialDelaySeconds: 20
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 10
