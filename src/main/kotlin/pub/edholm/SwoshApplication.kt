@@ -27,7 +27,7 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
 
   private val mustacheCompiler = Mustache
     .compiler()
-    .escapeHTML(false)
+    .escapeHTML(true)
     .withLoader(MustacheResourceTemplateLoader(props.prefix, props.suffix))
 
   @Bean
