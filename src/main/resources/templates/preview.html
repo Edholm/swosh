@@ -38,7 +38,11 @@
     </div>
 </div>
 <script>
-  window.location = "{{swoshPreviewDTO.swishUri}}"
+  url = new URL(window.location.href);
+  var redirect = url.searchParams.get('redirect');
+  if (redirect !== "false") {
+    window.location = "{{swoshPreviewDTO.swishUri}}"
+  }
 </script>
 </body>
 </html>
