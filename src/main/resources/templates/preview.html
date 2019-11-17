@@ -8,6 +8,7 @@
           content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}"/>
     <title>Swosh preview</title>
     {{>head}}
+    <script src="/js/preview.js" integrity="sha384-Asao9FI6fqKsxkCdPfQSbXq9NmgPsRQXByKdjrdBrzX0gELNuXFjLsVbgWr9CUw6"></script>
 </head>
 <body class="container">
 <div class="row justify-content-center" style="margin-top: 1em;">
@@ -27,7 +28,7 @@
                 {{#swoshPreviewDTO.expiresOn}}{{swoshPreviewDTO.expiresOn}}{{/swoshPreviewDTO.expiresOn}}{{^swoshPreviewDTO.expiresOn}}never!{{/swoshPreviewDTO.expiresOn}}
             </dd>
         </dl>
-        <a href="{{swoshPreviewDTO.swishUri}}" class="btn btn-primary">Looks good, open Swish</a>
+        <a href="{{swoshPreviewDTO.swishUri}}" class="btn btn-primary" id="openSwish">Looks good, open Swish</a>
     </div>
     <div class="col col-md-auto" style="margin-top: 1em;">
         <h4>Or scan the QR-code</h4>
@@ -37,12 +38,5 @@
         </div>
     </div>
 </div>
-<script>
-  url = new URL(window.location.href);
-  var redirect = url.searchParams.get('redirect');
-  if (redirect !== "false") {
-    window.location = "{{swoshPreviewDTO.swishUri}}"
-  }
-</script>
 </body>
 </html>

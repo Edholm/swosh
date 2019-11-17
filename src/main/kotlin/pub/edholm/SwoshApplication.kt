@@ -45,7 +45,7 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
         User(
           username = it.username,
           password = pwdEncoder.encode(it.password),
-          authorities = AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_ADMIN")
+          authorities = AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_ADMIN", "DELETE", "UPDATE")
         )
       }
     userRepository.saveAll(users).subscribe()
