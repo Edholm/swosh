@@ -16,6 +16,7 @@ function generateLink() {
       var resp = JSON.parse(http.responseText);
       if (http.status === 200) {
         document.getElementById("cardlinkdiv").classList.remove("hidden");
+        document.getElementById("copy-to-clipboard-btn").classList.remove("shake");
 
         var urlElem = document.getElementById("swoshurl");
         urlElem.href = resp.url;
@@ -37,4 +38,6 @@ function copyUrlToClipboard() {
   aux.select();
   document.execCommand("copy");
   document.body.removeChild(aux);
+
+  document.getElementById("copy-to-clipboard-btn").classList.add("shake");
 }
