@@ -16,8 +16,10 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: swosh-redirect
-  env: staging
   namespace: swosh
+  labels:
+    expose: public
+    env: staging
 spec:
   entryPoints:
     - web
@@ -28,14 +30,17 @@ spec:
         - name: swosh-staging
           port: 8080
       middlewares:
-        - name: redirect-https
+        - name: secured
+          namespace: middleware
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: swosh-https
-  env: staging
   namespace: swosh
+  labels:
+    expose: public
+    env: staging
 spec:
   entryPoints:
     - websecure
@@ -45,8 +50,16 @@ spec:
       services:
         - name: swosh-staging
           port: 8080
+      middlewares:
+        - name: secured
+          namespace: middleware
+        - name: security-headers
+          namespace: swosh
   tls:
     certResolver: namecheap
+    options:
+      name: default
+      namespace: infra
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -58,6 +71,11 @@ metadata:
     env: staging
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 100%
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app: swosh
