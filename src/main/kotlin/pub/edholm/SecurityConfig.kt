@@ -26,6 +26,10 @@ class SecurityConfig {
       .permitAll()
       .and()
       .csrf().disable()
+      .headers()
+      // https://scotthelme.co.uk/content-security-policy-an-introduction/
+      .contentSecurityPolicy("default-src 'self'; script-src https://use.fontawesome.com:443 https://code.jquery.com:443 'unsafe-inline'; style-src https://maxcdn.bootstrapcdn.com:443 'unsafe-inline'; img-src 'self' data:; object-src 'none'")
+      .and().and()
       .httpBasic()
       .and()
       .formLogin()
