@@ -8,4 +8,6 @@ import java.util.*
 @Repository
 interface UserRepository : ReactiveMongoRepository<User, UUID> {
   fun findByUsername(username: String): Mono<User>
+
+  fun existsByUsername(username: String): Mono<Boolean>
 }

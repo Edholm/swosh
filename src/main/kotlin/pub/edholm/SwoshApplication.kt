@@ -1,6 +1,7 @@
 package pub.edholm
 
 import com.samskivert.mustache.Mustache
+import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.mustache.MustacheProperties
 import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader
@@ -11,7 +12,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.config.EnableMongoAuditing
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.security.core.authority.AuthorityUtils
+import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.web.reactive.config.WebFluxConfigurer
+import pub.edholm.db.User
+import pub.edholm.db.UserRepository
 
 @SpringBootApplication
 @EnableConfigurationProperties(Properties::class)
@@ -30,18 +35,21 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
     setPrefix(props.prefix)
     setSuffix(props.suffix)
   }
-  /*
-    @Bean
-    fun createUsers(userRepository: UserRepository) = ApplicationRunner {
-      val pwdEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
-      val user = User(
-        username = "<username>",
-        password = pwdEncoder.encode("<password>"),
-        authorities = AuthorityUtils.createAuthorityList("USER", "ADMIN")
-      )
-      userRepository.saveAll(listOf(user)).subscribe()
-    }
-  */
+
+  @Bean
+  fun createAdminUsers(userRepository: UserRepository, properties: Properties) = ApplicationRunner {
+    val pwdEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
+    val users = properties.users
+      .filterNot { userRepository.existsByUsername(it.username).block() ?: false }
+      .map {
+        User(
+          username = it.username,
+          password = pwdEncoder.encode(it.password),
+          authorities = AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_ADMIN")
+        )
+      }
+    userRepository.saveAll(users).subscribe()
+  }
 }
 
 fun main(args: Array<String>) {
