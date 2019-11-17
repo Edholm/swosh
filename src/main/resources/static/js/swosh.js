@@ -1,6 +1,6 @@
 function generateLink() {
-  document.getElementById("erroralert").style.visibility = 'hidden';
-  document.getElementById("cardlinkdiv").style.visibility = 'hidden';
+  document.getElementById("erroralert").classList.add("hidden");
+  document.getElementById("cardlinkdiv").classList.add("hidden");
 
   var phone = document.getElementById("phone").value;
   var amount = document.getElementById("amount").value;
@@ -15,14 +15,14 @@ function generateLink() {
     if (http.readyState === 4) {
       var resp = JSON.parse(http.responseText);
       if (http.status === 200) {
-        document.getElementById("cardlinkdiv").style.visibility = '';
+        document.getElementById("cardlinkdiv").classList.remove("hidden");
 
         var urlElem = document.getElementById("swoshurl");
         urlElem.href = resp.url;
         urlElem.text = resp.url;
       } else {
         console.log("Error response: ", resp);
-        document.getElementById("erroralert").style.visibility = '';
+        document.getElementById("erroralert").classList.remove("hidden");
         document.getElementById("errortxt").innerHTML = resp.reason
       }
     }
