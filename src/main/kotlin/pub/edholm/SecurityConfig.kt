@@ -28,7 +28,7 @@ class SecurityConfig {
       .csrf().disable()
       .headers()
       // https://scotthelme.co.uk/content-security-policy-an-introduction/
-      .contentSecurityPolicy("default-src 'self'; script-src https://use.fontawesome.com:443 https://code.jquery.com:443 'self'; style-src https://maxcdn.bootstrapcdn.com:443 'unsafe-inline'; img-src 'self' data:; object-src 'none'")
+      .contentSecurityPolicy("default-src 'self'; script-src https://use.fontawesome.com:443 https://code.jquery.com:443 'self' 'unsafe-inline'; style-src https://maxcdn.bootstrapcdn.com:443 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'")
       .and().and()
       .httpBasic()
       .and()
