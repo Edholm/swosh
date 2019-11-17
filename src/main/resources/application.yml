@@ -34,6 +34,10 @@ swosh:
   scheme: ${SWOSH_SCHEME:https}
   expire:
     rate: ${SWOSH_EXPIRE_RATE:60000}
+  users:
+    -
+      username: ${SWOSH_ADMIN_USERNAME:admin}
+      password: ${SWOSH_ADMIN_PWD:admin}
 
 logging:
   level:
