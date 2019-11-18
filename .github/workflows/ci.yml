@@ -17,10 +17,7 @@ jobs:
 
     - uses: actions/cache@v1
       with:
-        path: ~/uses: actions/upload-artifact@v1
-        with:
-          name: homework
-          path: math-homework.txt.gradle/caches
+        path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: |
           ${{ runner.os }}-gradle-  
