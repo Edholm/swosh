@@ -27,7 +27,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradlew-${{ hashFiles('**/*.zip') }}
+        key: ${{ runner.os }}-gradlew-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradlew-
 
