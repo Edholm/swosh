@@ -15,12 +15,21 @@ jobs:
       with:
         java-version: 11
 
-    - uses: actions/cache@v1
+    - name: Cache Gradle cache
+      uses: actions/cache@v1
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: |
-          ${{ runner.os }}-gradle-  
+          ${{ runner.os }}-gradle-
+
+    - name: Cache Gradle wrapper
+      uses: actions/cache@v1
+      with:
+        path: ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradlew-${{ hashFiles('**/*.zip') }}
+        restore-keys: |
+          ${{ runner.os }}-gradlew-
 
     - name: Build with Gradle
       run: ./gradlew build
@@ -47,3 +56,4 @@ jobs:
         VERSION=${git describe HEAD}
         echo $VERSION
         stat swosh.jar
+      shell: bash
