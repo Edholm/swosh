@@ -53,7 +53,7 @@ jobs:
       env:
         REPO: edholm/swosh
       run: |
-        VERSION=${git describe HEAD}
+        VERSION=$(git describe HEAD)
         echo $VERSION
         stat swosh.jar
       shell: bash
