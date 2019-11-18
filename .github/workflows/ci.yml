@@ -44,6 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+    - uses: actions/checkout@v1
     - name: Download jar-file
       uses: actions/download-artifact@v1
       with:
@@ -53,6 +54,8 @@ jobs:
       env:
         REPO: edholm/swosh
       run: |
+        pwd
+        ls
         VERSION=$(git describe HEAD)
         echo $VERSION
         stat swosh.jar
