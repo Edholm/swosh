@@ -54,6 +54,7 @@ jobs:
         path: build/libs/
 
     - name: Login to docker
+      uses: docker-practice/actions-setup-docker@0.0.1
       env:
         DOCKER_USERNAME: ${{ secrets.DockerUsername }}
         DOCKER_PASSWORD: ${{ secrets.DockerPassword }}
@@ -62,6 +63,7 @@ jobs:
       shell: bash
 
     - name: Build and push arm64 container
+      uses: docker-practice/actions-setup-docker@0.0.1
       run: |
         VERSION=$(git describe HEAD)
         TAG="${REPO}:${VERSION}-arm64"
@@ -71,6 +73,7 @@ jobs:
       shell: bash
 
     - name: Build and push amd64 container
+      uses: docker-practice/actions-setup-docker@0.0.1
       run: |
         VERSION=$(git describe HEAD)
         TAG="${REPO}:${VERSION}-amd64"
@@ -80,6 +83,7 @@ jobs:
       shell: bash
 
     - name: Create manifest
+      uses: docker-practice/actions-setup-docker@0.0.1
       run: |
         VERSION=$(git describe HEAD)
         TAG="${REPO}:${VERSION}-amd64"
