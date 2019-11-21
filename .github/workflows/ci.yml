@@ -59,9 +59,9 @@ jobs:
 
       - name: Login to Docker
         uses: azure/container-actions/docker-login@master
-          with:
-            username: ${{ secrets.DockerUsername }}
-            password: ${{ secrets.DockerPassword }}
+        with:
+          username: ${{ secrets.DockerUsername }}
+          password: ${{ secrets.DockerPassword }}
 
       - name: Build and push arm64 container
         run: |
