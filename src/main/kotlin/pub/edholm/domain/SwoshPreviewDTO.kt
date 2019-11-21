@@ -18,7 +18,7 @@ data class SwoshPreviewDTO(
       val swishUri = swosh.toSwishDataDTO().generateUri()
       return SwoshPreviewDTO(
         swosh.id, swosh.payee, swosh.amount, swosh.description,
-        swosh.expiresOn, swishUri.toASCIIString(), swosh.generateQrCode(swishUri),
+        swosh.expiresOn, swishUri.toASCIIString(), swosh.generateQrCode(),
         swosh.createdAt
       )
     }

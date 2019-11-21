@@ -7,7 +7,6 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
-import java.net.URI
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.*
@@ -31,9 +30,9 @@ data class Swosh(
       BigInteger(130, SecureRandom()).toString(32).substring(0, ID_LENGTH)
   }
 
-  fun generateQrCode(swishUri: URI): String {
+  fun generateQrCode(): String {
     val qrCode = QRCode
-      .from(swishUri.toASCIIString())
+      .from("C${payee};${amount};${description ?: ""};4")
       .withSize(256, 256)
       .withCharset("UTF-8")
       .withHint(EncodeHintType.MARGIN, 0)
