@@ -88,7 +88,7 @@ spec:
     spec:
       containers:
         - name: swosh
-          image: edholm/swosh:1.2.7
+          image: edholm/swosh:<VERSION>
           ports:
             - containerPort: 8080
           env:
