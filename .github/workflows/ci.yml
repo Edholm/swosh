@@ -84,7 +84,7 @@ jobs:
       - name: Create manifest
         run: |
           VERSION=$(git describe HEAD)
-          TAG="${REPO}:${VERSION}-amd64"
+          TAG="${REPO}:${VERSION}"
           LATEST="${REPO}:latest"
           docker manifest create --amend "${TAG}" "${TAG}-arm64" "${TAG}-amd64"
           docker manifest create --amend "${LATEST}" "${TAG}-arm64" "${TAG}-amd64"
