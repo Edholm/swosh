@@ -85,9 +85,9 @@ jobs:
         run: |
           VERSION=$(git describe HEAD)
           TAG="${REPO}:${VERSION}-amd64"
-          LATEST="${REPO}:latest}
-          docker manifest create --amend "${TAG}" "${TAG}"-arm64 "${TAG}"-amd64
-          docker manifest create --amend "${LATEST}" "${TAG}"-arm64 "${TAG}"-amd64
+          LATEST="${REPO}:latest"
+          docker manifest create --amend "${TAG}" "${TAG}-arm64" "${TAG}-amd64"
+          docker manifest create --amend "${LATEST}" "${TAG}-arm64" "${TAG}-amd64"
 
           docker manifest push "${TAG}"
           docker manifest push "${LATEST}"
