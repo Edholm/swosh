@@ -3,7 +3,7 @@
 <head>
     <meta property="og:title" content="Swish {{ swoshPreviewDTO.amount}}kr to {{ swoshPreviewDTO.payee }}"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:url" content="https://swosh.me/{{ swoshPreviewDTO.id }}"/>
+    <meta property="og:url" content="{{ scheme }}://{{ host }}/{{ swoshPreviewDTO.id }}"/>
     <meta property="og:description"
           content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}"/>
     <title>Swosh preview</title>

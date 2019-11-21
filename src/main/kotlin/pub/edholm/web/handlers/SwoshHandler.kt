@@ -37,7 +37,14 @@ class SwoshHandler(private val repo: SwoshRepository, private val properties: Pr
     repo.findById(req.pathVariable("id"))
       .flatMap { swosh ->
         val swoshPreviewDTO = SwoshPreviewDTO.valueOf(swosh)
-        ok().contentType(MediaType.TEXT_HTML).render("preview", swoshPreviewDTO)
+        ok().contentType(MediaType.TEXT_HTML).render(
+          "preview",
+          mapOf(
+            Pair("swoshPreviewDTO", swoshPreviewDTO),
+            Pair("scheme", properties.scheme),
+            Pair("host", properties.hostname)
+          )
+        )
       }
       .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
