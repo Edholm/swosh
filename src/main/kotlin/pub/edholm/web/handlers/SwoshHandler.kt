@@ -36,6 +36,7 @@ class SwoshHandler(
 ) {
 
   private val failedCreation = meterRegistry.counter("create.failed")
+  private val successCreation = meterRegistry.counter("create.success")
 
   fun renderIndex(req: ServerRequest): Mono<ServerResponse> =
     ok().contentType(MediaType.TEXT_HTML)
@@ -70,6 +71,7 @@ class SwoshHandler(
         validateSwoshDTO(dto)
         constructAndInsertNewSwosh(dto)
           .flatMap { (id) ->
+            successCreation.increment()
             ok()
               .contentType(MediaType.APPLICATION_JSON)
               .body(SwoshUrlDTO(id, properties.hostname, properties.scheme).toMono<SwoshUrlDTO>())
