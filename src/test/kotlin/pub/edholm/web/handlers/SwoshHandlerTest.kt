@@ -1,5 +1,6 @@
 package pub.edholm.web.handlers
 
+import io.micrometer.core.instrument.MeterRegistry
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -41,7 +42,7 @@ class SwoshHandlerTest {
     swoshRepo = Mockito.mock(SwoshRepository::class.java)
     adminHandler = Mockito.mock(AdminHandler::class.java)
     properties = Properties("test.swosh.me", "https", listOf(), Properties.Metrics("localhost", "unittest", "swosh"))
-    swoshHandler = SwoshHandler(swoshRepo, properties)
+    swoshHandler = SwoshHandler(swoshRepo, properties, Mockito.mock(MeterRegistry::class.java))
     router = Router(swoshHandler, adminHandler)
     webTestClient = WebTestClient.bindToRouterFunction(router.route()).build()
   }
