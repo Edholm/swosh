@@ -67,9 +67,7 @@ class AdminHandler(private val repo: SwoshRepository) {
         val originalId = values.getValue("originalId")
         val id = values.getValue("id")
 
-        if (id.isBlank()) {
-          throw IllegalArgumentException("Tried to assign a blank id to $originalId")
-        }
+        require(!id.isBlank()) { "Tried to assign a blank id to $originalId" }
 
         repo.findById(originalId)
           .map {

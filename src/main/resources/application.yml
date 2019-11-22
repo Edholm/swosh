@@ -35,9 +35,13 @@ swosh:
   expire:
     rate: ${SWOSH_EXPIRE_RATE:60000}
   users:
-    -
-      username: ${SWOSH_ADMIN_USERNAME:admin}
+    - username: ${SWOSH_ADMIN_USERNAME:admin}
       password: ${SWOSH_ADMIN_PWD:admin}
+  metrics:
+    environment: ${SWOSH_ENVIRONMENT:local}
+    server-hostname: ${SWOSH_SERVER_HOSTNAME:}
+    app-name: ${SWOSH_APP_NAME:swosh}
+
 
 logging:
   level:

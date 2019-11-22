@@ -1,7 +1,9 @@
 package pub.edholm
 
 import com.samskivert.mustache.Mustache
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.boot.ApplicationRunner
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.mustache.MustacheProperties
 import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.web.reactive.config.WebFluxConfigurer
 import pub.edholm.db.User
 import pub.edholm.db.UserRepository
+import java.net.InetAddress
 
 @SpringBootApplication
 @EnableConfigurationProperties(Properties::class)
@@ -49,6 +52,19 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
         )
       }
     userRepository.saveAll(users).subscribe()
+  }
+
+  @Bean
+  fun metricsCommonTags(properties: Properties): MeterRegistryCustomizer<MeterRegistry> {
+    val hostName = properties.metrics.serverHostname.ifBlank { InetAddress.getLocalHost().hostName }
+    return MeterRegistryCustomizer {
+      it.config()
+        .commonTags(
+          "env", properties.metrics.environment,
+          "host", hostName,
+          "app", properties.metrics.appName
+        )
+    }
   }
 }
 

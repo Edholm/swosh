@@ -40,7 +40,7 @@ class SwoshHandlerTest {
   fun setUp() {
     swoshRepo = Mockito.mock(SwoshRepository::class.java)
     adminHandler = Mockito.mock(AdminHandler::class.java)
-    properties = Properties("test.swosh.me", "https", listOf())
+    properties = Properties("test.swosh.me", "https", listOf(), Properties.Metrics("localhost", "unittest", "swosh"))
     swoshHandler = SwoshHandler(swoshRepo, properties)
     router = Router(swoshHandler, adminHandler)
     webTestClient = WebTestClient.bindToRouterFunction(router.route()).build()
