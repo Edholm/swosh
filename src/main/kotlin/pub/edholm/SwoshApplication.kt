@@ -41,6 +41,10 @@ class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigure
 
   @Bean
   fun createAdminUsers(userRepository: UserRepository, properties: Properties) = ApplicationRunner {
+    if (!properties.provisionUsers) {
+      return@ApplicationRunner
+    }
+
     val pwdEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
     val users = properties.users
       .filterNot { userRepository.existsByUsername(it.username).block() ?: false }

@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class Properties(
   val hostname: String,
   val scheme: String,
+  val provisionUsers: Boolean,
   val users: List<User>,
   val metrics: Metrics
 ) {
