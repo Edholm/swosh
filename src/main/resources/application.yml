@@ -26,6 +26,8 @@ management:
     export:
       prometheus:
         enabled: ${PROMETHEUS_ENABLED:true}
+  server:
+    port: ${SWOSH_ACTUATOR_PORT:8081}
 
 
 # The interval between checking/deleting for old urls in milliseconds

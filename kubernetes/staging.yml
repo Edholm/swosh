@@ -89,8 +89,10 @@ spec:
       containers:
         - name: swosh
           image: edholm/swosh:<VERSION>
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
+            - containerPort: 8081
           env:
             - name: SWOSH_MONGODB_URI
               value: mongodb://mongodb/swosh-staging
@@ -104,16 +106,16 @@ spec:
               value: "true"
           readinessProbe:
             httpGet:
-              port: 8080
-              path: /
+              port: 8081
+              path: /actuator/health
             initialDelaySeconds: 20
             periodSeconds: 8
             timeoutSeconds: 2
             failureThreshold: 10
           livenessProbe:
             httpGet:
-              port: 8080
-              path: /
+              port: 8081
+              path: /actuator/health
             initialDelaySeconds: 20
             periodSeconds: 3
             timeoutSeconds: 2
