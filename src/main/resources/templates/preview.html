@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta property="og:title" content="Swish {{ swoshPreviewDTO.amount}}kr to {{ swoshPreviewDTO.payee }}"/>
+    <meta property="og:image" content="{{ scheme }}://{{ host }}/img/money.svg">
     <meta property="og:type" content="website"/>
     <meta property="og:url" content="{{ scheme }}://{{ host }}/{{ swoshPreviewDTO.id }}"/>
     <meta property="og:description"
           content="{{#swoshPreviewDTO.description }}{{swoshPreviewDTO.description }}{{/swoshPreviewDTO.description }}{{^swoshPreviewDTO.description }}No message given...{{/swoshPreviewDTO.description }}"/>
+    <meta property="og:locale" content="sv_SE">
     <title>Swosh preview</title>
     {{>head}}
     <script src="/js/preview.js"></script>
