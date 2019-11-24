@@ -18,10 +18,11 @@ class ExpiryService(
 
   @Scheduled(fixedRateString = "\${swosh.expire.rate}", initialDelay = 1337)
   fun expireOldLinks() {
-    val expired = swoshRepo.findByExpiresOnBefore(Instant.now())
+    val now = Instant.now()
+    val expired = swoshRepo.findByExpiresOnBefore(now)
     expired.count().subscribe { c ->
       if (c > 0) {
-        logger.info("Expiring {} links", c)
+        logger.info("Expiring {} links before {}", c, now)
       }
       counter.increment(c.toDouble())
     }
