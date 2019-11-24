@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.ServerResponse.temporaryRedirect
 import org.springframework.web.reactive.function.server.body
+import org.springframework.web.server.ServerWebInputException
 import pub.edholm.Properties
 import pub.edholm.badRequestResponse
 import pub.edholm.db.Swosh
@@ -79,10 +80,10 @@ class SwoshHandler(
       }
       .onErrorResume {
         failedCreation.increment()
-        if (it is IllegalArgumentException) {
-          ErrorDTO(reason = it.message ?: "Unknown error").badRequestResponse()
-        } else {
-          status(HttpStatus.INTERNAL_SERVER_ERROR)
+        when (it) {
+          is IllegalArgumentException -> ErrorDTO(reason = it.message ?: "Unknown error").badRequestResponse()
+          is ServerWebInputException -> ErrorDTO(reason = "Invalid input format!").badRequestResponse()
+          else -> status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.APPLICATION_JSON)
             .body(ErrorDTO(reason = "Unable to generate Swosh!").toMono())
         }
