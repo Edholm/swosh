@@ -119,4 +119,5 @@ jobs:
           sed -i "s|<VERSION>|${VERSION}|g" kubernetes/staging.yml
       - name: Deploy to staging
         run: |
-          kubectl apply -f kubernetes/
+          kubectl apply -f kubernetes/common.yml
+          kubectl apply -f kubernetes/staging.yml

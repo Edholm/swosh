@@ -98,6 +98,8 @@ spec:
               value: staging.swosh.me
             - name: SWOSH_SCHEME
               value: https
+            - name: SWOSH_ENVIRONMENT
+              value: staging
             - name: SWOSH_PROVISION_USERS
               value: true
           readinessProbe:
