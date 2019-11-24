@@ -98,7 +98,7 @@ spec:
             - name: SWOSH_ENVIRONMENT
               value: prod
             - name: SWOSH_PROVISION_USERS
-              value: false
+              value: "false"
           readinessProbe:
             httpGet:
               port: 8080

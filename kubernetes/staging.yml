@@ -101,7 +101,7 @@ spec:
             - name: SWOSH_ENVIRONMENT
               value: staging
             - name: SWOSH_PROVISION_USERS
-              value: true
+              value: "true"
           readinessProbe:
             httpGet:
               port: 8080
