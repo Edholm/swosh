@@ -37,9 +37,14 @@ class QRService(props: Properties) {
 
   @Cacheable("swishQRCode")
   fun fetchQRCode(swosh: Swosh): Mono<ByteArray> {
-    logger.debug("Fetching QR code from swish for {}", swosh.id)
+    logger.debug("Fetching QR code from Swish for {}", swosh.id)
     val qrInput =
-      SwishQRInputDTO(StringValue(swosh.payee), IntValue(swosh.amount), StringValue(swosh.description ?: ""))
+      SwishQRInputDTO(
+        payee = StringValue(swosh.payee),
+        amount = IntValue(swosh.amount),
+        message = StringValue(swosh.description ?: ""),
+        transparent = true
+      )
 
     return webClient.post()
       .body(BodyInserters.fromValue(qrInput))
