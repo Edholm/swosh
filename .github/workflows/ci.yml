@@ -1,6 +1,9 @@
 name: Build, test, and deploy
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build-gradle:
