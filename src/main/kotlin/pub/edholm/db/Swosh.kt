@@ -30,14 +30,17 @@ data class Swosh(
       BigInteger(130, SecureRandom()).toString(32).substring(0, ID_LENGTH)
   }
 
+  fun generateQrCodeByteArray(): ByteArray = QRCode
+    .from("C${payee};${amount};${description ?: ""};4")
+    .withSize(256, 256)
+    .withCharset("UTF-8")
+    .withHint(EncodeHintType.MARGIN, 0)
+    .to(ImageType.PNG)
+    .stream()
+    .toByteArray()
+
   fun generateQrCode(): String {
-    val qrCode = QRCode
-      .from("C${payee};${amount};${description ?: ""};4")
-      .withSize(256, 256)
-      .withCharset("UTF-8")
-      .withHint(EncodeHintType.MARGIN, 0)
-      .to(ImageType.PNG)
-      .stream()
-    return Base64.getEncoder().encodeToString(qrCode.toByteArray())
+    val qrCode = generateQrCodeByteArray()
+    return Base64.getEncoder().encodeToString(qrCode)
   }
 }

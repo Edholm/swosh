@@ -25,6 +25,7 @@ class Router(
       GET("/", swoshHandler::renderIndex)
       GET("/{id}", swoshHandler::renderPreview)
       GET("/{id}/redir", swoshHandler::redirectToSwish)
+      GET("/{id}/qr", swoshHandler::renderQRCode)
     }
 
     // API-routes

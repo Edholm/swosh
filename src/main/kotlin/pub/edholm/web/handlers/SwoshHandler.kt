@@ -43,7 +43,7 @@ class SwoshHandler(
     ok().contentType(MediaType.TEXT_HTML)
       .render("index", mapOf(Pair("user", req.principal())))
 
-  fun renderPreview(req: ServerRequest) =
+  fun renderPreview(req: ServerRequest): Mono<ServerResponse> =
     repo.findById(req.pathVariable("id"))
       .flatMap { swosh ->
         val swoshPreviewDTO = SwoshPreviewDTO.valueOf(swosh)
@@ -58,11 +58,19 @@ class SwoshHandler(
       }
       .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
-  fun redirectToSwish(req: ServerRequest) =
+  fun redirectToSwish(req: ServerRequest): Mono<ServerResponse> =
     repo.findById(req.pathVariable("id"))
       .flatMap { s ->
         temporaryRedirect(s.toSwishDataDTO().generateUri())
           .build()
+      }
+      .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
+
+  fun renderQRCode(req: ServerRequest): Mono<ServerResponse> =
+    repo.findById(req.pathVariable("id"))
+      .flatMap { swosh ->
+        ok().contentType(MediaType.IMAGE_PNG)
+          .bodyValue(swosh.generateQrCodeByteArray())
       }
       .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
