@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateL
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.boot.web.reactive.result.view.MustacheViewResolver
+import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.config.EnableMongoAuditing
@@ -25,6 +26,7 @@ import java.net.InetAddress
 @EnableConfigurationProperties(Properties::class)
 @EnableScheduling
 @EnableMongoAuditing
+@EnableCaching
 @Configuration
 class SwoshApplication(private val props: MustacheProperties) : WebFluxConfigurer {
 

@@ -14,11 +14,11 @@ data class SwoshPreviewDTO(
   val createdAt: Instant?
 ) {
   companion object {
-    fun valueOf(swosh: Swosh): SwoshPreviewDTO {
+    fun valueOf(swosh: Swosh, qrCode: String): SwoshPreviewDTO {
       val swishUri = swosh.toSwishDataDTO().generateUri()
       return SwoshPreviewDTO(
         swosh.id, swosh.payee, swosh.amount, swosh.description,
-        swosh.expiresOn, swishUri.toASCIIString(), swosh.generateQrCode(),
+        swosh.expiresOn, swishUri.toASCIIString(), qrCode,
         swosh.createdAt
       )
     }

@@ -12,21 +12,19 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.ServerResponse.seeOther
 import pub.edholm.db.SwoshRepository
-import pub.edholm.domain.SwoshPreviewDTO
+import pub.edholm.services.PreviewService
 import reactor.core.publisher.Mono
 import java.net.URI
 
 @Component
 @PreAuthorize("hasRole('ADMIN')")
-class AdminHandler(private val repo: SwoshRepository) {
+class AdminHandler(private val repo: SwoshRepository, private val previewService: PreviewService) {
 
   private val logger = LoggerFactory.getLogger(AdminHandler::class.java)
 
   fun renderAdmin(req: ServerRequest): Mono<ServerResponse> {
     return repo.findAll(Sort.by(Sort.Direction.DESC, "expiresOn"))
-      .map {
-        SwoshPreviewDTO.valueOf(it)
-      }
+      .flatMap { previewService.convertToPreview(it, false) }
       .collectList()
       .flatMap {
         ok().contentType(MediaType.TEXT_HTML).render(
@@ -45,12 +43,12 @@ class AdminHandler(private val repo: SwoshRepository) {
   fun renderSingle(req: ServerRequest): Mono<ServerResponse> {
     return repo
       .findById(req.pathVariable("id"))
+      .flatMap { previewService.convertToPreview(it, false) }
       .flatMap {
-        SwoshPreviewDTO.valueOf(it)
         ok().contentType(MediaType.TEXT_HTML).render(
           "admin/admin-single",
           mapOf(
-            Pair("all", listOf(SwoshPreviewDTO.valueOf(it))),
+            Pair("all", listOf(it)),
             Pair("user", req.principal()),
             Pair("canUpdate", req.hasAuthority("UPDATE")),
             Pair("canDelete", req.hasAuthority("DELETE"))
@@ -70,8 +68,8 @@ class AdminHandler(private val repo: SwoshRepository) {
         require(!id.isBlank()) { "Tried to assign a blank id to $originalId" }
 
         repo.findById(originalId)
-          .map {
-            it.copy(
+          .map { swosh ->
+            swosh.copy(
               id = id,
               description = values.getValue("description"),
               amount = values.getValue("amount").toInt(),

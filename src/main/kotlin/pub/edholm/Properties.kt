@@ -10,7 +10,8 @@ data class Properties(
   val scheme: String,
   val provisionUsers: Boolean,
   val users: List<User>,
-  val metrics: Metrics
+  val metrics: Metrics,
+  val swishQrEndpoint: String
 ) {
   data class User(val username: String, val password: String)
   data class Metrics(val serverHostname: String, val environment: String, val appName: String)

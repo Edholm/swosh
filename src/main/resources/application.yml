@@ -44,7 +44,7 @@ swosh:
     environment: ${SWOSH_ENVIRONMENT:local}
     server-hostname: ${SWOSH_SERVER_HOSTNAME:}
     app-name: ${SWOSH_APP_NAME:swosh}
-
+  swish-qr-endpoint: https://mpc.getswish.net/qrg-swish/api/v1/prefilled
 
 logging:
   level:

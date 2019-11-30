@@ -17,6 +17,8 @@ import pub.edholm.domain.SwishDataDTO
 import pub.edholm.domain.SwoshDTO
 import pub.edholm.domain.SwoshUrlDTO
 import pub.edholm.domain.toSwosh
+import pub.edholm.services.PreviewService
+import pub.edholm.services.QRService
 import pub.edholm.web.Router
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
@@ -41,8 +43,10 @@ class SwoshHandlerTest {
   fun setUp() {
     swoshRepo = Mockito.mock(SwoshRepository::class.java)
     adminHandler = Mockito.mock(AdminHandler::class.java)
-    properties = Properties("test.swosh.me", "https", false, listOf(), Properties.Metrics("localhost", "unittest", "swosh"))
-    swoshHandler = SwoshHandler(swoshRepo, properties, SimpleMeterRegistry())
+    val qrService = Mockito.mock(QRService::class.java)
+    val previewService = Mockito.mock(PreviewService::class.java)
+    properties = Properties("test.swosh.me", "https", false, listOf(), Properties.Metrics("localhost", "unittest", "swosh"), "http://localhost")
+    swoshHandler = SwoshHandler(swoshRepo, previewService, qrService, properties, SimpleMeterRegistry())
     router = Router(swoshHandler, adminHandler)
     webTestClient = WebTestClient.bindToRouterFunction(router.route()).build()
   }

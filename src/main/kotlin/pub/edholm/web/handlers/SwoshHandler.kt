@@ -20,11 +20,12 @@ import pub.edholm.db.Swosh
 import pub.edholm.db.SwoshRepository
 import pub.edholm.domain.ErrorDTO
 import pub.edholm.domain.SwoshDTO
-import pub.edholm.domain.SwoshPreviewDTO
 import pub.edholm.domain.SwoshUrlDTO
 import pub.edholm.domain.generateUri
 import pub.edholm.domain.toSwishDataDTO
 import pub.edholm.domain.toSwosh
+import pub.edholm.services.PreviewService
+import pub.edholm.services.QRService
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.net.URI
@@ -32,6 +33,8 @@ import java.net.URI
 @Component
 class SwoshHandler(
   private val repo: SwoshRepository,
+  private val previewService: PreviewService,
+  private val qrService: QRService,
   private val properties: Properties,
   meterRegistry: MeterRegistry
 ) {
@@ -45,12 +48,12 @@ class SwoshHandler(
 
   fun renderPreview(req: ServerRequest): Mono<ServerResponse> =
     repo.findById(req.pathVariable("id"))
-      .flatMap { swosh ->
-        val swoshPreviewDTO = SwoshPreviewDTO.valueOf(swosh)
+      .flatMap { previewService.convertToPreview(it) }
+      .flatMap { preview ->
         ok().contentType(MediaType.TEXT_HTML).render(
           "preview",
           mapOf(
-            Pair("swoshPreviewDTO", swoshPreviewDTO),
+            Pair("swoshPreviewDTO", preview),
             Pair("scheme", properties.scheme),
             Pair("host", properties.hostname)
           )
@@ -68,9 +71,10 @@ class SwoshHandler(
 
   fun renderQRCode(req: ServerRequest): Mono<ServerResponse> =
     repo.findById(req.pathVariable("id"))
-      .flatMap { swosh ->
+      .flatMap { qrService.fetchQRCode(it) }
+      .flatMap { qrCode ->
         ok().contentType(MediaType.IMAGE_PNG)
-          .bodyValue(swosh.generateQrCodeByteArray())
+          .bodyValue(qrCode)
       }
       .switchIfEmpty(temporaryRedirect(URI.create("/")).build())
 
