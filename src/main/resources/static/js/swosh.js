@@ -1,19 +1,23 @@
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('generate-link-btn').onclick = generateLink
+});
+
 function generateLink() {
   document.getElementById("erroralert").classList.add("hidden");
   document.getElementById("cardlinkdiv").classList.add("hidden");
 
-  var phone = document.getElementById("phone").value;
-  var amount = document.getElementById("amount").value;
-  var msg = document.getElementById("message").value;
-  var expire = document.getElementById("expire").value;
+  const phone = document.getElementById("phone").value;
+  const amount = document.getElementById("amount").value;
+  const msg = document.getElementById("message").value;
+  const expire = document.getElementById("expire").value;
 
-  var dto = {phone: phone, amount: amount, message: msg, expireAfterSeconds: expire};
-  var http = new XMLHttpRequest();
+  const dto = {phone: phone, amount: amount, message: msg, expireAfterSeconds: expire};
+  const http = new XMLHttpRequest();
   http.open("POST", "/api/create", true);
   http.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
   http.onreadystatechange = function () {
     if (http.readyState === 4) {
-      var resp = JSON.parse(http.responseText);
+      const resp = JSON.parse(http.responseText);
       if (http.status === 200) {
         document.getElementById("cardlinkdiv").classList.remove("hidden");
         document.getElementById("copy-to-clipboard-btn").classList.remove("shake");

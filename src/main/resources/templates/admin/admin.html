@@ -1,13 +1,13 @@
 {{>admin/admin-header}}
-<div class="row justify-content-center" style="margin-top: 2em">
+<div class="row justify-content-center margin-top-2">
     <div class="col-lg-7">
-        <div style="margin-bottom: 2em">
+        <div class="margin-bottom-2">
             <h1><i class="fas fa-unlock-alt"></i> Admin panel</h1>
             <i>Logged in user: {{user.name}}</i><a href="/logout" class="btn btn-light float-right"><i
                 class="fa fa-sign-out-alt"></i> Logout</a>
             <a href="/" class="btn btn-light float-right"><i class="fa fa-caret-left"></i> Back</a>
             <h3>All Swosh entities</h3>
-            <h5 style="margin-bottom: 1em">Total count: {{count}}</h5>
+            <h5 class="margin-bottom-1">Total count: {{count}}</h5>
         </div>
         {{#all}}
         {{>admin/edit-swosh}}

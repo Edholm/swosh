@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-header">
-        <h4><a style="color: #000;" href="/admin/{{id}}">Swosh</a> <a href="/{{id}}" target="_blank" rel="noopener" class="btn btn-secondary float-right"><i
+        <h4><a class="admin-link" href="/admin/{{id}}">Swosh</a> <a href="/{{id}}" target="_blank" rel="noopener" class="btn btn-secondary float-right"><i
                 class="fas fa-external-link-square-alt"></i></a>
         </h4>
     </div>
@@ -46,14 +46,14 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="swosh-expiry">Link expires at</label>
-                    <input name="expiry" readonly type="datetime-local"
+                    <input name="expiry" readonly type="text"
                            value="{{#expiresOn}}{{expiresOn}}{{/expiresOn}}" id="swosh-expiry"
                            class="form-control-plaintext">
 
                 </div>
                 <div class="form-group col-md-6">
                     <label for="swosh-createdAt">Created at</label>
-                    <input readonly type="datetime-local"
+                    <input readonly type="text"
                            value="{{#createdAt}}{{createdAt}}{{/createdAt}}" id="swosh-createdAt"
                            class="form-control-plaintext">
 

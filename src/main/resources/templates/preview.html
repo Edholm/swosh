@@ -13,7 +13,7 @@
     <script src="/js/preview.js"></script>
 </head>
 <body class="container">
-<div class="row justify-content-center" style="margin-top: 1em;">
+<div class="row justify-content-center margin-top-1">
     <div class="col col-md-auto">
         <h1>Swosh preview</h1>
         <dl>
@@ -32,11 +32,11 @@
         </dl>
         <a href="{{swoshPreviewDTO.swishUri}}" class="btn btn-primary" id="openSwish">Looks good, open Swish</a>
     </div>
-    <div class="col col-md-auto" style="margin-top: 1em;">
+    <div class="col col-md-auto margin-top-1">
         <h4>Or scan the QR-code</h4>
         <div title="{{swoshPreviewDTO.swishUri}}">
-            <canvas width="256" height="256" style="display: none;"></canvas>
-            <img alt="Scan me!" style="display: block;" src="data:image/png;base64,{{swoshPreviewDTO.qrCode}}">
+            <canvas class="display-none" width="256" height="256"></canvas>
+            <img alt="Scan me!" class="display-block" src="data:image/png;base64,{{swoshPreviewDTO.qrCode}}">
         </div>
     </div>
 </div>
