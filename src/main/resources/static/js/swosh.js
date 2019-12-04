@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('generate-link-btn').onclick = generateLink
+  document.getElementById('generate-link-btn').onclick = generateLink;
+  document.getElementById('copy-to-clipboard-btn').onclick = copyUrlToClipboard;
 });
 
 function generateLink() {
