@@ -1,6 +1,7 @@
 <div class="card">
     <div class="card-header">
-        <h4><a class="admin-link" href="/admin/{{id}}">Swosh</a> <a href="/{{id}}" target="_blank" rel="noopener" class="btn btn-secondary float-right"><i
+        <h4><a class="admin-link" href="/admin/{{id}}">Swosh</a> <a href="/{{id}}" target="_blank" rel="noopener"
+                                                                    class="btn btn-secondary float-right"><i
                 class="fas fa-external-link-square-alt"></i></a>
         </h4>
     </div>
@@ -60,14 +61,13 @@
                 </div>
             </div>
             {{#canUpdate}}
-            <button type="submit" class="btn btn-success float-right"><i
-                    class="far fa-edit"></i> Update
+            <button type="submit" class="btn btn-success float-right">
+                <i class="far fa-edit"></i> Update
             </button>
             {{/canUpdate}}
             {{#canDelete}}
-            <!-- FIXME: remove onClick -->
-            <button type="button" class="btn btn-danger float-left" onclick="deleteSwosh('{{id}}')"><i
-                    class="fa fa-trash"></i> Delete
+            <button id="{{id}}" type="button" class="btn btn-danger float-left delete-btn">
+                <i class="fa fa-trash"></i> Delete
             </button>
             {{/canDelete}}
         </form>
