@@ -58,7 +58,7 @@ spec:
   tls:
     certResolver: cloudflare
     options:
-      name: default
+      name: default-tls
       namespace: infra
 ---
 apiVersion: apps/v1
