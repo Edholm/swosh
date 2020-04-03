@@ -56,7 +56,7 @@ spec:
         - name: security-headers
           namespace: swosh
   tls:
-    certResolver: namecheap
+    certResolver: cloudflare
     options:
       name: default
       namespace: infra
