@@ -76,13 +76,13 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`staging.actuator.swosh.me`)
+    - match: Host(`staging.actuator.swosh.k8s.elee.cloud`)
       kind: Rule
       services:
         - name: swosh-staging
           port: 8081
       middlewares:
-        - name: secured
+        - name: secured-local
           namespace: middleware
         - name: security-headers
           namespace: swosh
