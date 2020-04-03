@@ -139,10 +139,10 @@ spec:
             httpGet:
               port: 8081
               path: /health
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
             periodSeconds: 8
             timeoutSeconds: 2
-            failureThreshold: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               port: 8081
