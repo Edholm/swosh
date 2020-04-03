@@ -8,6 +8,9 @@ spec:
     - name: backend
       port: 8080
       protocol: TCP
+    - name: actuator
+      port: 8081
+      protocol: TCP
   selector:
     app: swosh
     env: prod
@@ -61,6 +64,34 @@ spec:
       name: default-tls
       namespace: infra
 ---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: swosh-prod-actuator-https
+  namespace: swosh
+  labels:
+    expose: internal
+    env: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`actuator.swosh.k8s.elee.cloud`)
+      kind: Rule
+      services:
+        - name: swosh
+          port: 8081
+      middlewares:
+        - name: secured-local
+          namespace: middleware
+        - name: security-headers
+          namespace: swosh
+  tls:
+    certResolver: cloudflare
+    options:
+      name: default-tls
+      namespace: infra
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -103,16 +134,16 @@ spec:
           readinessProbe:
             httpGet:
               port: 8081
-              path: /actuator/health
-            initialDelaySeconds: 20
+              path: /health
+            initialDelaySeconds: 45
             periodSeconds: 8
             timeoutSeconds: 2
-            failureThreshold: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               port: 8081
-              path: /actuator/health
-            initialDelaySeconds: 20
+              path: /health/ping
+            initialDelaySeconds: 25
             periodSeconds: 3
             timeoutSeconds: 2
             failureThreshold: 10
