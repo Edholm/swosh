@@ -59,3 +59,9 @@ dependencies {
     implementation("com.googlecode.libphonenumber:libphonenumber:8.10.23")
     implementation("com.google.guava:guava:28.1-jre")
 }
+
+tasks {
+    dependencyUpdates {
+        gradleReleaseChannel = "current"
+    }
+}
