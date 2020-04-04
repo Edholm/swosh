@@ -143,7 +143,7 @@ spec:
             httpGet:
               port: 8081
               path: /health/ping
-            initialDelaySeconds: 25
+            initialDelaySeconds: 30
             periodSeconds: 3
             timeoutSeconds: 2
             failureThreshold: 10
