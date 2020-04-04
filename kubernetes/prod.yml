@@ -113,6 +113,20 @@ spec:
         app: swosh
         env: prod
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - swosh
+                  - key: env
+                    operator: In
+                    values:
+                      - prod
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: swosh
           image: edholm/swosh:<VERSION>
