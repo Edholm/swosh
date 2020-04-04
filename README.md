@@ -5,9 +5,9 @@ Used for creating short links that you can send to your friends, thus allowing t
 This is useful since https:// links are almost universally clickable.
 
 ## Requirements
-* gradle
-* java 8
-* _kotlin_ 
+* Gradle
+* Java 11
+* _Kotlin_ 
 * _spring-boot_
 
 ## API
