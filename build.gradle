@@ -57,7 +57,7 @@ dependencies {
     implementation("com.samskivert:jmustache:1.15")
     implementation("com.github.kenglxn.QRGen:javase:2.6.0")
     implementation("com.googlecode.libphonenumber:libphonenumber:8.10.23")
-    implementation("com.google.guava:guava:28.1-jre")
+    implementation("com.google.guava:guava:28.2-jre")
 }
 
 tasks {
