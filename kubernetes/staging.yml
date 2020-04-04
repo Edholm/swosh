@@ -105,7 +105,7 @@ spec:
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 100%
+      maxUnavailable: 50%
   revisionHistoryLimit: 2
   selector:
     matchLabels:
