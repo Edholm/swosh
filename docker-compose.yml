@@ -7,9 +7,11 @@ services:
         environment:
             - SWOSH_MONGODB_URI=mongodb://mongodb/swosh
             - SERVER_PORT=7070
+            - SWOSH_ACTUATOR_PORT=7071
         ports:
             - 7070:7070
-        depends_on: 
+            - 7071:7071
+        depends_on:
             - mongodb
 
     mongodb:
