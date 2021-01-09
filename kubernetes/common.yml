@@ -16,7 +16,7 @@ metadata:
   namespace: swosh
 subsets:
   - addresses:
-      - ip: 172.16.16.10
+      - ip: 172.16.16.9
     ports:
       - port: 27017
 ---
