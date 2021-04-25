@@ -1,4 +1,4 @@
-ARG IMAGE=openjdk:11-jre
+ARG IMAGE=openjdk:15
 FROM ${IMAGE}
 VOLUME /tmp
 COPY swosh.jar swosh.jar
