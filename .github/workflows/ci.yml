@@ -95,32 +95,32 @@ jobs:
           docker manifest push "${TAG}"
           docker manifest push "${LATEST}"
         shell: bash
-  deploy:
-    name: Deploy to staging
-    runs-on: ubuntu-latest
-    needs: build-docker
-    steps:
-      - uses: actions/checkout@v1
-      - name: Setup kubectl
-        env:
-          K8S_CA: ${{ secrets.K8S_CA }}
-          K8S_CLIENT_CERT: ${{ secrets.K8S_CLIENT_CERT }}
-          K8S_CLIENT_KEY: ${{ secrets.K8S_CLIENT_KEY }}
-          K8S_SERVER: ${{ secrets.K8S_SERVER }}
-        run: |
-          echo "${K8S_CA}" > ca.crt
-          echo "${K8S_CLIENT_CERT}" > client.crt
-          echo "${K8S_CLIENT_KEY}" > client.key
-          kubectl config set-cluster k8s --server "${K8S_SERVER}" --certificate-authority ca.crt --embed-certs=true
-          kubectl config set-credentials swosh-editor --client-certificate client.crt --client-key client.key --embed-certs=true
-          kubectl config set-context swosh-context --cluster k8s --namespace swosh --user swosh-editor
-          kubectl config use-context swosh-context
-        shell: bash
-      - name: Update version to deploy
-        run: |
-          VERSION=$(git describe HEAD)
-          sed -i "s|<VERSION>|${VERSION}|g" kubernetes/staging.yml
-      - name: Deploy to staging
-        run: |
-          kubectl apply -f kubernetes/common.yml
-          kubectl apply -f kubernetes/staging.yml
+#  deploy:
+#    name: Deploy to staging
+#    runs-on: ubuntu-latest
+#    needs: build-docker
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Setup kubectl
+#        env:
+#          K8S_CA: ${{ secrets.K8S_CA }}
+#          K8S_CLIENT_CERT: ${{ secrets.K8S_CLIENT_CERT }}
+#          K8S_CLIENT_KEY: ${{ secrets.K8S_CLIENT_KEY }}
+#          K8S_SERVER: ${{ secrets.K8S_SERVER }}
+#        run: |
+#          echo "${K8S_CA}" > ca.crt
+#          echo "${K8S_CLIENT_CERT}" > client.crt
+#          echo "${K8S_CLIENT_KEY}" > client.key
+#          kubectl config set-cluster k8s --server "${K8S_SERVER}" --certificate-authority ca.crt --embed-certs=true
+#          kubectl config set-credentials swosh-editor --client-certificate client.crt --client-key client.key --embed-certs=true
+#          kubectl config set-context swosh-context --cluster k8s --namespace swosh --user swosh-editor
+#          kubectl config use-context swosh-context
+#        shell: bash
+#      - name: Update version to deploy
+#        run: |
+#          VERSION=$(git describe HEAD)
+#          sed -i "s|<VERSION>|${VERSION}|g" kubernetes/staging.yml
+#      - name: Deploy to staging
+#        run: |
+#          kubectl apply -f kubernetes/common.yml
+#          kubectl apply -f kubernetes/staging.yml
