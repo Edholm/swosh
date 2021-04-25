@@ -6,14 +6,14 @@ This is useful since https:// links are almost universally clickable.
 
 ## Requirements
 * Gradle
-* Java 11
+* Java 15
 * _Kotlin_ 
 * _spring-boot_
 
 ## API
 * `POST /api/create`
 Accepts `application/json` and the body is as follows:
-```javascript
+```json
 	{
 		"phone": "07xxxxxx",
 		"amount": 100,
