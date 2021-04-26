@@ -22,6 +22,9 @@ Accepts `application/json` and the body is as follows:
 	}
 ```
 
+## Deploy
+You can "deploy" Swosh using `docker-compose`. See `deploy.sh` for an example of how it can be done.
+
 ## License
 
 See the [LICENSE](LICENSE.md) file for license rights and limitations (MIT).
