@@ -12,12 +12,12 @@ version=$(git describe HEAD)
 export TAG=${version}
 
 if [ "$1" == "prod" ]; then
-  echo "Deploying to prod using context io1"
+  echo "Deploying ${TAG} to prod using context io1"
   export SWOSH_HOSTNAME=swosh.me
   export SWOSH_SCHEMA=https
   docker-compose --context io1 --project-name swosh_prod up -d
 else
-  echo "Deploying to staging using context io2"
+  echo "Deploying ${TAG} to staging using context io2"
   export SWOSH_HOSTNAME=staging.swosh.me
   export SWOSH_SCHEMA=https
   docker-compose --context io2 --project-name swosh_staging up -d
