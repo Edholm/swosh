@@ -15,6 +15,7 @@ if [ "$1" == "prod" ]; then
   echo "Deploying ${TAG} to prod using context io1"
   export SWOSH_HOSTNAME=swosh.me
   export SWOSH_SCHEMA=https
+  export SWOSH_PROVISION_USERS=false
   docker-compose --context io1 --project-name swosh_prod up -d
 else
   echo "Deploying ${TAG} to staging using context io2"
