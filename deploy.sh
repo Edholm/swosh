@@ -4,11 +4,15 @@
 set -e
 
 if [ $# -eq 0 ]; then
-  echo "Usage: deploy.sh <prod|staging>"
-   exit 1
+  echo "Usage: deploy.sh <prod|staging> [version]"
+  exit 1
 fi
 
-version=$(git describe HEAD)
+if [ $# -eq 2 ] && [ "$2" != "latest" ]; then
+  version="$2"
+else
+  version=$(git describe HEAD)
+fi
 export TAG=${version}
 
 if [ "$1" == "prod" ]; then
