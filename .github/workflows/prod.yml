@@ -25,7 +25,10 @@ jobs:
           DOCKER_CONTEXT_SSH_USER: ${{ secrets.DOCKER_CONTEXT_SSH_USER }}
           DOCKER_CONTEXT_NAME: ${{ secrets.DOCKER_CONTEXT_NAME }}
         run: |
-          ssh-keyscan -H -p ${DOCKER_CONTEXT_PORT} ${DOCKER_CONTEXT_HOST} >> ~/.ssh/known_hosts
+          ip=$(dig +short ${DOCKER_CONTEXT_HOST})
+          ssh-keyscan -H -p ${DOCKER_CONTEXT_PORT} ${DOCKER_CONTEXT_HOST},${ip} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H -p ${DOCKER_CONTEXT_PORT} ${ip} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H -p ${DOCKER_CONTEXT_PORT} ${DOCKER_CONTEXT_HOST} >> ~/.ssh/known_hosts 2>/dev/null
           docker context create ${DOCKER_CONTEXT_NAME} --docker "host=ssh://${DOCKER_CONTEXT_SSH_USER}@${DOCKER_CONTEXT_HOST}:${DOCKER_CONTEXT_PORT}"
       - name: Deploy
         run: |
