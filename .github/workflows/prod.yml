@@ -1,0 +1,32 @@
+name: Manual deploy to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (docker tag name)'
+        required: true
+        default: 'latest'
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v1
+      - uses: webfactory/ssh-agent@v0.5.2
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup docker context
+        env:
+          DOCKER_CONTEXT_HOST: ${{ secrets.DOCKER_CONTEXT_HOST }}
+          DOCKER_CONTEXT_PORT: ${{ secrets.DOCKER_CONTEXT_PORT }}
+          DOCKER_CONTEXT_SSH_USER: ${{ secrets.DOCKER_CONTEXT_SSH_USER }}
+          DOCKER_CONTEXT_NAME: ${{ secrets.DOCKER_CONTEXT_NAME }}
+        run: |
+          ssh-keyscan -H -p ${DOCKER_CONTEXT_PORT} ${DOCKER_CONTEXT_HOST} >> ~/.ssh/known_hosts
+          docker context create ${DOCKER_CONTEXT_NAME} --docker "host=ssh://${DOCKER_CONTEXT_SSH_USER}@${DOCKER_CONTEXT_HOST}:${DOCKER_CONTEXT_PORT}"
+      - name: Deploy
+        run: |
+          ./deploy.sh prod ${{ github.event.inputs.version }}
