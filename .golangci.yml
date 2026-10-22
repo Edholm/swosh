@@ -1,0 +1,29 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - misspell
+    - noctx
+    - revive
+    - sqlclosecheck
+    - unconvert
+    - usestdlibvars
+  exclusions:
+    # Skips the sqlc output in internal/db/sqlc.
+    generated: lax
+    presets:
+      - comments
+      - std-error-handling
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/Edholm/swosh
