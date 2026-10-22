@@ -1,0 +1,55 @@
+name: Go
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: swosh
+          POSTGRES_PASSWORD: swosh
+          POSTGRES_DB: swosh
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U swosh -d swosh"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SWOSH_TEST_DATABASE_URL: postgres://swosh:swosh@localhost:5432/swosh?sslmode=disable
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # `git describe` in the Makefile needs the tags.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Cache tools
+        uses: actions/cache@v6
+        with:
+          path: bin
+          key: tools-${{ runner.os }}-${{ hashFiles('go.mod', 'Makefile') }}
+
+      - run: make tools
+      - run: make generate-check
+      - run: make lint
+      - run: make test
+      - run: make build
