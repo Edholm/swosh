@@ -13,16 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v7
 
       - name: Set up JDK 15
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v6
         with:
           distribution: adopt
           java-version: 15
 
       - name: Cache Gradle cache
-        uses: actions/cache@v1
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Cache Gradle wrapper
-        uses: actions/cache@v1
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradlew-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew build
 
       - name: Upload jar-file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v7
         with:
           name: libs
           path: build/libs/swosh.jar
@@ -52,9 +52,9 @@ jobs:
     env:
       REPO: edholm/swosh
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v7
       - name: Download jar-file
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v8
         with:
           name: libs
           path: build/libs/
@@ -64,7 +64,7 @@ jobs:
         uses: docker-practice/actions-setup-docker@master
 
       - name: Login to Docker
-        uses: azure/docker-login@v1
+        uses: azure/docker-login@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -104,8 +104,8 @@ jobs:
     needs: build-docker
     environment: Staging
     steps:
-      - uses: actions/checkout@v1
-      - uses: webfactory/ssh-agent@v0.5.2
+      - uses: actions/checkout@v7
+      - uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Setup docker context

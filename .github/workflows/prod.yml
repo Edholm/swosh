@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: Production
     steps:
-      - uses: actions/checkout@v1
-      - uses: webfactory/ssh-agent@v0.5.2
+      - uses: actions/checkout@v7
+      - uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Setup docker context
