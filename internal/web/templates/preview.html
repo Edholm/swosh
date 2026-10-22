@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta property="og:title" content="Swish {{.Amount}}kr to {{.Payee}}"/>
+    <meta property="og:image" content="{{.BaseURL}}/{{.ID}}/qr">
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="{{.BaseURL}}/{{.ID}}"/>
+    <meta property="og:description" content="{{with .Description}}{{.}}{{else}}No message given...{{end}}"/>
+    <meta property="og:locale" content="sv_SE">
+    <title>Swosh preview</title>
+    {{template "head"}}
+    <script src="/js/preview.js"></script>
+</head>
+<body class="container">
+<div class="row justify-content-center margin-top-1">
+    <div class="col col-md-auto">
+        <h1>Swosh preview</h1>
+        <dl>
+            <dt>Payee</dt>
+            <dd>{{.Payee}}</dd>
+            <dt>Amount</dt>
+            <dd>{{.Amount}} kr</dd>
+            {{with .Description}}
+            <dt>Description</dt>
+            <dd>{{.}}</dd>
+            {{end}}
+            <dt>Link expires on</dt>
+            <dd>{{with .ExpiresOn}}{{.}}{{else}}never!{{end}}</dd>
+        </dl>
+        <a href="{{.SwishURI}}" class="btn btn-primary" id="openSwish">Looks good, open Swish</a>
+    </div>
+    <div class="col col-md-auto margin-top-1">
+        <h4>Or scan the QR-code</h4>
+        <div title="{{.SwishURI}}">
+            <img alt="Scan me!" class="display-block" width="256" height="256" src="/{{.ID}}/qr">
+        </div>
+    </div>
+</div>
+</body>
+</html>
