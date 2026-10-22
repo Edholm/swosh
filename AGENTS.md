@@ -40,7 +40,7 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 
 ## Architecture
 
-- **CLI:** `cmd/swosh` only calls `internal/cli`, which is built on cobra. Root's `PersistentPreRunE` loads `internal/config` (go-envconfig) and a slog JSON logger into a shared `app` struct. Subcommands are `newXCmd(a *app)` functions registered in `NewRootCmd`. `version` overrides the hook so it works even when the environment is broken.
+- **CLI:** `cmd/swosh` holds the cobra commands (`cmd_*.go`, `package main`) and a thin `main.go`. Root's `PersistentPreRunE` loads `internal/config` (go-envconfig) and a slog JSON logger into a shared `app` struct. Subcommands are `newXCmd(a *app)` functions registered in `NewRootCmd`. `version` overrides the hook so it works even when the environment is broken.
 - **Database:** `internal/db` embeds `migrations/*.sql` (golang-migrate format). `db.Migrate` applies them on every `swosh serve` startup.
   - sqlc generates `internal/db/sqlc` from the migrations plus `queries/`. Never edit the generated code. CI runs `sqlc diff` and fails if it is stale.
 - **DB tests:** `dbtest.URL(t)` gives each test a throwaway schema through `search_path`. Combine it with `db.Migrate` + `db.Connect`.

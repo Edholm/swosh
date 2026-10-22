@@ -11,7 +11,7 @@ COMPOSE_FILE := docker-compose.dev.yml
 BIN := $(CURDIR)/bin
 MIGRATIONS := internal/db/migrations
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS := -s -w -X github.com/Edholm/swosh/internal/cli.version=$(VERSION)
+LDFLAGS := -s -w -X main.version=$(VERSION)
 
 SWOSH_DATABASE_URL ?= postgres://swosh:swosh@localhost:5432/swosh?sslmode=disable
 

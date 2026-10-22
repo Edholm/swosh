@@ -1,5 +1,4 @@
-// Package cli implements the swosh command line interface.
-package cli
+package main
 
 import (
 	"context"
@@ -14,7 +13,7 @@ import (
 )
 
 // version is set at build time with
-// -ldflags "-X github.com/Edholm/swosh/internal/cli.version=…".
+// -ldflags "-X main.version=…".
 var version = "dev"
 
 // Execute runs the CLI with the process arguments and environment and returns

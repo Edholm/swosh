@@ -6,13 +6,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/Edholm/swosh/internal/cli"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	code := cli.Execute(ctx)
+	code := Execute(ctx)
 	stop()
 	os.Exit(code)
 }
