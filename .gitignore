@@ -78,3 +78,6 @@ gradle-app.setting
 ### Go ###
 /bin/
 coverage.out
+
+# Local scratch files, e.g. database dumps
+/tmp/
