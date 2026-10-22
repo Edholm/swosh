@@ -12,7 +12,7 @@ It is being ported from Kotlin/Spring Boot + MongoDB to Go + PostgreSQL, in step
 3. `feat/admin`: login and admin CRUD.
 4. `refactor/cutover`: Docker/compose/deploy, data move, removal of Kotlin and `cmd/mongo-migrate`.
 
-Until the cutover, the Kotlin app (`src/`, Gradle, `.github/workflows/ci.yml`/`prod.yml`, `deploy.sh`, `docker-compose.yml`) is still what deploys production. Leave it alone.
+Until the cutover, the Kotlin app (`src/`, Gradle, `deploy.sh`, `docker-compose.yml`) is still what deploys production. Leave it alone.
 
 Use `src/main/kotlin/pub/edholm` as the behavioural reference when porting. `SwoshHandlerTest.kt` holds test cases to carry over.
 

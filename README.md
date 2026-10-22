@@ -1,4 +1,4 @@
-# Swosh.me ![](https://github.com/Edholm/swosh/workflows/Build,%20test,%20and%20deploy/badge.svg)
+# Swosh.me ![](https://github.com/Edholm/swosh/workflows/Go/badge.svg)
 
 Used for creating short links that you can send to your friends, thus allowing them to easily launch Swish with your preset information.
 
