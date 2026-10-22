@@ -74,3 +74,7 @@ gradle-app.setting
 
 *.tar*
 .DS_Store
+
+### Go ###
+/bin/
+coverage.out
