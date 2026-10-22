@@ -13,9 +13,12 @@ This is useful since https:// links are almost universally clickable.
 ## Go port (in progress)
 
 The service is being rewritten in Go with PostgreSQL. Until it reaches parity, the Kotlin
-app above is still what gets deployed. So far the Go side has the database layer, a
-`swosh serve` command that applies migrations and serves `/health`, and `mongo-migrate`,
-which copies the old MongoDB data into Postgres.
+app above is still what gets deployed. So far the Go side has the database layer,
+`mongo-migrate`, which copies the old MongoDB data into Postgres, and `swosh serve`, which
+applies migrations and serves the public site: `POST /api/create`, the start page, the
+`/{id}` preview, `/{id}/redir` and `/{id}/qr`. Expired links are deleted in the
+background. `/health` and `/prometheus` are on the actuator port. The admin pages are
+not ported yet.
 
 Requirements: Go 1.27 and Docker.
 
@@ -31,8 +34,13 @@ Configuration comes from the environment:
 | Variable | Default |
 |---|---|
 | `SWOSH_DATABASE_URL` | `postgres://swosh:swosh@localhost:5432/swosh?sslmode=disable` |
+| `SERVER_PORT` | `8080` |
 | `SWOSH_ACTUATOR_PORT` | `8081` |
 | `LOG_LEVEL` | `info` (`debug`, `info`, `warn` or `error`; the old `TRACE` is not accepted) |
+| `SWOSH_SCHEME`, `SWOSH_HOSTNAME` | `https`, `swosh.me` (the public URL of created links) |
+| `SWOSH_EXPIRE_RATE` | `60000` (milliseconds between deleting expired links) |
+| `SWOSH_SWISH_QR_ENDPOINT` | `https://mpc.getswish.net/qrg-swish/api/v1/prefilled` |
+| `SWOSH_ENVIRONMENT`, `SWOSH_SERVER_HOSTNAME`, `SWOSH_APP_NAME` | `local`, the machine's hostname, `swosh` (metric labels) |
 
 The schema is defined in `internal/db/migrations` and the queries in
 `internal/db/queries`. Run `make generate` after changing either of them, and

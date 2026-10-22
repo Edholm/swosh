@@ -8,12 +8,19 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/Edholm/swosh/internal/db"
+	"github.com/Edholm/swosh/internal/db/sqlc"
+	"github.com/Edholm/swosh/internal/expiry"
+	"github.com/Edholm/swosh/internal/metrics"
+	"github.com/Edholm/swosh/internal/swish"
+	"github.com/Edholm/swosh/internal/web"
 )
 
 const shutdownTimeout = 10 * time.Second
@@ -42,14 +49,46 @@ func (a *app) serve(ctx context.Context) error {
 	}
 	defer pool.Close()
 
+	host := a.cfg.ServerHostname
+	if host == "" {
+		host, _ = os.Hostname()
+	}
+	m := metrics.New(metrics.Labels{Env: a.cfg.Environment, Host: host, App: a.cfg.AppName})
+	queries := sqlc.New(pool)
+
+	public := newHTTPServer(a.cfg.ServerPort, web.New(web.Config{
+		Store:    queries,
+		QR:       swish.NewQRClient(a.cfg.SwishQREndpoint),
+		Metrics:  m,
+		Log:      a.log,
+		Scheme:   a.cfg.Scheme,
+		Hostname: a.cfg.Hostname,
+	}))
+
 	mux := http.NewServeMux()
 	mux.Handle("GET /health", healthHandler(pool, a.log))
-	actuator := &http.Server{
-		Addr:              net.JoinHostPort("", strconv.Itoa(a.cfg.ActuatorPort)),
-		Handler:           mux,
+	mux.Handle("GET /prometheus", m.Handler())
+	actuator := newHTTPServer(a.cfg.ActuatorPort, mux)
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error { return runServer(ctx, a.log, public) })
+	g.Go(func() error { return runServer(ctx, a.log, actuator) })
+	g.Go(func() error {
+		expiry.Run(ctx, queries, a.cfg.ExpireRate(), m.ExpiredLinks, a.log)
+		return nil
+	})
+	return g.Wait()
+}
+
+func newHTTPServer(port int, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              net.JoinHostPort("", strconv.Itoa(port)),
+		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       2 * time.Minute,
 	}
-	return runServer(ctx, a.log, actuator)
 }
 
 // runServer serves srv until ctx is cancelled, then shuts it down gracefully.
