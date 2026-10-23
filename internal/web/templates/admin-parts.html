@@ -1,0 +1,93 @@
+{{define "admin-head"}}
+    {{template "head"}}
+    {{with .CSRF}}<meta name="csrf-token" content="{{.}}">{{end}}
+    <script defer src="/js/admin.js"></script>
+{{end}}
+
+{{define "admin-title"}}
+<h1><i class="fad fa-unlock-alt"></i> Admin panel</h1>
+<i>Logged in user: {{.User}}</i><a href="/logout" class="btn btn-light float-right"><i
+        class="fad fa-sign-out-alt"></i> Logout</a>
+{{end}}
+
+{{define "admin-error"}}
+{{with .Error}}
+<div class="alert alert-danger" role="alert">{{.}}</div>
+{{end}}
+{{end}}
+
+{{define "admin-links"}}
+{{range .Links}}
+<div class="card">
+    <div class="card-header">
+        <h4><a class="admin-link" href="/admin/{{.OriginalID}}">Swosh</a>
+            <a href="/{{.OriginalID}}" target="_blank" rel="noopener" title="Open the link"
+               class="btn btn-secondary float-right"><i class="fad fa-external-link-square-alt"></i></a>
+            <a href="/{{.OriginalID}}/qr" target="_blank" rel="noopener" title="QR code from Swish"
+               class="btn btn-light float-right mr-2"><i class="fad fa-qrcode"></i></a>
+        </h4>
+    </div>
+    <div class="card-body">
+        <form action="/admin/{{.OriginalID}}" method="post">
+            <input name="originalId" value="{{.OriginalID}}" hidden>
+            {{with $.CSRF}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="swosh-id-{{.OriginalID}}">ID</label>
+                    <input name="id" type="text" value="{{.ID}}" id="swosh-id-{{.OriginalID}}" class="form-control"
+                           placeholder="swosh id goes here" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-8">
+                    <label for="swosh-payee-{{.OriginalID}}">Phone number</label>
+                    <input name="payee" type="text" value="{{.Payee}}" id="swosh-payee-{{.OriginalID}}"
+                           class="form-control" placeholder="phone goes here" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label>Sök på hitta</label>
+                    <a href="https://www.hitta.se/s%C3%B6k?vad={{.Payee}}" target="_blank"
+                       rel="noopener" class="btn btn-info form-control pull-right">Sök</a>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-2">
+                    <label for="swosh-amount-{{.OriginalID}}">Amount</label>
+                    <input name="amount" type="number" value="{{.Amount}}" id="swosh-amount-{{.OriginalID}}"
+                           class="form-control" placeholder="100" min="0" required>
+                </div>
+                <div class="form-group col-md-10">
+                    <label for="swosh-message-{{.OriginalID}}">Message</label>
+                    <input name="description" type="text" value="{{.Description}}"
+                           id="swosh-message-{{.OriginalID}}" class="form-control"
+                           placeholder="message goes here">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="swosh-expiry-{{.OriginalID}}">Link expires at</label>
+                    <input readonly type="text" value="{{.ExpiresOn}}" id="swosh-expiry-{{.OriginalID}}"
+                           class="form-control-plaintext">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="swosh-createdAt-{{.OriginalID}}">Created at</label>
+                    <input readonly type="text" value="{{.CreatedAt}}" id="swosh-createdAt-{{.OriginalID}}"
+                           class="form-control-plaintext">
+                </div>
+            </div>
+            {{if .CanUpdate}}
+            <button type="submit" class="btn btn-success float-right">
+                <i class="fad fa-edit"></i> Update
+            </button>
+            {{end}}
+            {{if .CanDelete}}
+            <button data-id="{{.OriginalID}}" type="button" class="btn btn-danger float-left delete-btn">
+                <i class="fad fa-trash"></i> Delete
+            </button>
+            {{end}}
+        </form>
+    </div>
+</div>
+<br/>
+{{end}}
+{{end}}

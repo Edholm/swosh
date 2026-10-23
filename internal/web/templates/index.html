@@ -116,6 +116,11 @@
                 <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-secondary">
                     <span><i class="fad fa-code-branch"></i> Swosh on Github</span>
                 </a>
+                {{if .LoggedIn}}
+                <a href="/admin" class="btn btn-light float-right">
+                    <span><i class="fad fa-unlock-alt"></i> Admin</span>
+                </a>
+                {{end}}
             </div>
         </div>
     </div>

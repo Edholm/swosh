@@ -41,7 +41,20 @@ type Config struct {
 	Environment    string `env:"SWOSH_ENVIRONMENT, default=local"`
 	ServerHostname string `env:"SWOSH_SERVER_HOSTNAME"`
 	AppName        string `env:"SWOSH_APP_NAME, default=swosh"`
+
+	// ProvisionUsers creates the admin user on startup unless it exists.
+	ProvisionUsers bool   `env:"SWOSH_PROVISION_USERS, default=true"`
+	AdminUsername  string `env:"SWOSH_ADMIN_USERNAME, default=admin"`
+	AdminPassword  string `env:"SWOSH_ADMIN_PWD, default=admin"`
+
+	// SessionKey signs login cookies and CSRF tokens. It must be at least
+	// MinSessionKeyLen bytes. When empty, a random key is made on startup and
+	// everyone is logged out when the server restarts.
+	SessionKey string `env:"SWOSH_SESSION_KEY"`
 }
+
+// MinSessionKeyLen is the shortest SessionKey accepted.
+const MinSessionKeyLen = 32
 
 // ExpireRate is ExpireRateMillis as a duration.
 func (c *Config) ExpireRate() time.Duration {
@@ -61,6 +74,12 @@ func LoadFrom(ctx context.Context, l envconfig.Lookuper) (*Config, error) {
 	}
 	if cfg.ExpireRateMillis <= 0 {
 		return nil, fmt.Errorf("load config: ExpireRateMillis: SWOSH_EXPIRE_RATE must be positive, got %d", cfg.ExpireRateMillis)
+	}
+	if cfg.SessionKey != "" && len(cfg.SessionKey) < MinSessionKeyLen {
+		return nil, fmt.Errorf("load config: SessionKey: SWOSH_SESSION_KEY must be at least %d bytes, got %d", MinSessionKeyLen, len(cfg.SessionKey))
+	}
+	if cfg.ProvisionUsers && (cfg.AdminUsername == "" || cfg.AdminPassword == "") {
+		return nil, fmt.Errorf("load config: AdminUsername: SWOSH_ADMIN_USERNAME and SWOSH_ADMIN_PWD must not be empty")
 	}
 	return &cfg, nil
 }

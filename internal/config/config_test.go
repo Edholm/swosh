@@ -28,6 +28,9 @@ func TestLoadFrom(t *testing.T) {
 				SwishQREndpoint:  "https://mpc.getswish.net/qrg-swish/api/v1/prefilled",
 				Environment:      "local",
 				AppName:          "swosh",
+				ProvisionUsers:   true,
+				AdminUsername:    "admin",
+				AdminPassword:    "admin",
 			},
 		},
 		{
@@ -44,6 +47,10 @@ func TestLoadFrom(t *testing.T) {
 				"SWOSH_ENVIRONMENT":       "prod",
 				"SWOSH_SERVER_HOSTNAME":   "web1",
 				"SWOSH_APP_NAME":          "swosh-go",
+				"SWOSH_PROVISION_USERS":   "false",
+				"SWOSH_ADMIN_USERNAME":    "root",
+				"SWOSH_ADMIN_PWD":         "hunter2",
+				"SWOSH_SESSION_KEY":       "0123456789abcdef0123456789abcdef",
 			},
 			want: Config{
 				DatabaseURL:      "postgres://u:p@db:5432/swosh",
@@ -57,6 +64,10 @@ func TestLoadFrom(t *testing.T) {
 				Environment:      "prod",
 				ServerHostname:   "web1",
 				AppName:          "swosh-go",
+				ProvisionUsers:   false,
+				AdminUsername:    "root",
+				AdminPassword:    "hunter2",
+				SessionKey:       "0123456789abcdef0123456789abcdef",
 			},
 		},
 	}
@@ -81,6 +92,8 @@ func TestLoadFromInvalid(t *testing.T) {
 		{"SWOSH_EXPIRE_RATE", "0", "ExpireRateMillis"},
 		// The Kotlin service defaulted to TRACE, which slog does not have.
 		{"LOG_LEVEL", "trace", "LogLevel"},
+		{"SWOSH_SESSION_KEY", "too short", "SessionKey"},
+		{"SWOSH_ADMIN_PWD", "", "AdminUsername"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.env, func(t *testing.T) {

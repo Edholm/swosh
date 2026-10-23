@@ -1,5 +1,5 @@
-// Package web serves swosh's public pages and API: link creation, the
-// preview page, the redirect into Swish and the QR code.
+// Package web serves swosh's pages and API: link creation, the preview page,
+// the redirect into Swish, the QR code, and the admin pages behind a login.
 package web
 
 import (
@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
+	"github.com/Edholm/swosh/internal/auth"
 	"github.com/Edholm/swosh/internal/db/sqlc"
 	"github.com/Edholm/swosh/internal/metrics"
 	"github.com/Edholm/swosh/internal/swish"
@@ -40,10 +41,14 @@ const (
 	maxBodySize    = 64 << 10
 )
 
-// Store is the part of the database the public pages use.
+// Store is the part of the database the site uses.
 type Store interface {
 	GetSwosh(ctx context.Context, id string) (sqlc.Swosh, error)
 	CreateSwosh(ctx context.Context, arg sqlc.CreateSwoshParams) (sqlc.Swosh, error)
+	ListSwoshes(ctx context.Context) ([]sqlc.Swosh, error)
+	UpdateSwosh(ctx context.Context, arg sqlc.UpdateSwoshParams) (int64, error)
+	DeleteSwosh(ctx context.Context, id string) (int64, error)
+	GetUserByUsername(ctx context.Context, username string) (sqlc.User, error)
 }
 
 // QRCoder makes QR codes that the Swish app can scan.
@@ -60,13 +65,17 @@ type Config struct {
 	// Scheme and Hostname make up the public URL of links, e.g. https://swosh.me/abc123.
 	Scheme   string
 	Hostname string
+	// SessionKey signs login sessions. When empty, a random key is used.
+	SessionKey []byte
 }
 
 type server struct {
 	Config
-	tmpl  *template.Template
-	now   func() time.Time
-	newID func() string
+	tmpl        *template.Template
+	now         func() time.Time
+	newID       func() string
+	signer      *auth.Signer
+	crossOrigin *http.CrossOriginProtection
 }
 
 // New returns the handler for the public site.
@@ -75,17 +84,36 @@ func New(c Config) http.Handler {
 }
 
 func newServer(c Config) *server {
+	key := c.SessionKey
+	if len(key) == 0 {
+		key = auth.RandomKey()
+	}
 	return &server{
-		Config: c,
-		tmpl:   template.Must(template.ParseFS(templateFiles, "templates/*.html")),
-		now:    time.Now,
-		newID:  newID,
+		Config:      c,
+		tmpl:        template.Must(template.ParseFS(templateFiles, "templates/*.html")),
+		now:         time.Now,
+		newID:       newID,
+		signer:      auth.NewSigner(key),
+		crossOrigin: http.NewCrossOriginProtection(),
 	}
 }
 
 func (s *server) routes() http.Handler {
+	// The admin pages get their own mux: /admin/{id} and /{id}/qr would
+	// conflict in one.
+	admin := http.NewServeMux()
+	admin.Handle("GET /admin", s.admin("", s.adminList))
+	admin.Handle("GET /admin/{$}", s.admin("", s.adminList))
+	admin.Handle("GET /admin/{id}", s.admin("", s.adminSingle))
+	admin.Handle("POST /admin/{id}", s.admin(auth.Update, s.adminUpdate))
+	admin.Handle("DELETE /admin/{id}", s.admin(auth.Delete, s.adminDelete))
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", s.index)
+	mux.HandleFunc("GET /login", s.loginForm)
+	mux.HandleFunc("POST /login", s.login)
+	mux.HandleFunc("GET /logout", s.logoutForm)
+	mux.HandleFunc("POST /logout", s.logout)
 	mux.HandleFunc("POST /api/create", s.create)
 	mux.HandleFunc("GET /{id}", s.preview)
 	mux.HandleFunc("GET /{id}/redir", s.redirect)
@@ -101,7 +129,40 @@ func (s *server) routes() http.Handler {
 		}
 		return err
 	})
-	return s.instrument(mux)
+	return securityHeaders(s.instrument(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/admin" || strings.HasPrefix(r.URL.Path, "/admin/") {
+			admin.ServeHTTP(w, r)
+			return
+		}
+		mux.ServeHTTP(w, r)
+	})))
+}
+
+// contentSecurityPolicy is the Kotlin service's policy, minus jQuery, which
+// the admin page no longer needs, and the unused getbootstrap.com, and with
+// rules added for forms, framing and <base>. Font Awesome's script injects a
+// <style> element, hence 'unsafe-inline' for styles.
+const contentSecurityPolicy = "default-src 'self'; " +
+	"script-src 'self'; " +
+	"style-src 'self' 'unsafe-inline' https://maxcdn.bootstrapcdn.com; " +
+	"img-src 'self' data:; " +
+	"font-src 'self'; " +
+	"object-src 'none'; " +
+	"base-uri 'self'; " +
+	"form-action 'self'; " +
+	"frame-ancestors 'none'"
+
+// securityHeaders adds the headers Spring Security sent by default, plus
+// the Content-Security-Policy, to every response.
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("Content-Security-Policy", contentSecurityPolicy)
+		h.Set("X-Content-Type-Options", "nosniff")
+		h.Set("X-Frame-Options", "DENY")
+		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		next.ServeHTTP(w, r)
+	})
 }
 
 // baseURL is the public address of the site, without a trailing slash.
@@ -109,8 +170,13 @@ func (s *server) baseURL() string {
 	return s.Scheme + "://" + s.Hostname
 }
 
+type indexPage struct {
+	// LoggedIn shows the Admin button.
+	LoggedIn bool
+}
+
 func (s *server) index(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, "index.html", nil)
+	s.render(w, r, "index.html", indexPage{LoggedIn: s.currentUser(r) != nil})
 }
 
 type previewData struct {
@@ -264,7 +330,16 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
+func (s *server) serverError(w http.ResponseWriter, r *http.Request, what string, err error) {
+	s.Log.ErrorContext(r.Context(), what, "err", err)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
+
 func (s *server) render(w http.ResponseWriter, r *http.Request, name string, data any) {
+	s.renderStatus(w, r, http.StatusOK, name, data)
+}
+
+func (s *server) renderStatus(w http.ResponseWriter, r *http.Request, code int, name string, data any) {
 	var buf bytes.Buffer
 	if err := s.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
 		s.Log.ErrorContext(r.Context(), "render template", "template", name, "err", err)
@@ -272,6 +347,7 @@ func (s *server) render(w http.ResponseWriter, r *http.Request, name string, dat
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(code)
 	_, _ = buf.WriteTo(w)
 }
 

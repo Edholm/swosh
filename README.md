@@ -17,8 +17,12 @@ app above is still what gets deployed. So far the Go side has the database layer
 `mongo-migrate`, which copies the old MongoDB data into Postgres, and `swosh serve`, which
 applies migrations and serves the public site: `POST /api/create`, the start page, the
 `/{id}` preview, `/{id}/redir` and `/{id}/qr`. Expired links are deleted in the
-background. `/health` and `/prometheus` are on the actuator port. The admin pages are
-not ported yet.
+background. `/health` and `/prometheus` are on the actuator port.
+
+The admin pages are ported too: log in at `/login` (or with HTTP Basic) and manage links
+at `/admin`. They need `ROLE_ADMIN`; editing needs `UPDATE` and deleting `DELETE`.
+Existing users from MongoDB keep their passwords, but have to log in again: sessions are
+signed cookies now, valid for 12 hours.
 
 Requirements: Go 1.27 and Docker.
 
@@ -41,6 +45,9 @@ Configuration comes from the environment:
 | `SWOSH_EXPIRE_RATE` | `60000` (milliseconds between deleting expired links) |
 | `SWOSH_SWISH_QR_ENDPOINT` | `https://mpc.getswish.net/qrg-swish/api/v1/prefilled` |
 | `SWOSH_ENVIRONMENT`, `SWOSH_SERVER_HOSTNAME`, `SWOSH_APP_NAME` | `local`, the machine's hostname, `swosh` (metric labels) |
+| `SWOSH_PROVISION_USERS` | `true` (create the admin user on startup unless it exists) |
+| `SWOSH_ADMIN_USERNAME`, `SWOSH_ADMIN_PWD` | `admin`, `admin` (the provisioned user; a warning is logged while the password is `admin`) |
+| `SWOSH_SESSION_KEY` | random on each start (at least 32 bytes; signs login cookies, so set it to stay logged in across restarts) |
 
 The schema is defined in `internal/db/migrations` and the queries in
 `internal/db/queries`. Run `make generate` after changing either of them, and

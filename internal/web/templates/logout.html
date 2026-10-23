@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Log out</title>
+    {{template "head"}}
+</head>
+<body class="container">
+<div class="row justify-content-center margin-top-2">
+    <div class="col-lg-5">
+        <h1>Are you sure you want to log out?</h1>
+        <form method="post" action="/logout" class="margin-top-1">
+            <a href="/admin" class="btn btn-light"><i class="fad fa-caret-left"></i> Back</a>
+            <button type="submit" class="btn btn-primary float-right"><i class="fad fa-sign-out-alt"></i> Log out</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

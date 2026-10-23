@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin panel</title>
+    {{template "admin-head" .}}
+</head>
+<body class="container">
+<div class="row justify-content-center margin-top-2">
+    <div class="col-lg-7">
+        <div class="margin-bottom-2">
+            {{template "admin-title" .}}
+            <a href="/admin" class="btn btn-light float-right"><i class="fad fa-caret-left"></i> Back</a>
+        </div>
+        {{template "admin-error" .}}
+        {{template "admin-links" .}}
+    </div>
+</div>
+</body>
+</html>
