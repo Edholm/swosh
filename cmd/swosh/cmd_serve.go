@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/Edholm/swosh/internal/auth"
 	"github.com/Edholm/swosh/internal/db"
 	"github.com/Edholm/swosh/internal/db/sqlc"
 	"github.com/Edholm/swosh/internal/expiry"
@@ -56,13 +57,25 @@ func (a *app) serve(ctx context.Context) error {
 	m := metrics.New(metrics.Labels{Env: a.cfg.Environment, Host: host, App: a.cfg.AppName})
 	queries := sqlc.New(pool)
 
+	if a.cfg.ProvisionUsers {
+		if err := auth.Provision(ctx, queries, a.cfg.AdminUsername, a.cfg.AdminPassword, a.log); err != nil {
+			return err
+		}
+	}
+	sessionKey := []byte(a.cfg.SessionKey)
+	if len(sessionKey) == 0 {
+		a.log.Warn("SWOSH_SESSION_KEY is not set; using a random key, so restarts log everyone out")
+		sessionKey = auth.RandomKey()
+	}
+
 	public := newHTTPServer(a.cfg.ServerPort, web.New(web.Config{
-		Store:    queries,
-		QR:       swish.NewQRClient(a.cfg.SwishQREndpoint),
-		Metrics:  m,
-		Log:      a.log,
-		Scheme:   a.cfg.Scheme,
-		Hostname: a.cfg.Hostname,
+		Store:      queries,
+		QR:         swish.NewQRClient(a.cfg.SwishQREndpoint),
+		Metrics:    m,
+		Log:        a.log,
+		Scheme:     a.cfg.Scheme,
+		Hostname:   a.cfg.Hostname,
+		SessionKey: sessionKey,
 	}))
 
 	mux := http.NewServeMux()
