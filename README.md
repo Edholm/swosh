@@ -85,11 +85,13 @@ linux/amd64 and linux/arm64.
 
 ```sh
 make image        # ko.local/swosh:<short sha> and :latest, for the local daemon's platform
-make image-push   # both platforms to KO_DOCKER_REPO, by default docker.io/edholm/swosh
+make image-push   # both platforms to KO_DOCKER_REPO, by default ghcr.io/edholm/swosh
 ```
 
 Both tag the image with the short commit SHA and `latest`. `make image-push` refuses to
-run with uncommitted changes. CI pushes the image for every commit on master.
+run with uncommitted changes, and needs `docker login ghcr.io` with a personal access
+token that has `write:packages`. CI pushes the image for every commit on master, with its
+`GITHUB_TOKEN`.
 
 ko starts the binary without arguments and has no way to set default ones, so the
 command has to be given: `docker-compose.yml` sets `command: [serve]`, and by hand it
@@ -105,7 +107,8 @@ checks run `swosh healthcheck`, which requests `/health` on the actuator port.
 `deploy.sh` runs `docker-compose.yml` on the host behind the Docker context `io1` (prod)
 or `io2` (staging), with the settings from `.env.prod` or `.env.staging`. Without a tag
 it builds and pushes the current commit with `make image-push` and deploys it; with one,
-it deploys that image, e.g. to roll back. It refuses env files without
+it deploys that image, e.g. to roll back. The hosts pull from GHCR with the local
+`docker login ghcr.io`, unless the package is public. It refuses env files without
 `POSTGRES_PASSWORD`, a `SWOSH_SESSION_KEY` or a real `SWOSH_ADMIN_PWD`.
 
 The one-time move from the old Kotlin service and its MongoDB is described in

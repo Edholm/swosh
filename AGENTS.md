@@ -26,7 +26,7 @@ make check              # generate-check + lint + test, like CI
 make build              # bin/swosh
 make run                # swosh serve against the dev Postgres
 make image              # ko.local/swosh into the local Docker daemon; then `docker compose up`
-make image-push         # to KO_DOCKER_REPO (docker.io/edholm/swosh); needs a clean tree
+make image-push         # to KO_DOCKER_REPO (ghcr.io/edholm/swosh); needs a clean tree and `docker login ghcr.io`
 make migrate-new name=add_foo
 ```
 
@@ -46,7 +46,7 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 - **DB tests:** `dbtest.URL(t)` gives each test a throwaway schema through `search_path`. Combine it with `db.Migrate` + `db.Connect`.
 - **Image:** ko builds it from `.ko.yaml` through the Makefile, which passes `VERSION` for the `-X main.version` ldflag. There is no Dockerfile. The base is static and distroless, with no shell or curl.
   - ko clears the image's arguments, so `docker-compose.yml` sets `command: [serve]`. Its health check runs `swosh healthcheck`.
-  - CI pushes the image on master with ko from `ko-build/setup-ko`. Keep its `version` in step with `KO_VERSION` in the Makefile.
+  - CI pushes the image to GHCR on master with ko from `ko-build/setup-ko`, which logs in with `GITHUB_TOKEN`. Keep its `version` in step with `KO_VERSION` in the Makefile.
 - **Compose:** `docker-compose.yml` is production: swosh plus Postgres, settings from an uncommitted env file (`.env.example`). `deploy.sh` runs it on the hosts. `docker-compose.dev.yml` is the dev/test Postgres, in its own compose project `swosh-dev`.
   - Keep `docker-compose.yml` working with docker-compose v1.28, which still deploys: no nested `${…}` defaults, no `required:` on `env_file`, no top-level `name:`.
 

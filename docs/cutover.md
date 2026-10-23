@@ -25,10 +25,19 @@ remote Docker host through its context.
 
 ## 0. Prepare (no downtime)
 
-1. Merge `refactor/cutover`. The `Go` workflow pushes `edholm/swosh:<short sha>`
-   and `latest` from master, once the `DOCKERHUB_USERNAME` and
-   `DOCKERHUB_TOKEN` secrets are set. Without CI, `./deploy.sh` builds and
-   pushes the image itself in step 6.
+1. Merge `refactor/cutover`. The `Go` workflow pushes
+   `ghcr.io/edholm/swosh:<short sha>` and `latest` from master. Without CI,
+   `./deploy.sh` builds and pushes the image itself in step 6.
+
+   Log in to GHCR on the machine you deploy from, with a personal access token
+   that has `write:packages` (or `read:packages` if CI does the pushing).
+   Compose pulls through the context with these local credentials, so the
+   hosts need no login of their own. If the package is public, pulling needs
+   no login at all.
+
+   ```sh
+   docker login ghcr.io -u Edholm
+   ```
 
 2. Fill in `.env.prod` (`.env.staging` for staging) from `.env.example`.
    `deploy.sh` refuses to run without `POSTGRES_PASSWORD`, a
@@ -60,7 +69,7 @@ remote Docker host through its context.
    images on the host until the move is signed off.
 
    ```sh
-   docker --context $ctx inspect -f '{{.Config.Image}}' "$(container swosh)"   # e.g. edholm/swosh:1.2.20
+   docker --context $ctx inspect -f '{{.Config.Image}}' "$(container swosh)"   # e.g. edholm/swosh:1.2.20, on Docker Hub
    ```
 
 5. Build `mongo-migrate` and load it onto the host. It was removed from master

@@ -9,7 +9,9 @@
 #
 # Needs a docker context for each host, io1 for prod and io2 for staging:
 #   docker context create io1 --docker "host=ssh://myuser@example.org"
-# and the settings in .env.prod or .env.staging; see .env.example.
+# the settings in .env.prod or .env.staging (see .env.example), and a login to
+# GHCR, which is used both to push and, through the context, to pull:
+#   docker login ghcr.io   # a token with write:packages, or read:packages to deploy tags
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -33,7 +35,7 @@ case "$1" in
   *) usage ;;
 esac
 export SWOSH_SCHEME=https
-export SWOSH_IMAGE="${KO_DOCKER_REPO:-docker.io/edholm/swosh}"
+export SWOSH_IMAGE="${KO_DOCKER_REPO:-ghcr.io/edholm/swosh}"
 
 env_file=".env.$1"
 fail() {
