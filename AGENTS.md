@@ -6,27 +6,27 @@ This file provides guidance to AI coding agents when working with code in this r
 
 Swosh creates short links that open Swish (Swedish mobile payments) with a prefilled payee, amount and message.
 
-It is being ported from Kotlin/Spring Boot + MongoDB to Go + PostgreSQL, in steps:
+It was ported from Kotlin/Spring Boot + MongoDB to Go + PostgreSQL, in steps:
 1. Foundation: done.
-2. `feat/public-api`: create API, preview/redirect/QR pages, expiry job, metrics.
-3. `feat/admin`: login and admin CRUD.
-4. `refactor/cutover`: Docker/compose/deploy, data move, removal of Kotlin and `cmd/mongo-migrate`.
+2. `feat/public-api`: create API, preview/redirect/QR pages, expiry job, metrics: done.
+3. `feat/admin`: login and admin CRUD: done.
+4. `refactor/cutover`: ko image, compose, data move runbook (`docs/cutover.md`), removal of Kotlin and `cmd/mongo-migrate`: done. The deploy script is being redone separately.
 
-Until the cutover, the Kotlin app (`src/`, Gradle, `deploy.sh`, `docker-compose.yml`) is still what deploys production. Leave it alone.
-
-Use `src/main/kotlin/pub/edholm` as the behavioural reference when porting. `SwoshHandlerTest.kt` holds test cases to carry over.
+The Kotlin service is only in git history now, up to the commit before `refactor!: remove the Kotlin service`. Comments that say "like the Kotlin service" refer to its behaviour, which the Go code keeps.
 
 ## Commands
 
 ```sh
-make tools              # once: pinned sqlc, golangci-lint v2, migrate into ./bin
+make tools              # once: pinned sqlc, golangci-lint v2, migrate, ko into ./bin
 make generate           # after changing internal/db/migrations or internal/db/queries
 make lint / make fmt
 make test               # DB tests skip without SWOSH_TEST_DATABASE_URL
 make test-integration   # starts Postgres (docker-compose.dev.yml) and runs everything
 make check              # generate-check + lint + test, like CI
-make build              # bin/swosh, bin/mongo-migrate
+make build              # bin/swosh
 make run                # swosh serve against the dev Postgres
+make image              # ko.local/swosh into the local Docker daemon; then `docker compose up`
+make image-push         # to KO_DOCKER_REPO (docker.io/edholm/swosh); needs a clean tree
 make migrate-new name=add_foo
 ```
 
@@ -44,7 +44,11 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 - **Database:** `internal/db` embeds `migrations/*.sql` (golang-migrate format). `db.Migrate` applies them on every `swosh serve` startup.
   - sqlc generates `internal/db/sqlc` from the migrations plus `queries/`. Never edit the generated code. CI runs `sqlc diff` and fails if it is stale.
 - **DB tests:** `dbtest.URL(t)` gives each test a throwaway schema through `search_path`. Combine it with `db.Migrate` + `db.Connect`.
-- **Data move:** `cmd/mongo-migrate` is the one-off Mongo→Postgres copy. It is a separate binary so `swosh` never links the Mongo driver.
+- **Image:** ko builds it from `.ko.yaml` through the Makefile, which passes `VERSION` for the `-X main.version` ldflag. There is no Dockerfile. The base is static and distroless, with no shell or curl.
+  - ko clears the image's arguments, so `docker-compose.yml` sets `command: [serve]`. Its health check runs `swosh healthcheck`.
+  - CI pushes the image on master with ko from `ko-build/setup-ko`. Keep its `version` in step with `KO_VERSION` in the Makefile.
+- **Compose:** `docker-compose.yml` is production: swosh plus Postgres, settings from an uncommitted env file (`.env.example`). `docker-compose.dev.yml` is the dev/test Postgres, in its own compose project `swosh-dev`.
+  - Keep `docker-compose.yml` working with docker-compose v1.28, which is still in use: no nested `${…}` defaults, no `required:` on `env_file`, no top-level `name:`.
 
 ## Data model gotchas
 
@@ -61,3 +65,4 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 - Go 1.27 (`go.mod`). If the local Go is older, the toolchain auto-downloads.
 - Environment variable names reuse the Kotlin ones where the setting still exists (`SWOSH_*`, `LOG_LEVEL`).
 - `tmp/` is git-ignored and may contain real production dumps. Never commit them or print their contents.
+- `.env` and `.env.*` (except `.env.example`) are git-ignored and hold secrets. Never commit them or print their contents.
