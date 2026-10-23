@@ -81,3 +81,8 @@ coverage.out
 
 # Local scratch files, e.g. database dumps
 /tmp/
+
+# Compose settings with secrets; see .env.example
+/.env
+/.env.*
+!/.env.example

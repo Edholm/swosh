@@ -1,27 +1,56 @@
+# The swosh service and its PostgreSQL. Works with docker compose v2 and
+# docker-compose v1.28+.
+#
+#   make image && docker compose up   # locally, runs ko.local/swosh:latest
+#
+# Settings come from .env, or the file passed with --env-file; see .env.example.
+# Without one, swosh runs with its defaults (README.md).
 services:
-    swosh:
-        image: "edholm/swosh:${TAG:-latest}"
-        restart: always
-        environment:
-            - SWOSH_MONGODB_URI=mongodb://mongodb/swosh
-            - SWOSH_HOSTNAME=${SWOSH_HOSTNAME:-swosh.me}
-            - SWOSH_SCHEME=${SWOSH_SCHEME:-https}
-            - SWOSH_PROVISION_USERS=${SWOSH_PROVISION_USERS:-true}
-        ports:
-            - ${APP_PORT:-8080}:8080
-            - ${ACTUATOR_PORT:-8081}:8081
-        depends_on:
-            - mongodb
+  swosh:
+    image: ${SWOSH_IMAGE:-ko.local/swosh}:${TAG:-latest}
+    # ko images run the binary without arguments.
+    command: [serve]
+    restart: always
+    environment:
+      SWOSH_DATABASE_URL: postgres://swosh:${POSTGRES_PASSWORD:-swosh}@postgres:5432/swosh?sslmode=disable
+      # Taken from the env file or the shell; left unset when neither has them.
+      SWOSH_SESSION_KEY:
+      SWOSH_PROVISION_USERS:
+      SWOSH_ADMIN_USERNAME:
+      SWOSH_ADMIN_PWD:
+      SWOSH_SCHEME:
+      SWOSH_HOSTNAME:
+      SWOSH_EXPIRE_RATE:
+      SWOSH_ENVIRONMENT:
+      SWOSH_SERVER_HOSTNAME:
+      LOG_LEVEL:
+    ports:
+      - ${APP_PORT:-8080}:8080
+      - ${ACTUATOR_PORT:-8081}:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # The image has no shell or curl.
+      test: [CMD, /ko-app/swosh, healthcheck]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-    mongodb:
-        image: mongo:${MONGO_TAG:-4}
-        restart: always
-        volumes:
-            - mongo-data:/data/db
-            - mongo-config:/data/configdb
-#        ports:
-#            - 27017:27017
+  postgres:
+    image: postgres:18-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: swosh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swosh}
+      POSTGRES_DB: swosh
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: [CMD, pg_isready, -U, swosh, -d, swosh]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
-    mongo-data:
-    mongo-config:
+  postgres-data:

@@ -6,7 +6,9 @@ SHELL := /usr/bin/env bash
 
 GO ?= go
 COMPOSE ?= docker compose
-COMPOSE_FILE := docker-compose.dev.yml
+# A project name of its own, so it never touches docker-compose.yml's
+# containers and volumes, which use the directory name.
+COMPOSE_DEV := $(COMPOSE) --project-name swosh-dev --file docker-compose.dev.yml
 
 BIN := $(CURDIR)/bin
 MIGRATIONS := internal/db/migrations
@@ -138,16 +140,16 @@ image-push: $(KO_DEP) ## Build the image for amd64 and arm64 and push it to KO_D
 
 .PHONY: db-up
 db-up: ## Start the dev Postgres and wait until it accepts connections
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d postgres
+	$(COMPOSE_DEV) up -d postgres
 	@for _ in $$(seq 30); do \
-		$(COMPOSE) -f $(COMPOSE_FILE) exec -T postgres pg_isready -q -U swosh -d swosh && exit 0; \
+		$(COMPOSE_DEV) exec -T postgres pg_isready -q -U swosh -d swosh && exit 0; \
 		sleep 1; \
 	done; \
 	echo "Postgres did not become ready in time" >&2; exit 1
 
 .PHONY: db-down
 db-down: ## Stop the dev databases (data is kept in a volume)
-	$(COMPOSE) -f $(COMPOSE_FILE) --profile mongo down
+	$(COMPOSE_DEV) --profile mongo down
 
 .PHONY: migrate-new
 migrate-new: $(MIGRATE_STAMP) ## Create a new migration pair: make migrate-new name=add_foo
