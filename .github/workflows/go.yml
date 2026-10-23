@@ -53,3 +53,35 @@ jobs:
       - run: make lint
       - run: make test
       - run: make build
+
+  image:
+    name: Build and push the image
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    env:
+      KO_DOCKER_REPO: docker.io/edholm/swosh
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # VERSION in the Makefile comes from `git describe`.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: ko-build/setup-ko@v0.10
+        with:
+          version: v0.19.1 # KO_VERSION in the Makefile
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: echo "$DOCKERHUB_TOKEN" | ko login docker.io --username "$DOCKERHUB_USERNAME" --password-stdin
+
+      # Tags the image with the short commit SHA and latest.
+      - run: make image-push KO=ko
