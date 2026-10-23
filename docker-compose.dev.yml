@@ -1,7 +1,8 @@
-# Databases for local development and tests. Deployment uses docker-compose.yml.
+# Databases for local development and tests, in the swosh-dev compose project.
+# Deployment uses docker-compose.yml.
 #
 #   make db-up                                         # Postgres only
-#   docker compose -f docker-compose.dev.yml --profile mongo up -d mongodb
+#   docker compose -p swosh-dev -f docker-compose.dev.yml --profile mongo up -d mongodb
 services:
   postgres:
     image: postgres:18-alpine
