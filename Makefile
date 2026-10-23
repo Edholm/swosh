@@ -6,7 +6,9 @@ SHELL := /usr/bin/env bash
 
 GO ?= go
 COMPOSE ?= docker compose
-COMPOSE_FILE := docker-compose.dev.yml
+# A project name of its own, so it never touches docker-compose.yml's
+# containers and volumes, which use the directory name.
+COMPOSE_DEV := $(COMPOSE) --project-name swosh-dev --file docker-compose.dev.yml
 
 BIN := $(CURDIR)/bin
 MIGRATIONS := internal/db/migrations
@@ -22,15 +24,19 @@ GO_TOOLCHAIN := $(shell $(GO) env GOVERSION)
 SQLC_VERSION ?= v1.31.1
 GOLANGCI_LINT_VERSION ?= v2.15.0
 MIGRATE_VERSION ?= v4.20.1
+# Keep in step with ko-build/setup-ko's version in .github/workflows/go.yml.
+KO_VERSION ?= v0.19.1
 
 SQLC := $(BIN)/sqlc
 GOLANGCI_LINT := $(BIN)/golangci-lint
 MIGRATE := $(BIN)/migrate
+KO := $(BIN)/ko
 
 # Stamp files make `make tools` reinstall a tool when its pinned version changes.
 SQLC_STAMP := $(BIN)/.sqlc-$(SQLC_VERSION)
 GOLANGCI_LINT_STAMP := $(BIN)/.golangci-lint-$(GOLANGCI_LINT_VERSION)
 MIGRATE_STAMP := $(BIN)/.migrate-$(MIGRATE_VERSION)
+KO_STAMP := $(BIN)/.ko-$(KO_VERSION)
 
 GO_INSTALL := GOTOOLCHAIN=$(GO_TOOLCHAIN) GOBIN=$(BIN) $(GO) install
 
@@ -43,7 +49,7 @@ help: ## Show this help
 		/^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) }' $(MAKEFILE_LIST)
 
 .PHONY: tools
-tools: $(SQLC_STAMP) $(GOLANGCI_LINT_STAMP) $(MIGRATE_STAMP) ## Install pinned dev tools into ./bin
+tools: $(SQLC_STAMP) $(GOLANGCI_LINT_STAMP) $(MIGRATE_STAMP) $(KO_STAMP) ## Install pinned dev tools into ./bin
 
 $(SQLC_STAMP):
 	@rm -f $(BIN)/.sqlc-*
@@ -58,6 +64,11 @@ $(GOLANGCI_LINT_STAMP):
 $(MIGRATE_STAMP):
 	@rm -f $(BIN)/.migrate-*
 	$(GO_INSTALL) -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@$(MIGRATE_VERSION)
+	@touch $@
+
+$(KO_STAMP):
+	@rm -f $(BIN)/.ko-*
+	$(GO_INSTALL) github.com/google/ko@$(KO_VERSION)
 	@touch $@
 
 .PHONY: clean
@@ -105,20 +116,44 @@ build: ## Build all binaries into ./bin
 run: db-up ## Run the server against the dev Postgres
 	$(GO) run -ldflags '$(LDFLAGS)' ./cmd/swosh serve
 
+##@ Image
+
+# ko builds the image from .ko.yaml; there is no Dockerfile. Images are tagged
+# with the commit and latest. CI installs ko with ko-build/setup-ko and runs
+# `make image-push KO=ko`, so the ./bin one is only a prerequisite by default.
+KO_DOCKER_REPO ?= ghcr.io/edholm/swosh
+LOCAL_IMAGE := ko.local/swosh
+IMAGE_TAGS = $(shell git rev-parse --short HEAD),latest
+# The source label links the GHCR package to the repository, which lets CI's
+# GITHUB_TOKEN push to it even when the package was created by a local push.
+IMAGE_SOURCE := https://github.com/Edholm/swosh
+KO_BUILD = VERSION='$(VERSION)' $(KO) build --bare --tags='$(IMAGE_TAGS)' \
+	--image-label=org.opencontainers.image.source=$(IMAGE_SOURCE) ./cmd/swosh
+KO_DEP := $(if $(filter $(BIN)/ko,$(KO)),$(KO_STAMP))
+
+.PHONY: image
+image: $(KO_DEP) ## Build the image into the local Docker daemon as ko.local/swosh
+	KO_DOCKER_REPO='$(LOCAL_IMAGE)' $(KO_BUILD) --platform=linux/$$(docker version -f '{{.Server.Arch}}')
+
+.PHONY: image-push
+image-push: $(KO_DEP) ## Build the image for amd64 and arm64 and push it to KO_DOCKER_REPO
+	@test -z "$$(git status --porcelain)" || { echo "Commit your changes first: the image is tagged with the commit" >&2; exit 1; }
+	KO_DOCKER_REPO='$(KO_DOCKER_REPO)' $(KO_BUILD)
+
 ##@ Database
 
 .PHONY: db-up
 db-up: ## Start the dev Postgres and wait until it accepts connections
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d postgres
+	$(COMPOSE_DEV) up -d postgres
 	@for _ in $$(seq 30); do \
-		$(COMPOSE) -f $(COMPOSE_FILE) exec -T postgres pg_isready -q -U swosh -d swosh && exit 0; \
+		$(COMPOSE_DEV) exec -T postgres pg_isready -q -U swosh -d swosh && exit 0; \
 		sleep 1; \
 	done; \
 	echo "Postgres did not become ready in time" >&2; exit 1
 
 .PHONY: db-down
-db-down: ## Stop the dev databases (data is kept in a volume)
-	$(COMPOSE) -f $(COMPOSE_FILE) --profile mongo down
+db-down: ## Stop the dev Postgres (data is kept in a volume)
+	$(COMPOSE_DEV) down
 
 .PHONY: migrate-new
 migrate-new: $(MIGRATE_STAMP) ## Create a new migration pair: make migrate-new name=add_foo

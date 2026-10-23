@@ -53,3 +53,32 @@ jobs:
       - run: make lint
       - run: make test
       - run: make build
+
+  image:
+    name: Build and push the image
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # VERSION in the Makefile comes from `git describe`.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # With KO_DOCKER_REPO unset, this logs in to ghcr.io with GITHUB_TOKEN
+      # and sets KO_DOCKER_REPO to ghcr.io/edholm/swosh.
+      - uses: ko-build/setup-ko@v0.10
+        with:
+          version: v0.19.1 # KO_VERSION in the Makefile
+
+      # Tags the image with the short commit SHA and latest.
+      - run: make image-push KO=ko

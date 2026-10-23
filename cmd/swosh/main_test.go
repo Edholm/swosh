@@ -7,8 +7,10 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -47,6 +49,45 @@ func TestServeRejectsInvalidConfig(t *testing.T) {
 	_, err := run(t, map[string]string{"SWOSH_ACTUATOR_PORT": "nope"}, "serve")
 	if err == nil || !strings.Contains(err.Error(), "ActuatorPort") {
 		t.Errorf("serve with invalid port: err = %v, want a config error naming ActuatorPort", err)
+	}
+}
+
+func TestHealthcheck(t *testing.T) {
+	// actuatorPort serves healthHandler with a database that fails with
+	// pingErr and returns its port. With closed set, nothing listens on it.
+	actuatorPort := func(t *testing.T, pingErr error, closed bool) string {
+		t.Helper()
+		srv := httptest.NewServer(healthHandler(fakePinger{pingErr}, slog.New(slog.DiscardHandler)))
+		port := strconv.Itoa(srv.Listener.Addr().(*net.TCPAddr).Port)
+		if closed {
+			srv.Close()
+		} else {
+			t.Cleanup(srv.Close)
+		}
+		return port
+	}
+
+	tests := []struct {
+		name    string
+		pingErr error
+		closed  bool
+		wantErr string
+	}{
+		{"up", nil, false, ""},
+		{"database down", errors.New("connection refused"), false, "503"},
+		{"server not running", nil, true, "health check"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			port := actuatorPort(t, tt.pingErr, tt.closed)
+			_, err := run(t, map[string]string{"SWOSH_ACTUATOR_PORT": port}, "healthcheck")
+			switch {
+			case tt.wantErr == "" && err != nil:
+				t.Errorf("healthcheck: %v", err)
+			case tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)):
+				t.Errorf("healthcheck: err = %v, want one containing %q", err, tt.wantErr)
+			}
+		})
 	}
 }
 
