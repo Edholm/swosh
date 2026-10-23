@@ -1,8 +1,5 @@
-# Databases for local development and tests, in the swosh-dev compose project.
-# Deployment uses docker-compose.yml.
-#
-#   make db-up                                         # Postgres only
-#   docker compose -p swosh-dev -f docker-compose.dev.yml --profile mongo up -d mongodb
+# Postgres for local development and tests, in the swosh-dev compose project.
+# Start it with `make db-up`. Deployment uses docker-compose.yml.
 services:
   postgres:
     image: postgres:18-alpine
@@ -14,15 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql
-
-  # Same major version as production, for trying out cmd/mongo-migrate.
-  mongodb:
-    image: mongo:4
-    profiles: [mongo]
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./cmd/mongo-migrate/testdata:/seed:ro
 
 volumes:
   postgres-data:

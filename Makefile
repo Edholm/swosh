@@ -148,8 +148,8 @@ db-up: ## Start the dev Postgres and wait until it accepts connections
 	echo "Postgres did not become ready in time" >&2; exit 1
 
 .PHONY: db-down
-db-down: ## Stop the dev databases (data is kept in a volume)
-	$(COMPOSE_DEV) --profile mongo down
+db-down: ## Stop the dev Postgres (data is kept in a volume)
+	$(COMPOSE_DEV) down
 
 .PHONY: migrate-new
 migrate-new: $(MIGRATE_STAMP) ## Create a new migration pair: make migrate-new name=add_foo
