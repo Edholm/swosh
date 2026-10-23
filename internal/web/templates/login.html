@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Log in</title>
+    {{template "head"}}
+</head>
+<body class="container">
+<div class="row justify-content-center margin-top-2">
+    <div class="col-lg-5">
+        <h1><i class="fad fa-unlock-alt"></i> Please log in</h1>
+        {{if .LoggedOut}}
+        <div class="alert alert-success" role="alert">You have been logged out.</div>
+        {{end}}
+        {{with .Error}}
+        <div class="alert alert-danger" role="alert">{{.}}</div>
+        {{end}}
+        <form method="post" action="/login" class="margin-top-1">
+            {{with .Next}}<input type="hidden" name="next" value="{{.}}">{{end}}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{.Username}}" class="form-control"
+                       autocomplete="username" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control"
+                       autocomplete="current-password" required>
+            </div>
+            <a href="/" class="btn btn-light"><i class="fad fa-caret-left"></i> Back</a>
+            <button type="submit" class="btn btn-primary float-right"><i class="fad fa-sign-in-alt"></i> Log in</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

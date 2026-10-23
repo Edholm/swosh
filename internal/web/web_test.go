@@ -30,6 +30,7 @@ var now = time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 // for ids that are taken, like Postgres.
 type fakeStore struct {
 	links   map[string]sqlc.Swosh
+	users   map[string]sqlc.User
 	created []sqlc.CreateSwoshParams
 	err     error
 }
@@ -80,7 +81,7 @@ type testServer struct {
 
 func newTestServer(t *testing.T, links ...sqlc.Swosh) *testServer {
 	t.Helper()
-	store := &fakeStore{links: map[string]sqlc.Swosh{}}
+	store := &fakeStore{links: map[string]sqlc.Swosh{}, users: map[string]sqlc.User{}}
 	for _, l := range links {
 		store.links[l.ID] = l
 	}
