@@ -1,0 +1,17 @@
+# ko builds the swosh image; run it through `make image` or `make image-push`,
+# which set VERSION like `make build` does.
+defaultBaseImage: cgr.dev/chainguard/static # ko's default: static, distroless, non-root
+defaultPlatforms:
+  - linux/amd64
+  - linux/arm64
+
+builds:
+  - id: swosh
+    main: ./cmd/swosh
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ or (index .Env "VERSION") "dev" }}
