@@ -18,7 +18,7 @@ import (
 )
 
 func TestCheckPassword(t *testing.T) {
-	// "admin", as in cmd/mongo-migrate/testdata/seed.js.
+	// "admin", as Spring Security stored it for the Kotlin service.
 	const spring = "{bcrypt}$2a$10$0MfTyXDYOZTLPDoT7hqrr.xH1qI8A8s/DmBMp1R94iNznJsP0r.6y"
 	raw, err := bcrypt.GenerateFromPassword([]byte("admin"), bcrypt.MinCost)
 	if err != nil {
