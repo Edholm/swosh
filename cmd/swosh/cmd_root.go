@@ -55,6 +55,7 @@ func NewRootCmd(env envconfig.Lookuper) *cobra.Command {
 	root.AddCommand(
 		newServeCmd(a),
 		newHealthcheckCmd(a),
+		newAdminCmd(a),
 		newVersionCmd(),
 	)
 	return root

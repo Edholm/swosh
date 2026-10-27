@@ -176,6 +176,9 @@ func TestProvisionAndLoginWithPostgres(t *testing.T) {
 	if err := Provision(ctx, q, "admin", "second", log); err != nil {
 		t.Fatal(err)
 	}
+	if err := CreateAdmin(ctx, q, "admin", "second"); !errors.Is(err, ErrUserExists) {
+		t.Errorf("CreateAdmin of an existing user: err = %v, want ErrUserExists", err)
+	}
 	u, err := Login(ctx, q, "admin", "first")
 	if err != nil {
 		t.Fatalf("Login with the first password: %v", err)

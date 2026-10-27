@@ -1,5 +1,5 @@
 // Package auth checks passwords stored in Spring Security's format, signs
-// login sessions and provisions the admin user.
+// login sessions and creates admin users.
 package auth
 
 import (
@@ -96,13 +96,12 @@ type UserCreator interface {
 	CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (int64, error)
 }
 
-// Provision creates an admin user with the given credentials unless a user
-// with that name exists. An existing user's password and authorities are
-// left as they are.
-func Provision(ctx context.Context, users UserCreator, username, password string, log *slog.Logger) error {
-	if password == "admin" {
-		log.WarnContext(ctx, "the admin user is provisioned with the default password; set SWOSH_ADMIN_PWD", "username", username)
-	}
+// ErrUserExists means a user with the username already exists.
+var ErrUserExists = errors.New("user already exists")
+
+// CreateAdmin creates an enabled user with AdminAuthorities. If the username
+// is taken, it returns ErrUserExists and leaves that user as it is.
+func CreateAdmin(ctx context.Context, users UserCreator, username, password string) error {
 	hash, err := HashPassword(password)
 	if err != nil {
 		return err
@@ -114,11 +113,28 @@ func Provision(ctx context.Context, users UserCreator, username, password string
 		Authorities: AdminAuthorities,
 	})
 	if err != nil {
-		return fmt.Errorf("provision user %q: %w", username, err)
+		return fmt.Errorf("create user %q: %w", username, err)
 	}
 	if n == 0 {
+		return fmt.Errorf("create user %q: %w", username, ErrUserExists)
+	}
+	return nil
+}
+
+// Provision creates an admin user with the given credentials unless a user
+// with that name exists. An existing user's password and authorities are
+// left as they are.
+func Provision(ctx context.Context, users UserCreator, username, password string, log *slog.Logger) error {
+	if password == "admin" {
+		log.WarnContext(ctx, "the admin user is provisioned with the default password; set SWOSH_ADMIN_PWD", "username", username)
+	}
+	err := CreateAdmin(ctx, users, username, password)
+	switch {
+	case errors.Is(err, ErrUserExists):
 		log.DebugContext(ctx, "admin user already exists", "username", username)
-	} else {
+	case err != nil:
+		return fmt.Errorf("provision admin user: %w", err)
+	default:
 		log.InfoContext(ctx, "provisioned admin user", "username", username)
 	}
 	return nil

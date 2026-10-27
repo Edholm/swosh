@@ -10,18 +10,30 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/sethvargo/go-envconfig"
+
+	"github.com/Edholm/swosh/internal/auth"
+	"github.com/Edholm/swosh/internal/db"
+	"github.com/Edholm/swosh/internal/db/dbtest"
+	"github.com/Edholm/swosh/internal/db/sqlc"
 )
 
 func run(t *testing.T, env map[string]string, args ...string) (string, error) {
 	t.Helper()
+	return runWithInput(t, env, "", args...)
+}
+
+func runWithInput(t *testing.T, env map[string]string, stdin string, args ...string) (string, error) {
+	t.Helper()
 	var out bytes.Buffer
 	cmd := NewRootCmd(envconfig.MapLookuper(env))
 	cmd.SetArgs(args)
+	cmd.SetIn(strings.NewReader(stdin))
 	cmd.SetOut(&out)
 	cmd.SetErr(io.Discard)
 	err := cmd.ExecuteContext(t.Context())
@@ -88,6 +100,69 @@ func TestHealthcheck(t *testing.T) {
 				t.Errorf("healthcheck: err = %v, want one containing %q", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestAdminAddRejectsBadInput(t *testing.T) {
+	tests := []struct {
+		name    string
+		stdin   string
+		args    []string
+		wantErr string
+	}{
+		{"no username", "pw\n", []string{"admin", "add"}, "accepts 1 arg"},
+		{"empty username", "pw\n", []string{"admin", "add", ""}, "username"},
+		{"padded username", "pw\n", []string{"admin", "add", " alice"}, "username"},
+		{"no password", "", []string{"admin", "add", "alice"}, "password must not be empty"},
+		{"empty line", "\n", []string{"admin", "add", "alice"}, "password must not be empty"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// The database is never reached, so the default URL does not matter.
+			_, err := runWithInput(t, nil, tt.stdin, tt.args...)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("err = %v, want one containing %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAdminAdd(t *testing.T) {
+	url := dbtest.URL(t)
+	if err := db.Migrate(url, slog.New(slog.DiscardHandler)); err != nil {
+		t.Fatal(err)
+	}
+	env := map[string]string{"SWOSH_DATABASE_URL": url}
+
+	out, err := runWithInput(t, env, "hunter2\nignored\n", "admin", "add", "alice")
+	if err != nil {
+		t.Fatalf("admin add alice: %v", err)
+	}
+	if want := "Created admin user \"alice\"\n"; out != want {
+		t.Errorf("output = %q, want %q", out, want)
+	}
+	if _, err := runWithInput(t, env, "s3cret\r\n", "admin", "add", "bob"); err != nil {
+		t.Fatalf("admin add bob: %v", err)
+	}
+	if _, err := runWithInput(t, env, "other\n", "admin", "add", "alice"); !errors.Is(err, auth.ErrUserExists) {
+		t.Errorf("admin add alice again: err = %v, want ErrUserExists", err)
+	}
+
+	pool, err := db.Connect(t.Context(), url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	q := sqlc.New(pool)
+	for name, password := range map[string]string{"alice": "hunter2", "bob": "s3cret"} {
+		u, err := auth.Login(t.Context(), q, name, password)
+		if err != nil {
+			t.Errorf("Login as %s: %v", name, err)
+			continue
+		}
+		if !slices.Equal(u.Authorities, auth.AdminAuthorities) {
+			t.Errorf("%s has authorities %v, want %v", name, u.Authorities, auth.AdminAuthorities)
+		}
 	}
 }
 

@@ -13,6 +13,10 @@ Admins log in at `/login` (or with HTTP Basic) and manage links at `/admin`. Tha
 `ROLE_ADMIN`; editing needs `UPDATE` and deleting `DELETE`. Logins are signed cookies,
 valid for 12 hours.
 
+`swosh admin add <username>` creates another admin user with all of those. It asks for
+the password on a terminal, or reads the first line of stdin, and fails if the user
+exists. In the compose setup: `docker compose exec swosh /ko-app/swosh admin add <username>`.
+
 ## Requirements
 
 * Go 1.27 (an older `go` downloads it automatically)
