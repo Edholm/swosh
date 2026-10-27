@@ -13,7 +13,7 @@ import (
 // Config holds the settings for the swosh server. Variable names match those
 // of the Kotlin service where the setting still exists.
 type Config struct {
-	// DatabaseURL is a postgres:// URL. The default matches docker-compose.dev.yml.
+	// DatabaseURL is a postgres:// URL. The default matches compose.dev.yaml.
 	DatabaseURL string `env:"SWOSH_DATABASE_URL, default=postgres://swosh:swosh@localhost:5432/swosh?sslmode=disable"`
 
 	// ServerPort serves the public site and API.

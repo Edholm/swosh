@@ -1,10 +1,12 @@
-# The swosh service and its PostgreSQL. Works with docker compose v2 and
-# docker-compose v1.28+.
+# The swosh service and its PostgreSQL. Needs Docker Compose 2.24+ and Docker
+# Engine 25+.
 #
 #   make image && docker compose up   # locally, runs ko.local/swosh:latest
 #
 # Settings come from .env, or the file passed with --env-file; see .env.example.
 # Without one, swosh runs with its defaults (README.md).
+name: swosh
+
 services:
   swosh:
     image: ${SWOSH_IMAGE:-ko.local/swosh}:${TAG:-latest}
@@ -36,6 +38,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      # Checked every second while starting, so `up --wait` returns quickly.
+      start_period: 30s
+      start_interval: 1s
 
   postgres:
     image: postgres:18-alpine
@@ -47,10 +52,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: [CMD, pg_isready, -U, swosh, -d, swosh]
-      interval: 5s
+      # Over TCP: while initdb runs on a new volume, Postgres answers on its
+      # socket only, and then restarts.
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, swosh, -d, swosh]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
 
 volumes:
   postgres-data:

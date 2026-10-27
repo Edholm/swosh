@@ -21,7 +21,7 @@ make tools              # once: pinned sqlc, golangci-lint v2, migrate, ko into 
 make generate           # after changing internal/db/migrations or internal/db/queries
 make lint / make fmt
 make test               # DB tests skip without SWOSH_TEST_DATABASE_URL
-make test-integration   # starts Postgres (docker-compose.dev.yml) and runs everything
+make test-integration   # starts Postgres (compose.dev.yaml) and runs everything
 make check              # generate-check + lint + test, like CI
 make build              # bin/swosh
 make run                # swosh serve against the dev Postgres
@@ -45,10 +45,10 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
   - sqlc generates `internal/db/sqlc` from the migrations plus `queries/`. Never edit the generated code. CI runs `sqlc diff` and fails if it is stale.
 - **DB tests:** `dbtest.URL(t)` gives each test a throwaway schema through `search_path`. Combine it with `db.Migrate` + `db.Connect`.
 - **Image:** ko builds it from `.ko.yaml` through the Makefile, which passes `VERSION` for the `-X main.version` ldflag. There is no Dockerfile. The base is static and distroless, with no shell or curl.
-  - ko clears the image's arguments, so `docker-compose.yml` sets `command: [serve]`. Its health check runs `swosh healthcheck`.
+  - ko clears the image's arguments, so `compose.yaml` sets `command: [serve]`. Its health check runs `swosh healthcheck`.
   - CI pushes the image to GHCR on master with ko from `ko-build/setup-ko`, which logs in with `GITHUB_TOKEN`. Keep its `version` in step with `KO_VERSION` in the Makefile.
-- **Compose:** `docker-compose.yml` is production: swosh plus Postgres, settings from an uncommitted env file (`.env.example`). `docker-compose.dev.yml` is the dev/test Postgres, in its own compose project `swosh-dev`.
-  - Keep `docker-compose.yml` working with docker-compose v1.28, which is still in use: no nested `${…}` defaults, no `required:` on `env_file`, no top-level `name:`.
+- **Compose:** `compose.yaml` is production: swosh plus Postgres, settings from an uncommitted env file (`.env.example`). `compose.dev.yaml` is the dev/test Postgres, in its own compose project `swosh-dev`.
+  - Both set their project name with top-level `name:`, and use `healthcheck.start_interval` so `up --wait` returns quickly. They need Docker Compose 2.24+ and Docker Engine 25+; docker-compose v1 can't read them.
 
 ## Data model gotchas
 

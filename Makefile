@@ -6,9 +6,9 @@ SHELL := /usr/bin/env bash
 
 GO ?= go
 COMPOSE ?= docker compose
-# A project name of its own, so it never touches docker-compose.yml's
-# containers and volumes, which use the directory name.
-COMPOSE_DEV := $(COMPOSE) --project-name swosh-dev --file docker-compose.dev.yml
+# compose.dev.yaml has a project name of its own, swosh-dev, so it never
+# touches compose.yaml's containers and volumes.
+COMPOSE_DEV := $(COMPOSE) --file compose.dev.yaml
 
 BIN := $(CURDIR)/bin
 MIGRATIONS := internal/db/migrations
@@ -144,12 +144,7 @@ image-push: $(KO_DEP) ## Build the image for amd64 and arm64 and push it to KO_D
 
 .PHONY: db-up
 db-up: ## Start the dev Postgres and wait until it accepts connections
-	$(COMPOSE_DEV) up -d postgres
-	@for _ in $$(seq 30); do \
-		$(COMPOSE_DEV) exec -T postgres pg_isready -q -U swosh -d swosh && exit 0; \
-		sleep 1; \
-	done; \
-	echo "Postgres did not become ready in time" >&2; exit 1
+	$(COMPOSE_DEV) up --wait postgres
 
 .PHONY: db-down
 db-down: ## Stop the dev Postgres (data is kept in a volume)

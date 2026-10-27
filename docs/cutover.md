@@ -8,7 +8,9 @@ The site is down from step 2 (Kotlin stops) until step 6 (Go starts), usually a
 few minutes. Rehearse on staging first with the same steps.
 
 All commands run from a checkout of this repository on master, against the
-remote Docker host through its context.
+remote Docker host through its context. Compose runs on the machine you deploy
+from, so that machine needs Docker Compose 2.24+; the host's own compose
+version doesn't matter.
 
 ## What changes for users
 
@@ -55,9 +57,7 @@ remote Docker host through its context.
 
    ```sh
    ctx=io1 project=swosh_prod env=.env.prod
-   # docker-compose v1. With compose v2:
-   #   dc() { docker --context $ctx compose --env-file $env --project-name $project "$@"; }
-   dc() { docker-compose --context $ctx --env-file $env --project-name $project "$@"; }
+   dc() { docker --context $ctx compose --env-file $env --project-name $project "$@"; }
    container() {
      docker --context $ctx ps -aq \
        --filter label=com.docker.compose.project=$project \
@@ -110,8 +110,7 @@ Only Postgres; swosh must not start before the import, or it would provision
 the admin user before the old one is copied.
 
 ```sh
-dc up -d postgres
-dc ps postgres   # wait for "Up (healthy)"
+dc up --wait postgres   # returns once it is healthy
 ```
 
 ## 4. Copy the data
@@ -161,7 +160,7 @@ differ by more than a link or two that expired in between.
 Start the image CI pushed for the merged commit:
 
 ```sh
-SWOSH_IMAGE=ghcr.io/edholm/swosh TAG=<short sha> dc up -d
+SWOSH_IMAGE=ghcr.io/edholm/swosh TAG=<short sha> dc up --wait
 ```
 
 Compose replaces the Kotlin `swosh` container with the Go one and warns about
@@ -198,7 +197,7 @@ while Go was running exist only in Postgres and are not carried back.
 dc stop swosh
 git show d700851:docker-compose.yml > tmp/kotlin-compose.yml   # the Kotlin compose file
 TAG=<tag from step 0.4> SWOSH_HOSTNAME=swosh.me SWOSH_SCHEME=https SWOSH_PROVISION_USERS=false \
-  docker-compose --context $ctx --project-name $project -f tmp/kotlin-compose.yml up -d swosh
+  docker --context $ctx compose --project-name $project -f tmp/kotlin-compose.yml up -d swosh
 ```
 
 Postgres keeps running and does no harm. To try the move again, start over at

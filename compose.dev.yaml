@@ -1,0 +1,26 @@
+# Postgres for local development and tests. Start it with `make db-up`.
+# Deployment uses compose.yaml; the project names keep the two apart.
+name: swosh-dev
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: swosh
+      POSTGRES_PASSWORD: swosh
+      POSTGRES_DB: swosh
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    # For `up --wait`; over TCP for the same reason as in compose.yaml.
+    healthcheck:
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, swosh, -d, swosh]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
+
+volumes:
+  postgres-data:

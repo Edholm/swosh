@@ -16,14 +16,14 @@ valid for 12 hours.
 ## Requirements
 
 * Go 1.27 (an older `go` downloads it automatically)
-* Docker, with compose v2 or docker-compose 1.28+
+* Docker Engine 25+ with Docker Compose 2.24+
 * [ko](https://ko.build) for the image; `make tools` installs the pinned version into `./bin`
 
 ## Running
 
 ```sh
 make tools              # install pinned sqlc, golangci-lint, migrate and ko into ./bin
-make test-integration   # start Postgres from docker-compose.dev.yml and run all tests
+make test-integration   # start Postgres from compose.dev.yaml and run all tests
 make run                # run `swosh serve` against that Postgres
 make                    # list all targets
 ```
@@ -37,7 +37,7 @@ docker compose up       # http://localhost:8080, actuator on :8081
 
 That works without any settings: the admin user is `admin`/`admin`, and a restart logs
 everyone out. To change that, copy `.env.example` to `.env` and fill it in. Compose
-reads it automatically and it is git-ignored. `docker-compose.dev.yml` uses its own
+reads it automatically and it is git-ignored. `compose.dev.yaml` uses its own
 project name, `swosh-dev`, so the two never share containers or volumes.
 
 ## Configuration
@@ -58,7 +58,7 @@ Configuration comes from the environment:
 | `SWOSH_ADMIN_USERNAME`, `SWOSH_ADMIN_PWD` | `admin`, `admin` (the provisioned user; a warning is logged while the password is `admin`) |
 | `SWOSH_SESSION_KEY` | random on each start (at least 32 bytes; signs login cookies, so set it to stay logged in across restarts) |
 
-`docker-compose.yml` sets `SWOSH_DATABASE_URL` itself, from `POSTGRES_PASSWORD`, and
+`compose.yaml` sets `SWOSH_DATABASE_URL` itself, from `POSTGRES_PASSWORD`, and
 passes the other settings through from `.env`; see `.env.example`.
 
 The schema is defined in `internal/db/migrations` and the queries in
@@ -94,7 +94,7 @@ token that has `write:packages`. CI pushes the image for every commit on master,
 `GITHUB_TOKEN`.
 
 ko starts the binary without arguments and has no way to set default ones, so the
-command has to be given: `docker-compose.yml` sets `command: [serve]`, and by hand it
+command has to be given: `compose.yaml` sets `command: [serve]`, and by hand it
 is `docker run ko.local/swosh serve`. Without a shell or curl in the image, health
 checks run `swosh healthcheck`, which requests `/health` on the actuator port.
 
