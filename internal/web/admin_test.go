@@ -345,6 +345,7 @@ func TestCSRF(t *testing.T) {
 func TestEdit(t *testing.T) {
 	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1, Description: ptr("old")})
 	ts.addUser(t, "admin", allAuthorities...)
+	logged := ts.captureLogs(t)
 	c := ts.client()
 	token := c.login(t, "admin")
 
@@ -358,11 +359,16 @@ func TestEdit(t *testing.T) {
 	if sw.Payee != "0700000000" || sw.Amount != 250 || sw.Description != nil {
 		t.Errorf("link = %+v, want payee 0700000000, amount 250 and no description", sw)
 	}
+	wantLogged(t, logged("updated link"), map[string]string{
+		"id": `"abc123"`, "user": `"admin"`,
+		"changed": `{"payee":{"from":"1230000000","to":"0700000000"},"amount":{"from":1,"to":250},"description":{"from":"old","to":""}}`,
+	})
 }
 
 func TestRename(t *testing.T) {
 	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
 	ts.addUser(t, "admin", allAuthorities...)
+	logged := ts.captureLogs(t)
 	c := ts.client()
 	token := c.login(t, "admin")
 
@@ -377,6 +383,10 @@ func TestRename(t *testing.T) {
 	if sw := ts.store.links["fika"]; sw.Description == nil || *sw.Description != "Fika" {
 		t.Errorf("renamed link = %+v", sw)
 	}
+	wantLogged(t, logged("renamed link"), map[string]string{
+		"from": `"abc123"`, "to": `"fika"`, "user": `"admin"`,
+		"changed": `{"description":{"from":"","to":"Fika"}}`,
+	})
 }
 
 func TestRenameCollision(t *testing.T) {
@@ -438,6 +448,7 @@ func TestEditValidation(t *testing.T) {
 func TestDelete(t *testing.T) {
 	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
 	ts.addUser(t, "admin", allAuthorities...)
+	logged := ts.captureLogs(t)
 	c := ts.client()
 	c.header.Set(csrfHeader, c.login(t, "admin"))
 
@@ -447,6 +458,7 @@ func TestDelete(t *testing.T) {
 	if _, ok := ts.store.links["abc123"]; ok {
 		t.Error("link was not deleted")
 	}
+	wantLogged(t, logged("deleted link"), map[string]string{"id": `"abc123"`, "user": `"admin"`})
 	// Deleting it again is no error, as in the Kotlin service.
 	wantStatus(t, c.do(t, http.MethodDelete, "/admin/abc123", nil), http.StatusSeeOther)
 }

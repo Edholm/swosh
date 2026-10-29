@@ -44,17 +44,30 @@ func (q *Queries) CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh
 	return i, err
 }
 
-const deleteExpiredSwoshes = `-- name: DeleteExpiredSwoshes :execrows
+const deleteExpiredSwoshes = `-- name: DeleteExpiredSwoshes :many
 DELETE FROM swosh
 WHERE expires_on < $1::timestamptz
+RETURNING id
 `
 
-func (q *Queries) DeleteExpiredSwoshes(ctx context.Context, now time.Time) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteExpiredSwoshes, now)
+func (q *Queries) DeleteExpiredSwoshes(ctx context.Context, now time.Time) ([]string, error) {
+	rows, err := q.db.Query(ctx, deleteExpiredSwoshes, now)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const deleteSwosh = `-- name: DeleteSwosh :execrows

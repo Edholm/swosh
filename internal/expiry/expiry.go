@@ -13,9 +13,9 @@ import (
 // Kotlin scheduler did.
 const initialDelay = 1337 * time.Millisecond
 
-// Deleter removes all links that expired before now and returns how many.
+// Deleter removes all links that expired before now and returns their ids.
 type Deleter interface {
-	DeleteExpiredSwoshes(ctx context.Context, now time.Time) (int64, error)
+	DeleteExpiredSwoshes(ctx context.Context, now time.Time) ([]string, error)
 }
 
 // Run deletes expired links every interval until ctx is cancelled. Failed
@@ -37,15 +37,15 @@ func Run(ctx context.Context, db Deleter, interval time.Duration, expired promet
 // Sweep deletes the links that have expired by now.
 func Sweep(ctx context.Context, db Deleter, expired prometheus.Counter, log *slog.Logger) {
 	now := time.Now()
-	n, err := db.DeleteExpiredSwoshes(ctx, now)
+	ids, err := db.DeleteExpiredSwoshes(ctx, now)
 	if err != nil {
 		if ctx.Err() == nil {
 			log.ErrorContext(ctx, "delete expired links", "err", err)
 		}
 		return
 	}
-	if n > 0 {
-		log.InfoContext(ctx, "deleted expired links", "count", n, "before", now)
+	if len(ids) > 0 {
+		log.InfoContext(ctx, "deleted expired links", "count", len(ids), "ids", ids, "before", now)
 	}
-	expired.Add(float64(n))
+	expired.Add(float64(len(ids)))
 }

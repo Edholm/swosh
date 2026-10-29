@@ -3,6 +3,7 @@ package web
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"slices"
@@ -158,12 +159,39 @@ func (s *server) adminUpdate(w http.ResponseWriter, r *http.Request, p *principa
 		failed(http.StatusNotFound, fmt.Sprintf("There is no link with id %q.", arg.ID))
 		return
 	}
+	changed := slog.Group("changed", changes(sw, arg)...)
 	if arg.NewID != arg.ID {
-		s.Log.InfoContext(r.Context(), "renamed link", "from", arg.ID, "to", arg.NewID, "user", p.Name)
+		s.Log.InfoContext(r.Context(), "renamed link", "from", arg.ID, "to", arg.NewID, "user", p.Name, changed)
 	} else {
-		s.Log.InfoContext(r.Context(), "updated link", "id", arg.ID, "user", p.Name)
+		s.Log.InfoContext(r.Context(), "updated link", "id", arg.ID, "user", p.Name, changed)
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+// changes returns a group of old and new values for each field an edit
+// changes, so the log shows what an admin did.
+func changes(sw sqlc.Swosh, arg sqlc.UpdateSwoshParams) []any {
+	var attrs []any
+	change := func(field string, from, to any) {
+		attrs = append(attrs, slog.Group(field, "from", from, "to", to))
+	}
+	if arg.Payee != sw.Payee {
+		change("payee", sw.Payee, arg.Payee)
+	}
+	if arg.Amount != sw.Amount {
+		change("amount", sw.Amount, arg.Amount)
+	}
+	if from, to := deref(sw.Description), deref(arg.Description); from != to {
+		change("description", from, to)
+	}
+	return attrs
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // params validates the form and returns a message for the admin if it is

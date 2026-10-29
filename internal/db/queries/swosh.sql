@@ -22,9 +22,10 @@ WHERE id = @id;
 DELETE FROM swosh
 WHERE id = $1;
 
--- name: DeleteExpiredSwoshes :execrows
+-- name: DeleteExpiredSwoshes :many
 DELETE FROM swosh
-WHERE expires_on < sqlc.arg(now)::timestamptz;
+WHERE expires_on < sqlc.arg(now)::timestamptz
+RETURNING id;
 
 -- name: ImportSwosh :execrows
 -- Leaves an existing link with the same id untouched, so imports can be re-run.

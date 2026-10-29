@@ -13,7 +13,7 @@ type Querier interface {
 	CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh, error)
 	// Does nothing if the username is taken; a row count of 0 means it existed.
 	CreateUser(ctx context.Context, arg CreateUserParams) (int64, error)
-	DeleteExpiredSwoshes(ctx context.Context, now time.Time) (int64, error)
+	DeleteExpiredSwoshes(ctx context.Context, now time.Time) ([]string, error)
 	DeleteSwosh(ctx context.Context, id string) (int64, error)
 	GetSwosh(ctx context.Context, id string) (Swosh, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)

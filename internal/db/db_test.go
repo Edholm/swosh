@@ -229,9 +229,9 @@ func TestDeleteExpiredSwoshes(t *testing.T) {
 		}
 	}
 
-	n, err := q.DeleteExpiredSwoshes(t.Context(), now)
-	if err != nil || n != 1 {
-		t.Fatalf("DeleteExpiredSwoshes = %d, %v; want 1 row", n, err)
+	ids, err := q.DeleteExpiredSwoshes(t.Context(), now)
+	if err != nil || !slices.Equal(ids, []string{"expired"}) {
+		t.Fatalf("DeleteExpiredSwoshes = %v, %v; want [expired]", ids, err)
 	}
 	if _, err := q.GetSwosh(t.Context(), "expired"); !errors.Is(err, pgx.ErrNoRows) {
 		t.Errorf("expired link still exists: %v", err)

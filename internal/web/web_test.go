@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -110,6 +112,38 @@ func (ts *testServer) do(t *testing.T, method, target, body string) *httptest.Re
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// captureLogs sends the server's logs to a buffer. The function it returns
+// gives the fields of the first record with msg, as JSON.
+func (ts *testServer) captureLogs(t *testing.T) func(msg string) map[string]json.RawMessage {
+	t.Helper()
+	var buf bytes.Buffer
+	ts.Log = slog.New(slog.NewJSONHandler(&buf, nil))
+	return func(msg string) map[string]json.RawMessage {
+		t.Helper()
+		for line := range bytes.Lines(buf.Bytes()) {
+			var rec map[string]json.RawMessage
+			if err := json.Unmarshal(line, &rec); err != nil {
+				t.Fatalf("decode log %q: %v", line, err)
+			}
+			if string(rec["msg"]) == strconv.Quote(msg) {
+				return rec
+			}
+		}
+		t.Fatalf("no %q record in the log:\n%s", msg, buf.String())
+		return nil
+	}
+}
+
+// wantLogged checks the fields of a log record, given as JSON.
+func wantLogged(t *testing.T, rec map[string]json.RawMessage, fields map[string]string) {
+	t.Helper()
+	for k, want := range fields {
+		if got := string(rec[k]); got != want {
+			t.Errorf("logged %s = %s, want %s", k, got, want)
+		}
+	}
+}
 
 func TestNotFoundWhenLinkIsMissing(t *testing.T) {
 	expired := sqlc.Swosh{ID: "old123", Payee: "1230000000", Amount: 1, ExpiresOn: ptr(now.Add(-time.Second))}
@@ -386,6 +420,23 @@ func TestCreateDatabaseError(t *testing.T) {
 	rec := ts.do(t, http.MethodPost, "/api/create", `{"phone":"0700000000","amount":1}`)
 	if rec.Code != http.StatusInternalServerError || !strings.Contains(rec.Body.String(), "Unable to generate Swosh!") {
 		t.Errorf("got %d %s, want 500 with a reason", rec.Code, rec.Body)
+	}
+}
+
+func TestCreateIsLogged(t *testing.T) {
+	ts := newTestServer(t)
+	logged := ts.captureLogs(t)
+	ts.newID = func() string { return "brave-otter-sings" }
+	ts.do(t, http.MethodPost, "/api/create", `{"phone":"0700000000","amount":100,"message":"Fika","expireAfterSeconds":3600}`)
+	rec := logged("created link")
+	wantLogged(t, rec, map[string]string{
+		"id": `"brave-otter-sings"`, "amount": "100", "expires_on": `"2026-10-22T13:00:00Z"`,
+	})
+	// Anyone can create links, so their phone numbers and messages stay out of the log.
+	for _, k := range []string{"payee", "description"} {
+		if _, ok := rec[k]; ok {
+			t.Errorf("logged %s", k)
+		}
 	}
 }
 

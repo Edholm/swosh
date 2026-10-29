@@ -293,7 +293,7 @@ func (s *server) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Metrics.CreateSuccess.Inc()
-	s.Log.InfoContext(r.Context(), "created link", "id", sw.ID)
+	s.Log.InfoContext(r.Context(), "created link", "id", sw.ID, "amount", sw.Amount, "expires_on", sw.ExpiresOn)
 	writeJSON(w, http.StatusOK, createResponse{ID: sw.ID, URL: s.baseURL() + "/" + sw.ID})
 }
 

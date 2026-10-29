@@ -1,9 +1,12 @@
 package expiry
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"log/slog"
+	"slices"
 	"testing"
 	"time"
 
@@ -18,24 +21,41 @@ import (
 var discard = slog.New(slog.DiscardHandler)
 
 type fakeDeleter struct {
-	n     int64
+	ids   []string
 	err   error
 	calls chan struct{}
 }
 
-func (f *fakeDeleter) DeleteExpiredSwoshes(context.Context, time.Time) (int64, error) {
+func (f *fakeDeleter) DeleteExpiredSwoshes(context.Context, time.Time) ([]string, error) {
 	if f.calls != nil {
 		f.calls <- struct{}{}
 	}
-	return f.n, f.err
+	return f.ids, f.err
 }
 
 func TestSweepCounts(t *testing.T) {
 	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "expired_links_total"})
-	Sweep(t.Context(), &fakeDeleter{n: 3}, c, discard)
+	Sweep(t.Context(), &fakeDeleter{ids: []string{"a", "b", "c"}}, c, discard)
 	Sweep(t.Context(), &fakeDeleter{err: errors.New("db down")}, c, discard)
 	if n := testutil.ToFloat64(c); n != 3 {
 		t.Errorf("expired_links_total = %v, want 3", n)
+	}
+}
+
+func TestSweepLogsIDs(t *testing.T) {
+	var buf bytes.Buffer
+	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "expired_links_total"})
+	Sweep(t.Context(), &fakeDeleter{ids: []string{"brave-otter-sings", "abc123"}}, c, slog.New(slog.NewJSONHandler(&buf, nil)))
+	var got struct {
+		Msg   string
+		Count int
+		IDs   []string
+	}
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("decode log %q: %v", buf.String(), err)
+	}
+	if got.Msg != "deleted expired links" || got.Count != 2 || !slices.Equal(got.IDs, []string{"brave-otter-sings", "abc123"}) {
+		t.Errorf("log = %s", buf.String())
 	}
 }
 
