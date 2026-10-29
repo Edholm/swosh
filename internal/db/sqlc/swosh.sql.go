@@ -11,17 +11,20 @@ import (
 )
 
 const createSwosh = `-- name: CreateSwosh :one
-INSERT INTO swosh (id, payee, amount, description, expires_on)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, payee, amount, description, expires_on, created_at
+INSERT INTO swosh (id, payee, amount, description, expires_on, payee_editable, amount_editable, message_editable)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable
 `
 
 type CreateSwoshParams struct {
-	ID          string
-	Payee       string
-	Amount      int32
-	Description *string
-	ExpiresOn   *time.Time
+	ID              string
+	Payee           string
+	Amount          int32
+	Description     *string
+	ExpiresOn       *time.Time
+	PayeeEditable   bool
+	AmountEditable  bool
+	MessageEditable bool
 }
 
 func (q *Queries) CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh, error) {
@@ -31,6 +34,9 @@ func (q *Queries) CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh
 		arg.Amount,
 		arg.Description,
 		arg.ExpiresOn,
+		arg.PayeeEditable,
+		arg.AmountEditable,
+		arg.MessageEditable,
 	)
 	var i Swosh
 	err := row.Scan(
@@ -40,6 +46,9 @@ func (q *Queries) CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh
 		&i.Description,
 		&i.ExpiresOn,
 		&i.CreatedAt,
+		&i.PayeeEditable,
+		&i.AmountEditable,
+		&i.MessageEditable,
 	)
 	return i, err
 }
@@ -84,7 +93,7 @@ func (q *Queries) DeleteSwosh(ctx context.Context, id string) (int64, error) {
 }
 
 const getSwosh = `-- name: GetSwosh :one
-SELECT id, payee, amount, description, expires_on, created_at FROM swosh
+SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable FROM swosh
 WHERE id = $1
 `
 
@@ -98,6 +107,9 @@ func (q *Queries) GetSwosh(ctx context.Context, id string) (Swosh, error) {
 		&i.Description,
 		&i.ExpiresOn,
 		&i.CreatedAt,
+		&i.PayeeEditable,
+		&i.AmountEditable,
+		&i.MessageEditable,
 	)
 	return i, err
 }
@@ -134,7 +146,7 @@ func (q *Queries) ImportSwosh(ctx context.Context, arg ImportSwoshParams) (int64
 }
 
 const listSwoshes = `-- name: ListSwoshes :many
-SELECT id, payee, amount, description, expires_on, created_at FROM swosh
+SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable FROM swosh
 ORDER BY expires_on DESC NULLS LAST, created_at DESC
 `
 
@@ -155,6 +167,9 @@ func (q *Queries) ListSwoshes(ctx context.Context) ([]Swosh, error) {
 			&i.Description,
 			&i.ExpiresOn,
 			&i.CreatedAt,
+			&i.PayeeEditable,
+			&i.AmountEditable,
+			&i.MessageEditable,
 		); err != nil {
 			return nil, err
 		}

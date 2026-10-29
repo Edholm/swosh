@@ -55,9 +55,9 @@ func (c *QRClient) PNG(ctx context.Context, p Payment) ([]byte, error) {
 	}
 
 	body := marshal(qrRequest{
-		Payee:       stringValue{Value: p.Payee},
-		Amount:      intValue{Value: p.Amount},
-		Message:     stringValue{Value: p.Message},
+		Payee:       stringValue{Value: p.Payee, Editable: p.PayeeEditable},
+		Amount:      intValue{Value: p.Amount, Editable: p.AmountEditable},
+		Message:     stringValue{Value: p.Message, Editable: p.MessageEditable},
 		Format:      "png",
 		Size:        300,
 		Border:      2,

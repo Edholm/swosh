@@ -186,6 +186,9 @@ type previewData struct {
 	// ExpiresOn is empty for links that never expire.
 	ExpiresOn string
 	SwishURI  template.URL
+	// Editable lists what the payer may change in Swish, e.g. "the amount
+	// and the message", or is empty.
+	Editable string
 }
 
 func (s *server) preview(w http.ResponseWriter, r *http.Request) {
@@ -200,6 +203,7 @@ func (s *server) preview(w http.ResponseWriter, r *http.Request) {
 		Amount:  sw.Amount,
 		// URI escapes everything a browser could misread, and the scheme is fixed.
 		SwishURI: template.URL(payment(sw).URI()),
+		Editable: editable(sw),
 	}
 	if sw.Description != nil {
 		data.Description = *sw.Description
@@ -256,8 +260,39 @@ func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, boo
 	return sqlc.Swosh{}, false
 }
 
+// editable lists the fields of sw that the payer may change in Swish.
+func editable(sw sqlc.Swosh) string {
+	var fields []string
+	for _, f := range []struct {
+		on   bool
+		name string
+	}{
+		{sw.PayeeEditable, "the number"},
+		{sw.AmountEditable, "the amount"},
+		{sw.MessageEditable, "the message"},
+	} {
+		if f.on {
+			fields = append(fields, f.name)
+		}
+	}
+	switch len(fields) {
+	case 0:
+		return ""
+	case 1:
+		return fields[0]
+	default:
+		return strings.Join(fields[:len(fields)-1], ", ") + " and " + fields[len(fields)-1]
+	}
+}
+
 func payment(sw sqlc.Swosh) swish.Payment {
-	p := swish.Payment{Payee: sw.Payee, Amount: sw.Amount}
+	p := swish.Payment{
+		Payee:           sw.Payee,
+		Amount:          sw.Amount,
+		PayeeEditable:   sw.PayeeEditable,
+		AmountEditable:  sw.AmountEditable,
+		MessageEditable: sw.MessageEditable,
+	}
 	if sw.Description != nil {
 		p.Message = *sw.Description
 	}
@@ -302,11 +337,14 @@ func (s *server) insert(ctx context.Context, n newSwosh) (sqlc.Swosh, error) {
 	for range createAttempts {
 		var sw sqlc.Swosh
 		sw, err = s.Store.CreateSwosh(ctx, sqlc.CreateSwoshParams{
-			ID:          s.newID(),
-			Payee:       n.Payee,
-			Amount:      n.Amount,
-			Description: n.Description,
-			ExpiresOn:   n.ExpiresOn,
+			ID:              s.newID(),
+			Payee:           n.Payee,
+			Amount:          n.Amount,
+			Description:     n.Description,
+			ExpiresOn:       n.ExpiresOn,
+			PayeeEditable:   n.PayeeEditable,
+			AmountEditable:  n.AmountEditable,
+			MessageEditable: n.MessageEditable,
 		})
 		var pgErr *pgconn.PgError
 		if !errors.As(err, &pgErr) || pgErr.Code != "23505" { // unique_violation

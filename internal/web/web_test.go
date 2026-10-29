@@ -58,6 +58,7 @@ func (f *fakeStore) CreateSwosh(_ context.Context, arg sqlc.CreateSwoshParams) (
 	sw := sqlc.Swosh{
 		ID: arg.ID, Payee: arg.Payee, Amount: arg.Amount,
 		Description: arg.Description, ExpiresOn: arg.ExpiresOn, CreatedAt: now,
+		PayeeEditable: arg.PayeeEditable, AmountEditable: arg.AmountEditable, MessageEditable: arg.MessageEditable,
 	}
 	f.links[arg.ID] = sw
 	return sw, nil
@@ -171,12 +172,12 @@ func TestDatabaseErrorIsNotARedirect(t *testing.T) {
 }
 
 func TestRedirectToSwish(t *testing.T) {
-	ts := newTestServer(t, sqlc.Swosh{ID: "asdf123", Payee: "070-000 00 00", Amount: 100, Description: ptr("msg")})
+	ts := newTestServer(t, sqlc.Swosh{ID: "asdf123", Payee: "070-000 00 00", Amount: 100, Description: ptr("msg"), AmountEditable: true, MessageEditable: true})
 	rec := ts.do(t, http.MethodGet, "/asdf123/redir", "")
 	if rec.Code != http.StatusTemporaryRedirect {
 		t.Errorf("status = %d, want %d", rec.Code, http.StatusTemporaryRedirect)
 	}
-	want := swish.Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg"}.URI()
+	want := swish.Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg", AmountEditable: true, MessageEditable: true}.URI()
 	if loc := rec.Header().Get("Location"); loc != want {
 		t.Errorf("Location = %q, want %q", loc, want)
 	}
@@ -188,7 +189,7 @@ func TestRedirectToSwish(t *testing.T) {
 func TestPreview(t *testing.T) {
 	ts := newTestServer(t,
 		sqlc.Swosh{ID: "abc123", Payee: "070-000 00 00", Amount: 100, Description: ptr("<b>pizza</b>"), ExpiresOn: ptr(now.Add(time.Hour))},
-		sqlc.Swosh{ID: "forevr", Payee: "1230000000", Amount: 5},
+		sqlc.Swosh{ID: "forevr", Payee: "1230000000", Amount: 5, PayeeEditable: true, AmountEditable: true, MessageEditable: true},
 	)
 
 	rec := ts.do(t, http.MethodGet, "/abc123", "")
@@ -203,6 +204,7 @@ func TestPreview(t *testing.T) {
 		`<time datetime="2026-10-22T13:00:00Z">`,
 		`href="swish://payment?data=%7B%22version%22%3A1%2C`,
 		`src="/abc123/qr"`,
+		`in Swish.</p>`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("preview is missing %s", want)
@@ -210,7 +212,7 @@ func TestPreview(t *testing.T) {
 	}
 
 	body = ts.do(t, http.MethodGet, "/forevr", "").Body.String()
-	for _, want := range []string{`content="No message given..."`, `<dd>Never</dd>`} {
+	for _, want := range []string{`content="No message given..."`, `<dd>Never</dd>`, `where you can change the number, the amount and the message.`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("preview of a link without message and expiry is missing %s", want)
 		}
@@ -310,53 +312,63 @@ func TestCreate(t *testing.T) {
 		{
 			name: "max length description",
 			body: `{"phone":"0700000000","amount":100,"message":"` + strings.Repeat("b", 50) + `","expireAfterSeconds":100}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr(strings.Repeat("b", 50)), ExpiresOn: ptr(now.Add(100 * time.Second))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr(strings.Repeat("b", 50)), ExpiresOn: ptr(now.Add(100 * time.Second)), MessageEditable: true},
 		},
 		{
 			name: "multi-byte description counted in characters",
 			body: `{"phone":"0700000000","amount":100,"message":"` + strings.Repeat("ö", 50) + `"}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr(strings.Repeat("ö", 50)), ExpiresOn: ptr(now.Add(defaultExpiry))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr(strings.Repeat("ö", 50)), ExpiresOn: ptr(now.Add(defaultExpiry)), MessageEditable: true},
 		},
 		{
 			name: "largest amount Swish allows",
 			body: `{"phone":"0700000000","amount":150000}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 150000, ExpiresOn: ptr(now.Add(defaultExpiry))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 150000, ExpiresOn: ptr(now.Add(defaultExpiry)), MessageEditable: true},
 		},
 		{
 			name: "missing message",
 			body: `{"phone":"0700000000","amount":100,"expireAfterSeconds":100}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(100 * time.Second))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(100 * time.Second)), MessageEditable: true},
 		},
 		{
 			name: "blank message",
 			body: `{"phone":"0700000000","amount":100,"message":"   "}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(defaultExpiry))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(defaultExpiry)), MessageEditable: true},
 		},
 		{
 			name: "missing expiry gets the default",
 			body: `{"phone":"0700000000","amount":100,"message":"msg"}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg"), ExpiresOn: ptr(now.Add(defaultExpiry))},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg"), ExpiresOn: ptr(now.Add(defaultExpiry)), MessageEditable: true},
 		},
 		{
 			name: "null expiry never expires",
 			body: `{"phone":"0700000000","amount":100,"message":"msg","expireAfterSeconds":null}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg")},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg"), MessageEditable: true},
 		},
 		{
 			name: "zero expiry never expires",
 			body: `{"phone":" 070-000 00 00 ","amount":100,"message":"msg","expireAfterSeconds":0}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg")},
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("msg"), MessageEditable: true},
 		},
 		{
 			// The web form sends every value as a string, and "" for "Never".
 			name: "form values as strings",
 			body: `{"phone":"1230000000","amount":"25","message":"","expireAfterSeconds":""}`,
-			want: sqlc.CreateSwoshParams{Payee: "1230000000", Amount: 25},
+			want: sqlc.CreateSwoshParams{Payee: "1230000000", Amount: 25, MessageEditable: true},
 		},
 		{
 			name: "form values with expiry",
 			body: `{"phone":"0701234567","amount":"25","message":"","expireAfterSeconds":"3600"}`,
-			want: sqlc.CreateSwoshParams{Payee: "070-123 45 67", Amount: 25, ExpiresOn: ptr(now.Add(time.Hour))},
+			want: sqlc.CreateSwoshParams{Payee: "070-123 45 67", Amount: 25, ExpiresOn: ptr(now.Add(time.Hour)), MessageEditable: true},
+		},
+		{
+			name: "editable fields",
+			body: `{"phone":"0700000000","amount":100,"payeeEditable":true,"amountEditable":true,"messageEditable":false}`,
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(defaultExpiry)), PayeeEditable: true, AmountEditable: true},
+		},
+		{
+			name: "null editable flags get the defaults",
+			body: `{"phone":"0700000000","amount":100,"payeeEditable":null,"amountEditable":null,"messageEditable":null}`,
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(defaultExpiry)), MessageEditable: true},
 		},
 	}
 	for _, tt := range tests {
@@ -503,5 +515,10 @@ func assertParams(t *testing.T, got, want sqlc.CreateSwoshParams) {
 		t.Errorf("stored {%s %q %d %q %s}, want {%s %q %d %q %s}",
 			got.ID, got.Payee, got.Amount, str(got.Description), tm(got.ExpiresOn),
 			want.ID, want.Payee, want.Amount, str(want.Description), tm(want.ExpiresOn))
+	}
+	if got.PayeeEditable != want.PayeeEditable || got.AmountEditable != want.AmountEditable || got.MessageEditable != want.MessageEditable {
+		t.Errorf("stored editable payee/amount/message = %t/%t/%t, want %t/%t/%t",
+			got.PayeeEditable, got.AmountEditable, got.MessageEditable,
+			want.PayeeEditable, want.AmountEditable, want.MessageEditable)
 	}
 }

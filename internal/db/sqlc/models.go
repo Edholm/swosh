@@ -11,12 +11,15 @@ import (
 )
 
 type Swosh struct {
-	ID          string
-	Payee       string
-	Amount      int32
-	Description *string
-	ExpiresOn   *time.Time
-	CreatedAt   time.Time
+	ID              string
+	Payee           string
+	Amount          int32
+	Description     *string
+	ExpiresOn       *time.Time
+	CreatedAt       time.Time
+	PayeeEditable   bool
+	AmountEditable  bool
+	MessageEditable bool
 }
 
 type User struct {

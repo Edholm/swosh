@@ -18,7 +18,7 @@ func TestURI(t *testing.T) {
 	}{
 		{
 			name: "plain",
-			p:    Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg"},
+			p:    Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg", MessageEditable: true},
 			want: "swish://payment?data=%7B%22version%22%3A1%2C%22payee%22%3A%7B%22value%22%3A%22070-000%2000%2000%22%2C%22editable%22%3Afalse%7D%2C" +
 				"%22amount%22%3A%7B%22value%22%3A100%2C%22editable%22%3Afalse%7D%2C%22message%22%3A%7B%22value%22%3A%22msg%22%2C%22editable%22%3Atrue%7D%7D",
 		},
@@ -26,9 +26,15 @@ func TestURI(t *testing.T) {
 			// Characters Go's JSON encoder would escape for HTML, query
 			// delimiters, and non-ASCII.
 			name: "special characters",
-			p:    Payment{Payee: "1230000000", Amount: 1, Message: "Öl & <mat>?#1+1=2"},
+			p:    Payment{Payee: "1230000000", Amount: 1, Message: "Öl & <mat>?#1+1=2", MessageEditable: true},
 			want: "swish://payment?data=%7B%22version%22%3A1%2C%22payee%22%3A%7B%22value%22%3A%221230000000%22%2C%22editable%22%3Afalse%7D%2C" +
 				"%22amount%22%3A%7B%22value%22%3A1%2C%22editable%22%3Afalse%7D%2C%22message%22%3A%7B%22value%22%3A%22%C3%96l%20%26%20%3Cmat%3E%3F%231%2B1%3D2%22%2C%22editable%22%3Atrue%7D%7D",
+		},
+		{
+			name: "payee and amount editable",
+			p:    Payment{Payee: "1230000000", Amount: 1, PayeeEditable: true, AmountEditable: true},
+			want: "swish://payment?data=%7B%22version%22%3A1%2C%22payee%22%3A%7B%22value%22%3A%221230000000%22%2C%22editable%22%3Atrue%7D%2C" +
+				"%22amount%22%3A%7B%22value%22%3A1%2C%22editable%22%3Atrue%7D%2C%22message%22%3A%7B%22value%22%3A%22%22%2C%22editable%22%3Afalse%7D%7D",
 		},
 	}
 	for _, tt := range tests {
@@ -70,7 +76,7 @@ func TestQRClientPNG(t *testing.T) {
 		}
 		want := qrRequest{
 			Payee:       stringValue{Value: "070-000 00 00"},
-			Amount:      intValue{Value: 100},
+			Amount:      intValue{Value: 100, Editable: true},
 			Message:     stringValue{Value: "msg"},
 			Format:      "png",
 			Size:        300,
@@ -86,7 +92,7 @@ func TestQRClientPNG(t *testing.T) {
 	defer srv.Close()
 
 	c := NewQRClient(srv.URL)
-	p := Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg"}
+	p := Payment{Payee: "070-000 00 00", Amount: 100, Message: "msg", AmountEditable: true}
 	for range 2 {
 		png, err := c.PNG(t.Context(), p)
 		if err != nil {

@@ -78,6 +78,9 @@ Accepts `application/json` and the body is as follows:
 		"amount": 100,
 		"message": "example message",
 		"expireAfterSeconds": null, // (optional, 0 or null is never expire)
+		"payeeEditable": false,     // (optional) whether the payer may change the field in Swish;
+		"amountEditable": false,    // by default only the message is editable
+		"messageEditable": true,
 	}
 ```
 

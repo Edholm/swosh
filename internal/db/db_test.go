@@ -259,6 +259,11 @@ func TestImportSwoshKeepsExistingRow(t *testing.T) {
 	if got.Payee != "first" || !got.CreatedAt.Equal(createdAt) {
 		t.Errorf("GetSwosh = %+v, want the first import with CreatedAt %v", got, createdAt)
 	}
+	// Links from before the editable columns keep only the message editable.
+	if got.PayeeEditable || got.AmountEditable || !got.MessageEditable {
+		t.Errorf("editable payee/amount/message = %t/%t/%t, want false/false/true",
+			got.PayeeEditable, got.AmountEditable, got.MessageEditable)
+	}
 }
 
 func TestCreateUser(t *testing.T) {

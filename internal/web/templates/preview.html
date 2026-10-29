@@ -44,7 +44,7 @@
             <a href="{{.SwishURI}}" class="btn btn-primary btn-lg btn-block" id="openSwish">
                 Open in Swish {{template "icon" "arrow-right"}}
             </a>
-            <p class="pay-hint">You check and confirm the payment in Swish.</p>
+            <p class="pay-hint">You check and confirm the payment in Swish{{with .Editable}}, where you can change {{.}}{{end}}.</p>
         </div>
         <aside class="pay-qr">
             <div class="qr-frame" title="{{.SwishURI}}">

@@ -78,7 +78,7 @@
                 <summary>
                     {{template "icon" "sliders-horizontal"}}
                     <span>Advanced</span>
-                    <span class="advanced-hint" id="expire-hint">Expires after 1 week</span>
+                    <span class="advanced-hint" id="advanced-hint">Expires after 1 week</span>
                     <svg class="icon advanced-chevron" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                 </summary>
                 <div class="field">
@@ -98,6 +98,24 @@
                         </select>
                         <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                     </div>
+                </div>
+                <div class="field" role="group" aria-labelledby="editable-label" aria-describedby="editable-hint">
+                    <span class="label" id="editable-label">Can be changed in Swish</span>
+                    <div class="toggles">
+                        <label class="toggle">
+                            <input type="checkbox" id="payee-editable" data-name="number">
+                            {{template "icon" "smartphone"}} Number
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="amount-editable" data-name="amount">
+                            {{template "icon" "banknote"}} Amount
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="message-editable" data-name="message" checked>
+                            {{template "icon" "message-square-text"}} Message
+                        </label>
+                    </div>
+                    <p class="hint" id="editable-hint">The payer can change these before paying. The rest is locked.</p>
                 </div>
             </details>
             <div class="form-buttons">

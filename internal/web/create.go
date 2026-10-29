@@ -33,6 +33,11 @@ type createRequest struct {
 	Message *string     `json:"message"`
 	// Missing means defaultExpiry; null or 0 means the link never expires.
 	ExpireAfterSeconds nullableInt `json:"expireAfterSeconds"`
+	// Whether the payer may change the field in Swish. Missing or null
+	// means only the message is editable, as before these existed.
+	PayeeEditable   *bool `json:"payeeEditable"`
+	AmountEditable  *bool `json:"amountEditable"`
+	MessageEditable *bool `json:"messageEditable"`
 }
 
 // nullableInt is an integer that may also be sent as a string, the way the
@@ -69,10 +74,13 @@ func (n *nullableInt) UnmarshalJSON(b []byte) error {
 
 // newSwosh is a validated link that is ready to be stored.
 type newSwosh struct {
-	Payee       string
-	Amount      int32
-	Description *string
-	ExpiresOn   *time.Time
+	Payee           string
+	Amount          int32
+	Description     *string
+	ExpiresOn       *time.Time
+	PayeeEditable   bool
+	AmountEditable  bool
+	MessageEditable bool
 }
 
 // validationError is a reason shown to the API caller.
@@ -116,11 +124,21 @@ func (req createRequest) validate(now time.Time) (newSwosh, error) {
 		return newSwosh{}, err
 	}
 	return newSwosh{
-		Payee:       payee,
-		Amount:      int32(req.Amount.value),
-		Description: description,
-		ExpiresOn:   expiresOn,
+		Payee:           payee,
+		Amount:          int32(req.Amount.value),
+		Description:     description,
+		ExpiresOn:       expiresOn,
+		PayeeEditable:   orDefault(req.PayeeEditable, false),
+		AmountEditable:  orDefault(req.AmountEditable, false),
+		MessageEditable: orDefault(req.MessageEditable, true),
 	}, nil
+}
+
+func orDefault(b *bool, def bool) bool {
+	if b == nil {
+		return def
+	}
+	return *b
 }
 
 func (req createRequest) expiresOn(now time.Time) (*time.Time, error) {

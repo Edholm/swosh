@@ -8,8 +8,8 @@ SELECT * FROM swosh
 ORDER BY expires_on DESC NULLS LAST, created_at DESC;
 
 -- name: CreateSwosh :one
-INSERT INTO swosh (id, payee, amount, description, expires_on)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO swosh (id, payee, amount, description, expires_on, payee_editable, amount_editable, message_editable)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: UpdateSwosh :execrows

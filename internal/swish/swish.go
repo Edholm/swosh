@@ -9,12 +9,15 @@ import (
 	"strings"
 )
 
-// Payment is what Swish gets prefilled with. Only the message can be edited
-// in the app.
+// Payment is what Swish gets prefilled with, and which of the fields the
+// payer may change in the app.
 type Payment struct {
-	Payee   string
-	Amount  int32
-	Message string
+	Payee           string
+	Amount          int32
+	Message         string
+	PayeeEditable   bool
+	AmountEditable  bool
+	MessageEditable bool
 }
 
 type stringValue struct {
@@ -40,9 +43,9 @@ type uriData struct {
 func (p Payment) URI() string {
 	data := uriData{
 		Version: 1,
-		Payee:   stringValue{Value: p.Payee},
-		Amount:  intValue{Value: p.Amount},
-		Message: stringValue{Value: p.Message, Editable: true},
+		Payee:   stringValue{Value: p.Payee, Editable: p.PayeeEditable},
+		Amount:  intValue{Value: p.Amount, Editable: p.AmountEditable},
+		Message: stringValue{Value: p.Message, Editable: p.MessageEditable},
 	}
 	// QueryEscape writes spaces as +, which only form decoding turns back
 	// into spaces. Use %20 so any decoder gets them right. Real + signs are

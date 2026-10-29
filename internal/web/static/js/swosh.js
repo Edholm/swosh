@@ -15,7 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const copyBtn = document.getElementById('copy-btn');
   const shareBtn = document.getElementById('share-btn');
   const previewLink = document.getElementById('preview-link');
-  const expireHint = document.getElementById('expire-hint');
+  const advancedHint = document.getElementById('advanced-hint');
+  const payeeEditable = document.getElementById('payee-editable');
+  const amountEditable = document.getElementById('amount-editable');
+  const messageEditable = document.getElementById('message-editable');
+  const editables = [payeeEditable, amountEditable, messageEditable];
   const resultExpiry = document.getElementById('result-expiry');
   const dateFormat = new Intl.DateTimeFormat(undefined, {dateStyle: 'medium', timeStyle: 'short'});
   let share = null;
@@ -132,18 +136,30 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
       updateCount();
       markCurrentNumber();
-      updateExpireHint();
+      updateAdvancedHint();
       phone.focus();
     });
   });
 
-  // The expiry sits folded away under Advanced, whose summary tells what it
-  // is set to.
-  function updateExpireHint() {
-    expireHint.textContent = expire.value ? 'Expires after ' + expireLabel() : 'Never expires';
+  // The expiry and which fields can be changed in Swish sit folded away
+  // under Advanced, whose summary tells what they are set to. It leaves out
+  // the editable fields while they are the default, just the message.
+  function updateAdvancedHint() {
+    let hint = expire.value ? 'Expires after ' + expireLabel() : 'Never expires';
+    const names = editables.filter(function (box) {
+      return box.checked;
+    }).map(function (box) {
+      return box.dataset.name;
+    });
+    if (names.join() !== 'message') {
+      hint += names.length === 0 ? ', nothing editable' : ', ' + names.join(' & ') + ' editable';
+    }
+    advancedHint.textContent = hint;
   }
-  expire.addEventListener('change', updateExpireHint);
-  updateExpireHint();
+  for (const input of [expire].concat(editables)) {
+    input.addEventListener('change', updateAdvancedHint);
+  }
+  updateAdvancedHint();
 
   function expireLabel() {
     return expire.selectedOptions[0].text;
@@ -168,6 +184,9 @@ document.addEventListener('DOMContentLoaded', function () {
       amount: amount.value.replace(/\s/g, ''),
       message: message.value,
       expireAfterSeconds: expire.value,
+      payeeEditable: payeeEditable.checked,
+      amountEditable: amountEditable.checked,
+      messageEditable: messageEditable.checked,
     };
     // The server checks this too; asking here saves a round trip.
     const sum = Number(req.amount);
