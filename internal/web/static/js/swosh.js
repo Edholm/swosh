@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateCount();
       markCurrentNumber();
       updateAdvancedHint();
+      updateMessageHint();
       phone.focus();
     });
   });
@@ -163,6 +164,16 @@ document.addEventListener('DOMContentLoaded', function () {
     input.addEventListener('change', updateAdvancedHint);
   }
   updateAdvancedHint();
+
+  // Links that last long, or forever, need a message, so the placeholder
+  // stops calling it optional.
+  const hintOptional = message.placeholder;
+  function updateMessageHint() {
+    const required = !expire.value || Number(expire.value) >= Number(expire.dataset.messageRequired);
+    message.placeholder = required ? message.dataset.hintRequired : hintOptional;
+  }
+  expire.addEventListener('change', updateMessageHint);
+  updateMessageHint();
 
   function expireLabel() {
     return expire.selectedOptions[0].text;

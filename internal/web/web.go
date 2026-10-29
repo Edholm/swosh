@@ -174,12 +174,14 @@ func (s *server) baseURL() string {
 type indexPage struct {
 	BaseURL   string
 	MaxAmount int
+	// LongExpiry is longExpiry in seconds. From it on the message is required.
+	LongExpiry int64
 	// LoggedIn shows the Admin button.
 	LoggedIn bool
 }
 
 func (s *server) index(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, "index.html", indexPage{BaseURL: s.baseURL(), MaxAmount: maxAmount, LoggedIn: s.currentUser(r) != nil})
+	s.render(w, r, "index.html", indexPage{BaseURL: s.baseURL(), MaxAmount: maxAmount, LongExpiry: int64(longExpiry / time.Second), LoggedIn: s.currentUser(r) != nil})
 }
 
 type previewData struct {

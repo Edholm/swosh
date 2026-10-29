@@ -246,7 +246,7 @@ func TestIndexAndStaticFiles(t *testing.T) {
 		}
 	}
 	index := ts.do(t, http.MethodGet, "/", "").Body.String()
-	for _, want := range []string{`<meta property="og:image" content="https://test.swosh.me/img/og.png">`, `data-max="150000"`} {
+	for _, want := range []string{`<meta property="og:image" content="https://test.swosh.me/img/og.png">`, `data-max="150000"`, `data-message-required="15768000"`} {
 		if !strings.Contains(index, want) {
 			t.Errorf("index is missing %s", want)
 		}

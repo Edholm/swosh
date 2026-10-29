@@ -75,7 +75,7 @@
                 <div class="control">
                     {{template "icon" "message-square-text"}}
                     <input class="input" type="text" id="message" maxlength="50" autocomplete="off"
-                           placeholder="{{t "form.message.hint"}}">
+                           placeholder="{{t "form.message.hint"}}" data-hint-required="{{t "form.message.hint.required"}}">
                     <button type="button" class="control-clear" data-clear="message" tabindex="-1"
                             title="{{t "form.message.clear"}}" aria-label="{{t "form.message.clear"}}">{{template "icon" "x"}}</button>
                 </div>
@@ -91,7 +91,7 @@
                     <label class="label" for="expire">{{t "form.expire"}}</label>
                     <div class="control">
                         {{template "icon" "clock"}}
-                        <select class="input" id="expire">
+                        <select class="input" id="expire" data-message-required="{{.LongExpiry}}">
                             <option value="600">{{t "form.expire.10m"}}</option>
                             <option value="1800">{{t "form.expire.30m"}}</option>
                             <option value="3600">{{t "form.expire.1h"}}</option>
