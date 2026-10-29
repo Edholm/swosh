@@ -5,6 +5,7 @@ package swish
 import (
 	"bytes"
 	"encoding/json"
+	"net/url"
 	"strings"
 )
 
@@ -43,7 +44,11 @@ func (p Payment) URI() string {
 		Amount:  intValue{Value: p.Amount},
 		Message: stringValue{Value: p.Message, Editable: true},
 	}
-	return "swish://payment?data=" + escapeFragment(string(marshal(data)))
+	// QueryEscape writes spaces as +, which only form decoding turns back
+	// into spaces. Use %20 so any decoder gets them right. Real + signs are
+	// already %2B at this point.
+	escaped := strings.ReplaceAll(url.QueryEscape(string(marshal(data))), "+", "%20")
+	return "swish://payment?data=" + escaped
 }
 
 // marshal encodes v as JSON without escaping <, > and &, like Jackson does.
@@ -54,30 +59,4 @@ func marshal(v any) []byte {
 	// Encoding plain structs of strings and integers cannot fail.
 	_ = enc.Encode(v)
 	return bytes.TrimSuffix(buf.Bytes(), []byte("\n"))
-}
-
-// escapeFragment percent-encodes s for a URI fragment the way Guava's
-// UrlEscapers.urlFragmentEscaper does, which is what the Kotlin service used.
-func escapeFragment(s string) string {
-	const hex = "0123456789ABCDEF"
-	var b strings.Builder
-	for i := range len(s) {
-		c := s[i]
-		if fragmentSafe(c) {
-			b.WriteByte(c)
-			continue
-		}
-		b.WriteByte('%')
-		b.WriteByte(hex[c>>4])
-		b.WriteByte(hex[c&0xf])
-	}
-	return b.String()
-}
-
-func fragmentSafe(c byte) bool {
-	switch {
-	case 'a' <= c && c <= 'z', 'A' <= c && c <= 'Z', '0' <= c && c <= '9':
-		return true
-	}
-	return strings.IndexByte("-._~!$&'()*+,;=:@/?", c) >= 0
 }
