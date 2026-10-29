@@ -238,7 +238,7 @@ func (s *server) qr(w http.ResponseWriter, r *http.Request) {
 }
 
 // lookup finds the link named in the path. For an unknown or expired link it
-// redirects to the start page, and on a database error it answers 500. It
+// shows the not found page, and on a database error it answers 500. It
 // reports whether the caller should go on.
 func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, bool) {
 	id := r.PathValue("id")
@@ -254,8 +254,7 @@ func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, boo
 	default:
 		return sw, true
 	}
-	w.Header().Set("Location", "/")
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	s.renderStatus(w, r, http.StatusNotFound, "notfound.html", nil)
 	return sqlc.Swosh{}, false
 }
 

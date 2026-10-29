@@ -112,20 +112,20 @@ func (ts *testServer) do(t *testing.T, method, target, body string) *httptest.Re
 
 func ptr[T any](v T) *T { return &v }
 
-func TestRedirectToStartWhenLinkIsMissing(t *testing.T) {
+func TestNotFoundWhenLinkIsMissing(t *testing.T) {
 	expired := sqlc.Swosh{ID: "old123", Payee: "1230000000", Amount: 1, ExpiresOn: ptr(now.Add(-time.Second))}
 	ts := newTestServer(t, expired)
 	for _, target := range []string{"/asdfg", "/asdfg/redir", "/asdfg/qr", "/old123", "/old123/redir"} {
 		t.Run(target, func(t *testing.T) {
 			rec := ts.do(t, http.MethodGet, target, "")
-			if rec.Code != http.StatusTemporaryRedirect {
-				t.Errorf("status = %d, want %d", rec.Code, http.StatusTemporaryRedirect)
+			if rec.Code != http.StatusNotFound {
+				t.Errorf("status = %d, want %d", rec.Code, http.StatusNotFound)
 			}
-			if loc := rec.Header().Get("Location"); loc != "/" {
-				t.Errorf("Location = %q, want /", loc)
+			if loc := rec.Header().Get("Location"); loc != "" {
+				t.Errorf("Location = %q, want none", loc)
 			}
-			if rec.Body.Len() != 0 {
-				t.Errorf("body = %q, want empty", rec.Body)
+			if !strings.Contains(rec.Body.String(), "Link not found") {
+				t.Errorf("body = %q, want the not found page", rec.Body)
 			}
 		})
 	}
@@ -385,9 +385,12 @@ func TestNewID(t *testing.T) {
 }
 
 func TestRequestMetrics(t *testing.T) {
-	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
+	ts := newTestServer(t,
+		sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1},
+		sqlc.Swosh{ID: "def456", Payee: "1230000000", Amount: 2},
+	)
 	ts.do(t, http.MethodGet, "/abc123/redir", "")
-	ts.do(t, http.MethodGet, "/nope12/redir", "")
+	ts.do(t, http.MethodGet, "/def456/redir", "")
 	if n := testutil.CollectAndCount(ts.Metrics.HTTPRequests); n != 1 {
 		t.Errorf("got %d series, want 1 (both requests share route and status)", n)
 	}
