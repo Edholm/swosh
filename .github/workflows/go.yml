@@ -54,9 +54,37 @@ jobs:
       - run: make test
       - run: make build
 
+  release:
+    name: Release
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    # Tags the commit and creates a GitHub release when the Conventional
+    # Commits since the last v* tag call for one (.releaserc.json).
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - run: >-
+          npx --yes
+          -p semantic-release@25.0.9
+          -p conventional-changelog-conventionalcommits@10.4.1
+          semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   image:
     name: Build and push the image
-    needs: check
+    needs: release
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
@@ -70,7 +98,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # VERSION in the Makefile comes from `git describe`.
+          # VERSION in the Makefile comes from `git describe`, and IMAGE_TAGS
+          # picks up the release job's tag.
           fetch-depth: 0
 
       - uses: actions/setup-go@v7
@@ -83,7 +112,8 @@ jobs:
         with:
           version: v0.19.1 # KO_VERSION in the Makefile
 
-      # Tags the image with the short commit SHA and latest.
+      # Tags the image with the short commit SHA, the release version if this
+      # commit has one, and latest.
       - run: make image-push KO=ko
 
       # The same short SHA as IMAGE_TAGS in the Makefile, for the deploy job.

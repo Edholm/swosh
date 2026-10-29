@@ -119,11 +119,14 @@ run: db-up ## Run the server against the dev Postgres
 ##@ Image
 
 # ko builds the image from .ko.yaml; there is no Dockerfile. Images are tagged
-# with the commit and latest. CI installs ko with ko-build/setup-ko and runs
-# `make image-push KO=ko`, so the ./bin one is only a prerequisite by default.
+# with the commit, its release tags (like v1.3.0) and latest. CI installs ko with
+# ko-build/setup-ko and runs `make image-push KO=ko`, so the ./bin one is only a
+# prerequisite by default.
 KO_DOCKER_REPO ?= ghcr.io/edholm/swosh
 LOCAL_IMAGE := ko.local/swosh
-IMAGE_TAGS = $(shell git rev-parse --short HEAD),latest
+comma := ,
+RELEASE_TAGS = $(shell git tag --points-at HEAD --list 'v[0-9]*.[0-9]*.[0-9]*')
+IMAGE_TAGS = $(shell git rev-parse --short HEAD)$(foreach t,$(RELEASE_TAGS),$(comma)$(t)),latest
 # The source label links the GHCR package to the repository, which lets CI's
 # GITHUB_TOKEN push to it even when the package was created by a local push.
 IMAGE_SOURCE := https://github.com/Edholm/swosh

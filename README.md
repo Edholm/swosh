@@ -92,10 +92,16 @@ make image        # ko.local/swosh:<short sha> and :latest, for the local daemon
 make image-push   # both platforms to KO_DOCKER_REPO, by default ghcr.io/edholm/swosh
 ```
 
-Both tag the image with the short commit SHA and `latest`. `make image-push` refuses to
-run with uncommitted changes, and needs `docker login ghcr.io` with a personal access
-token that has `write:packages`. CI pushes the image for every commit on master, with its
-`GITHUB_TOKEN`.
+Both tag the image with the short commit SHA, any release tag on the commit, and `latest`.
+`make image-push` refuses to run with uncommitted changes, and needs `docker login ghcr.io`
+with a personal access token that has `write:packages`. CI pushes the image for every
+commit on master, with its `GITHUB_TOKEN`.
+
+CI releases with [semantic-release](https://semantic-release.gitbook.io/) on every push to
+master: when the Conventional Commits since the last `v*` tag include a `fix` (patch), or
+a `feat` or breaking change (minor; breaking changes never bump the major version), it
+tags the commit with the next version and creates a GitHub release with the notes. See
+`.releaserc.json`.
 
 ko starts the binary without arguments and has no way to set default ones, so the
 command has to be given: `compose.yaml` sets `command: [serve]`, and by hand it
