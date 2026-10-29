@@ -6,7 +6,10 @@
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
-        "releaseRules": [{ "breaking": true, "release": "minor" }]
+        "releaseRules": [
+          { "breaking": true, "release": "minor" },
+          { "type": "chore", "scope": "deps", "release": "patch" }
+        ]
       }
     ],
     ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],

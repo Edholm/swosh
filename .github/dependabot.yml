@@ -1,21 +1,25 @@
 version: 2
+
+# One weekly PR for all ecosystems, as chore(deps): …, which the release job
+# turns into a patch release (.releaserc.json).
+multi-ecosystem-groups:
+  deps:
+    schedule:
+      interval: weekly
+
 updates:
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: deps
     commit-message:
-      prefix: "ci"
-    groups:
-      actions:
-        patterns: ["*"]
+      prefix: chore
+      include: scope
 
   - package-ecosystem: gomod
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: deps
     commit-message:
-      prefix: "chore"
-    groups:
-      go-minor-patch:
-        update-types: ["minor", "patch"]
+      prefix: chore
+      include: scope
