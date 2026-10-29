@@ -43,6 +43,8 @@
                         {{template "icon" "smartphone"}}
                         <input class="input input-number" type="tel" id="phone" maxlength="20" inputmode="tel"
                                autocomplete="tel" placeholder="070-123 45 67" required>
+                        <button type="button" class="control-clear" data-clear="phone" tabindex="-1"
+                                title="Clear the number" aria-label="Clear the number">{{template "icon" "x"}}</button>
                     </div>
                 </div>
                 <div class="recent" id="recent-numbers" hidden>
@@ -68,6 +70,8 @@
                     {{template "icon" "message-square-text"}}
                     <input class="input" type="text" id="message" maxlength="50" autocomplete="off"
                            placeholder="What's it for? (optional)">
+                    <button type="button" class="control-clear" data-clear="message" tabindex="-1"
+                            title="Clear the message" aria-label="Clear the message">{{template "icon" "x"}}</button>
                 </div>
             </div>
             <div class="field">
@@ -88,9 +92,14 @@
                     <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block" id="create-btn">
-                {{template "icon" "link"}} <span>Create link</span>
-            </button>
+            <div class="form-buttons">
+                <button type="reset" class="btn btn-lg" title="Clear the form">
+                    {{template "icon" "eraser"}} Clear
+                </button>
+                <button type="submit" class="btn btn-primary btn-lg" id="create-btn">
+                    {{template "icon" "link"}} <span>Create link</span>
+                </button>
+            </div>
         </form>
 
         <div class="alert alert-danger form-error" id="create-error" role="alert" hidden>

@@ -96,6 +96,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // The × in a field empties just that field.
+  for (const btn of form.querySelectorAll('[data-clear]')) {
+    btn.addEventListener('click', function () {
+      const input = document.getElementById(btn.dataset.clear);
+      input.value = '';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      input.focus();
+    });
+  }
+
+  // Clear empties the form and hides the error or link below it, ready for
+  // the next link.
+  form.addEventListener('reset', function () {
+    hideError();
+    result.hidden = true;
+    for (const input of [phone, amount, message]) {
+      input.removeAttribute('aria-invalid');
+    }
+    // The browser resets the fields after this event, so update what shows
+    // their values once it has.
+    setTimeout(function () {
+      updateCount();
+      markCurrentNumber();
+      phone.focus();
+    });
+  });
+
   form.addEventListener('submit', async function (event) {
     event.preventDefault();
     hideError();

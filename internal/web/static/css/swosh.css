@@ -521,8 +521,39 @@ code {
 }
 
 .input:has(~ .control-suffix),
-.input:has(~ .icon-end) {
+.input:has(~ .icon-end),
+.input:has(~ .control-clear) {
     padding-right: 2.75rem;
+}
+
+.control-clear {
+    position: absolute;
+    right: 0.45rem;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.control-clear:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.control-clear .icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+/* Only fields with something in them have anything to clear. */
+.input:placeholder-shown ~ .control-clear {
+    display: none;
 }
 
 .input:hover {
@@ -761,6 +792,15 @@ select.input {
     margin: 0;
     max-width: 30rem;
     color: var(--muted);
+}
+
+.form-buttons {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.form-buttons .btn-primary {
+    flex: 1;
 }
 
 .result {
