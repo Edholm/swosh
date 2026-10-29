@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
-    <title>Sign in · Swosh</title>
+    <title>{{t "login.title"}} · Swosh</title>
     {{template "head"}}
 </head>
 <body>
@@ -12,11 +12,11 @@
 <main class="container center-page">
     <div class="card narrow-card">
         <span class="icon-badge">{{template "icon" "lock"}}</span>
-        <h1>Admin sign in</h1>
-        <p>Sign in to manage Swosh links.</p>
+        <h1>{{t "login.heading"}}</h1>
+        <p>{{t "login.text"}}</p>
         {{if .LoggedOut}}
         <div class="alert alert-success" role="status">
-            {{template "icon" "circle-check"}}<p>You have been logged out.</p>
+            {{template "icon" "circle-check"}}<p>{{t "login.loggedout"}}</p>
         </div>
         {{end}}
         {{with .Error}}
@@ -25,7 +25,7 @@
         <form method="post" action="/login" class="form">
             {{with .Next}}<input type="hidden" name="next" value="{{.}}">{{end}}
             <div class="field">
-                <label class="label" for="username">Username</label>
+                <label class="label" for="username">{{t "login.username"}}</label>
                 <div class="control">
                     {{template "icon" "user-round"}}
                     <input class="input" type="text" id="username" name="username" value="{{.Username}}"
@@ -33,17 +33,17 @@
                 </div>
             </div>
             <div class="field">
-                <label class="label" for="password">Password</label>
+                <label class="label" for="password">{{t "login.password"}}</label>
                 <div class="control">
                     {{template "icon" "lock"}}
                     <input class="input" type="password" id="password" name="password"
                            autocomplete="current-password" required>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block">{{template "icon" "log-in"}} Sign in</button>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">{{template "icon" "log-in"}} {{t "login.submit"}}</button>
         </form>
     </div>
-    <a href="/" class="back-link">{{template "icon" "arrow-left"}} Back to Swosh</a>
+    <a href="/" class="back-link">{{template "icon" "arrow-left"}} {{t "login.back"}}</a>
 </main>
 </body>
 </html>

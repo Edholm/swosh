@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
-    <title>Link not found · Swosh</title>
+    <title>{{t "notfound.title"}} · Swosh</title>
     {{template "head"}}
 </head>
 <body>
@@ -12,9 +12,9 @@
 <main class="container center-page">
     <div class="card narrow-card notfound">
         <img class="illustration" src="/img/notfound.svg" alt="" width="240" height="160">
-        <h1>Link not found</h1>
-        <p>This Swosh link doesn't exist or has expired. Ask whoever sent it for a new one.</p>
-        <a href="/" class="btn btn-primary btn-block">{{template "icon" "plus"}} Create a new Swosh</a>
+        <h1>{{t "notfound.title"}}</h1>
+        <p>{{t "notfound.text"}}</p>
+        <a href="/" class="btn btn-primary btn-block">{{template "icon" "plus"}} {{t "notfound.new"}}</a>
     </div>
 </main>
 

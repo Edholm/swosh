@@ -256,28 +256,28 @@ func TestIndexAndStaticFiles(t *testing.T) {
 func TestCreateErrors(t *testing.T) {
 	long := strings.Repeat("a", 51)
 	tests := []struct {
-		name, body, reason string
+		name, body, reason, field string
 	}{
-		{"invalid body", `{"version":1,"payee":{"value":"herp"},"amount":{"value":1},"message":{"value":"derp"}}`, "Invalid input format!"},
-		{"not JSON", `phone=0700000000`, "Invalid input format!"},
-		{"amount not a number", `{"phone":"0700000000","amount":"lots"}`, "Invalid input format!"},
-		{"amount over the Swish limit", `{"phone":"0700000000","amount":150001}`, "Maximum allowed amount is 150000. Got 150001"},
-		{"amount over int32", `{"phone":"0700000000","amount":2147483648}`, "Maximum allowed amount is 150000. Got 2147483648"},
-		{"amount over int64", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 30) + `"}`, "Invalid input format!"},
+		{"invalid body", `{"version":1,"payee":{"value":"herp"},"amount":{"value":1},"message":{"value":"derp"}}`, "Invalid input format!", ""},
+		{"not JSON", `phone=0700000000`, "Invalid input format!", ""},
+		{"amount not a number", `{"phone":"0700000000","amount":"lots"}`, "Invalid input format!", ""},
+		{"amount over the Swish limit", `{"phone":"0700000000","amount":150001}`, "Maximum allowed amount is 150000. Got 150001", "amount"},
+		{"amount over int32", `{"phone":"0700000000","amount":2147483648}`, "Maximum allowed amount is 150000. Got 2147483648", "amount"},
+		{"amount over int64", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 30) + `"}`, "Invalid input format!", ""},
 		// The body is cut off at maxBodySize, so the decoder never sees all of it.
-		{"huge amount", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 1<<20) + `"}`, "Invalid input format!"},
-		{"missing amount", `{"phone":"0700000000","message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required"},
-		{"empty amount from the form", `{"phone":"0700000000","amount":""}`, "Missing input parameters. 'phone' and 'amount' is required"},
-		{"missing phone", `{"amount":100,"message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required"},
-		{"blank phone", `{"phone":"          ","amount":100,"message":"msg"}`, "Missing input parameters. 'phone' and 'amount' is required"},
-		{"zero amount", `{"phone":"0700000000","amount":0,"message":"msg"}`, "Minimum allowed amount is 1. Got 0"},
-		{"negative amount", `{"phone":"0700000000","amount":-1,"message":"msg"}`, "Minimum allowed amount is 1. Got -1"},
-		{"too long description", `{"phone":"0700000000","amount":100,"message":"` + long + `"}`, "Description is too long. Max 50 chars. Got 51"},
-		{"invalid phone number", `{"phone":"070000000a","amount":100,"message":"msg"}`, "'070000000a' is not a mobile number"},
-		{"unparsable phone number", `{"phone":"x","amount":100}`, "'x' is not a valid phone number"},
-		{"landline", `{"phone":"08-123 456","amount":100}`, "'08-123 456' is not a mobile number"},
-		{"foreign mobile", `{"phone":"+4791234567","amount":100}`, "'+4791234567' is not a mobile number"},
-		{"negative expiry", `{"phone":"0700000000","amount":100,"expireAfterSeconds":-1}`, "'expireAfterSeconds' must be between 0 and 3153600000. Got -1"},
+		{"huge amount", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 1<<20) + `"}`, "Invalid input format!", ""},
+		{"missing amount", `{"phone":"0700000000","message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required", ""},
+		{"empty amount from the form", `{"phone":"0700000000","amount":""}`, "Missing input parameters. 'phone' and 'amount' is required", ""},
+		{"missing phone", `{"amount":100,"message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required", ""},
+		{"blank phone", `{"phone":"          ","amount":100,"message":"msg"}`, "Missing input parameters. 'phone' and 'amount' is required", ""},
+		{"zero amount", `{"phone":"0700000000","amount":0,"message":"msg"}`, "Minimum allowed amount is 1. Got 0", "amount"},
+		{"negative amount", `{"phone":"0700000000","amount":-1,"message":"msg"}`, "Minimum allowed amount is 1. Got -1", "amount"},
+		{"too long description", `{"phone":"0700000000","amount":100,"message":"` + long + `"}`, "Description is too long. Max 50 chars. Got 51", "message"},
+		{"invalid phone number", `{"phone":"070000000a","amount":100,"message":"msg"}`, "'070000000a' is not a mobile number", "phone"},
+		{"unparsable phone number", `{"phone":"x","amount":100}`, "'x' is not a valid phone number", "phone"},
+		{"landline", `{"phone":"08-123 456","amount":100}`, "'08-123 456' is not a mobile number", "phone"},
+		{"foreign mobile", `{"phone":"+4791234567","amount":100}`, "'+4791234567' is not a mobile number", "phone"},
+		{"negative expiry", `{"phone":"0700000000","amount":100,"expireAfterSeconds":-1}`, "'expireAfterSeconds' must be between 0 and 3153600000. Got -1", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -290,7 +290,7 @@ func TestCreateErrors(t *testing.T) {
 			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 				t.Fatalf("decode %q: %v", rec.Body, err)
 			}
-			if want := (errorResponse{Error: true, Reason: tt.reason}); got != want {
+			if want := (errorResponse{Error: true, Reason: tt.reason, Field: tt.field}); got != want {
 				t.Errorf("response = %+v, want %+v", got, want)
 			}
 			if len(ts.store.created) != 0 {

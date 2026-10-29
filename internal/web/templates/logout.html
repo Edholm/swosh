@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
-    <title>Log out · Swosh</title>
+    <title>{{t "logout.title"}} · Swosh</title>
     {{template "head"}}
 </head>
 <body>
@@ -12,11 +12,11 @@
 <main class="container center-page">
     <div class="card narrow-card">
         <span class="icon-badge">{{template "icon" "log-out"}}</span>
-        <h1>Log out?</h1>
-        <p>You will have to sign in again to get back to the admin pages.</p>
+        <h1>{{t "logout.heading"}}</h1>
+        <p>{{t "logout.text"}}</p>
         <form method="post" action="/logout" class="form-actions">
-            <a href="/admin" class="btn btn-ghost">{{template "icon" "arrow-left"}} Back</a>
-            <button type="submit" class="btn btn-primary">{{template "icon" "log-out"}} Log out</button>
+            <a href="/admin" class="btn btn-ghost">{{template "icon" "arrow-left"}} {{t "logout.back"}}</a>
+            <button type="submit" class="btn btn-primary">{{template "icon" "log-out"}} {{t "logout.submit"}}</button>
         </form>
     </div>
 </main>

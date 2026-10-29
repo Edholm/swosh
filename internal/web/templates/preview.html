@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
-    <meta property="og:title" content="Swish {{.Amount}}kr to {{.Payee}}"/>
+    <meta property="og:title" content="{{t "preview.og.title" .Amount .Payee}}"/>
     <meta property="og:image" content="{{.BaseURL}}/{{.ID}}/qr">
     <meta property="og:type" content="website"/>
     <meta property="og:url" content="{{.BaseURL}}/{{.ID}}"/>
-    <meta property="og:description" content="{{with .Description}}{{.}}{{else}}No message given...{{end}}"/>
-    <meta property="og:locale" content="sv_SE">
-    <title>Swish {{.Amount}} kr to {{.Payee}} · Swosh</title>
+    <meta property="og:description" content="{{with .Description}}{{.}}{{else}}{{t "preview.og.nomessage"}}{{end}}"/>
+    <meta property="og:locale" content="{{t "og.locale"}}">
+    <title>{{t "preview.title" .Amount .Payee}}</title>
     {{template "head"}}
     <script src="/js/preview.js"></script>
     <script defer src="/js/time.js"></script>
@@ -16,7 +16,7 @@
 <header class="container topbar">
     {{template "brand"}}
     <nav class="nav">
-        <a href="/" class="btn btn-ghost">{{template "icon" "plus"}} Create a link</a>
+        <a href="/" class="btn btn-ghost">{{template "icon" "plus"}} {{t "create.link"}}</a>
     </nav>
 </header>
 
@@ -24,39 +24,39 @@
     <article class="card pay">
         <div>
             <div class="pay-head">
-                <p class="eyebrow">{{template "icon" "hand-coins"}} Payment request</p>
+                <p class="eyebrow">{{template "icon" "hand-coins"}} {{t "preview.eyebrow"}}</p>
                 {{template "swish-logo"}}
             </div>
             <p class="pay-amount">{{.Amount}}<span class="pay-currency">kr</span></p>
             <dl class="pay-details">
                 <div>
-                    <dt>To</dt>
+                    <dt>{{t "preview.to"}}</dt>
                     <dd>{{.Payee}}</dd>
                 </div>
                 {{with .Description}}
                 <div>
-                    <dt>Message</dt>
+                    <dt>{{t "preview.message"}}</dt>
                     <dd>{{.}}</dd>
                 </div>
                 {{end}}
                 <div>
-                    <dt>Link expires</dt>
-                    <dd>{{with .ExpiresOn}}<time datetime="{{.}}">{{.}}</time>{{else}}Never{{end}}</dd>
+                    <dt>{{t "preview.expires"}}</dt>
+                    <dd>{{with .ExpiresOn}}<time datetime="{{.}}">{{.}}</time>{{else}}{{t "preview.never"}}{{end}}</dd>
                 </div>
             </dl>
             <a href="{{.SwishURI}}" class="btn btn-primary btn-lg btn-block" id="openSwish">
-                Pay with Swish {{template "icon" "arrow-right"}}
+                {{t "preview.pay"}} {{template "icon" "arrow-right"}}
             </a>
-            <p class="pay-hint">You check and confirm the payment in Swish{{with .Editable}}, where you can change {{.}}{{end}}.</p>
+            <p class="pay-hint">{{.Hint}}</p>
         </div>
         <aside class="pay-qr">
             <div class="qr-frame" title="{{.SwishURI}}">
-                <img alt="QR code to scan with Swish" width="256" height="256" src="/{{.ID}}/qr">
+                <img alt="{{t "preview.qr.alt"}}" width="256" height="256" src="/{{.ID}}/qr">
             </div>
-            <p>On a computer? Open Swish on your phone and scan the code.</p>
+            <p>{{t "preview.qr"}}</p>
         </aside>
     </article>
-    <p class="made-with">Want to get paid back too? <a href="/">Make your own Swosh link</a></p>
+    <p class="made-with">{{t "preview.own"}} <a href="/">{{t "preview.own.link"}}</a></p>
 </main>
 
 {{template "footer"}}

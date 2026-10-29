@@ -1,11 +1,14 @@
-// Shows <time datetime> elements in the reader's time zone and language.
+// Shows <time datetime> elements in the reader's time zone and the page's
+// language.
 // Those marked data-relative read like "in 3 days", the others like
 // "22 Oct 2026, 15:00"; the tooltip has the other form. Times in the past get
 // data-past.
 document.addEventListener('DOMContentLoaded', function () {
-  const absolute = new Intl.DateTimeFormat(undefined, {dateStyle: 'medium', timeStyle: 'short'});
+  // The page's language, so dates don't come out English on a Swedish page.
+  const locale = document.documentElement.lang || undefined;
+  const absolute = new Intl.DateTimeFormat(locale, {dateStyle: 'medium', timeStyle: 'short'});
   // "in 1 month", not "next month", which could mean the calendar month.
-  const relative = new Intl.RelativeTimeFormat(undefined, {numeric: 'always'});
+  const relative = new Intl.RelativeTimeFormat(locale, {numeric: 'always'});
   const units = [
     ['year', 365 * 24 * 3600],
     ['month', 30 * 24 * 3600],

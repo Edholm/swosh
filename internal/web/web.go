@@ -68,7 +68,7 @@ type Config struct {
 
 type server struct {
 	Config
-	tmpl        *template.Template
+	tmpl        map[lang]*template.Template
 	now         func() time.Time
 	newID       func() string
 	signer      *auth.Signer
@@ -87,7 +87,7 @@ func newServer(c Config) *server {
 	}
 	return &server{
 		Config:      c,
-		tmpl:        template.Must(template.ParseFS(templateFiles, "templates/*.html")),
+		tmpl:        parseTemplates(),
 		now:         time.Now,
 		newID:       linkid.New,
 		signer:      auth.NewSigner(key),
@@ -111,6 +111,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("POST /login", s.login)
 	mux.HandleFunc("GET /logout", s.logoutForm)
 	mux.HandleFunc("POST /logout", s.logout)
+	mux.HandleFunc("GET /lang", s.setLang)
 	mux.HandleFunc("POST /api/create", s.create)
 	mux.HandleFunc("GET /{id}", s.preview)
 	mux.HandleFunc("GET /{id}/redir", s.redirect)
@@ -186,9 +187,8 @@ type previewData struct {
 	// ExpiresOn is empty for links that never expire.
 	ExpiresOn string
 	SwishURI  template.URL
-	// Editable lists what the payer may change in Swish, e.g. "the amount
-	// and the message", or is empty.
-	Editable string
+	// Hint tells the payer what they may change in Swish, if anything.
+	Hint string
 }
 
 func (s *server) preview(w http.ResponseWriter, r *http.Request) {
@@ -196,6 +196,7 @@ func (s *server) preview(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	l := requestLang(r)
 	data := previewData{
 		BaseURL: s.baseURL(),
 		ID:      sw.ID,
@@ -203,7 +204,10 @@ func (s *server) preview(w http.ResponseWriter, r *http.Request) {
 		Amount:  sw.Amount,
 		// URI escapes everything a browser could misread, and the scheme is fixed.
 		SwishURI: template.URL(payment(sw).URI()),
-		Editable: editable(sw),
+		Hint:     mustTr(l, "preview.hint"),
+	}
+	if e := editable(sw, l); e != "" {
+		data.Hint = mustTr(l, "preview.hint.editable", e)
 	}
 	if sw.Description != nil {
 		data.Description = *sw.Description
@@ -260,19 +264,20 @@ func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, boo
 	return sqlc.Swosh{}, false
 }
 
-// editable lists the fields of sw that the payer may change in Swish.
-func editable(sw sqlc.Swosh) string {
+// editable lists the fields of sw that the payer may change in Swish, e.g.
+// "the amount and the message".
+func editable(sw sqlc.Swosh, l lang) string {
 	var fields []string
 	for _, f := range []struct {
-		on   bool
-		name string
+		on  bool
+		key string
 	}{
-		{sw.PayeeEditable, "the number"},
-		{sw.AmountEditable, "the amount"},
-		{sw.MessageEditable, "the message"},
+		{sw.PayeeEditable, "editable.number"},
+		{sw.AmountEditable, "editable.amount"},
+		{sw.MessageEditable, "editable.message"},
 	} {
 		if f.on {
-			fields = append(fields, f.name)
+			fields = append(fields, mustTr(l, f.key))
 		}
 	}
 	switch len(fields) {
@@ -281,7 +286,7 @@ func editable(sw sqlc.Swosh) string {
 	case 1:
 		return fields[0]
 	default:
-		return strings.Join(fields[:len(fields)-1], ", ") + " and " + fields[len(fields)-1]
+		return strings.Join(fields[:len(fields)-1], ", ") + " " + mustTr(l, "editable.and") + " " + fields[len(fields)-1]
 	}
 }
 
@@ -307,23 +312,31 @@ type createResponse struct {
 type errorResponse struct {
 	Error  bool   `json:"error"`
 	Reason string `json:"reason"`
+	// Field is the request field the error is about, if it is about one.
+	Field string `json:"field,omitempty"`
 }
 
 func (s *server) create(w http.ResponseWriter, r *http.Request) {
+	l := requestLang(r)
 	var req createRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodySize)).Decode(&req); err != nil {
-		s.createFailed(w, http.StatusBadRequest, invalidInputReason)
+		s.createFailed(w, http.StatusBadRequest, errorResponse{Reason: mustTr(l, "api.badinput")})
 		return
 	}
 	n, err := req.validate(s.now())
-	if err != nil {
-		s.createFailed(w, http.StatusBadRequest, err.Error())
+	var verr validationError
+	switch {
+	case errors.As(err, &verr):
+		s.createFailed(w, http.StatusBadRequest, errorResponse{Reason: verr.in(l), Field: verr.field})
+		return
+	case err != nil:
+		s.createFailed(w, http.StatusBadRequest, errorResponse{Reason: err.Error()})
 		return
 	}
 	sw, err := s.insert(r.Context(), n)
 	if err != nil {
 		slog.ErrorContext(r.Context(), "create link", slog.Any("err", err))
-		s.createFailed(w, http.StatusInternalServerError, "Unable to generate Swosh!")
+		s.createFailed(w, http.StatusInternalServerError, errorResponse{Reason: mustTr(l, "api.failed")})
 		return
 	}
 	s.Metrics.CreateSuccess.Inc()
@@ -354,9 +367,11 @@ func (s *server) insert(ctx context.Context, n newSwosh) (sqlc.Swosh, error) {
 	return sqlc.Swosh{}, err
 }
 
-func (s *server) createFailed(w http.ResponseWriter, code int, reason string) {
+func (s *server) createFailed(w http.ResponseWriter, code int, resp errorResponse) {
 	s.Metrics.CreateFailed.Inc()
-	writeJSON(w, code, errorResponse{Error: true, Reason: reason})
+	resp.Error = true
+	varyLang(w)
+	writeJSON(w, code, resp)
 }
 
 func writeJSON(w http.ResponseWriter, code int, v any) {
@@ -376,12 +391,13 @@ func (s *server) render(w http.ResponseWriter, r *http.Request, name string, dat
 
 func (s *server) renderStatus(w http.ResponseWriter, r *http.Request, code int, name string, data any) {
 	var buf bytes.Buffer
-	if err := s.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
+	if err := s.tmpl[requestLang(r)].ExecuteTemplate(&buf, name, data); err != nil {
 		slog.ErrorContext(r.Context(), "render template", slog.String("template", name), slog.Any("err", err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	varyLang(w)
 	w.WriteHeader(code)
 	_, _ = buf.WriteTo(w)
 }

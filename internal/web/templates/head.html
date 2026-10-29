@@ -31,8 +31,10 @@ dark mode, and always with clear space around it (see .swish-logo).
 {{define "footer"}}
 <footer class="site-footer">
     <div class="container">
-        <span>Swosh is open source on <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener">GitHub</a>.</span>
-        <span>Swosh is an independent service, not part of Swish.</span>
+        <span>{{t "footer.source"}} <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener">GitHub</a>.</span>
+        <span>{{t "footer.notswish"}}</span>
+        <a href="/lang?l={{t "lang.switch.code"}}" class="lang-switch" lang="{{t "lang.switch.code"}}"
+           hreflang="{{t "lang.switch.code"}}" rel="nofollow">{{t "lang.switch"}}</a>
     </div>
 </footer>
 {{end}}

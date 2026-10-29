@@ -177,7 +177,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	u, err := auth.Login(r.Context(), s.Store, name, password)
 	if errors.Is(err, auth.ErrBadCredentials) {
 		slog.InfoContext(r.Context(), "failed login", slog.String("username", name))
-		s.renderStatus(w, r, http.StatusUnauthorized, "login.html", loginPage{Next: next, Username: name, Error: "Bad credentials"})
+		s.renderStatus(w, r, http.StatusUnauthorized, "login.html", loginPage{Next: next, Username: name, Error: mustTr(requestLang(r), "login.bad")})
 		return
 	}
 	if err != nil {

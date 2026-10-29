@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const messageEditable = document.getElementById('message-editable');
   const editables = [payeeEditable, amountEditable, messageEditable];
   const resultExpiry = document.getElementById('result-expiry');
-  const dateFormat = new Intl.DateTimeFormat(undefined, {dateStyle: 'medium', timeStyle: 'short'});
+  const dateFormat = new Intl.DateTimeFormat(document.documentElement.lang || undefined, {dateStyle: 'medium', timeStyle: 'short'});
   let share = null;
   let copyTimer = 0;
 
@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const forget = document.createElement('button');
     forget.type = 'button';
     forget.className = 'chip-forget';
-    forget.title = 'Forget this number';
-    forget.setAttribute('aria-label', 'Forget ' + number);
+    forget.title = msg('forget');
+    forget.setAttribute('aria-label', msg('forgetNumber', number));
     forget.append(icon('x'));
     forget.addEventListener('click', function () {
       numbers = numbers.filter(function (n) {
@@ -145,14 +145,17 @@ document.addEventListener('DOMContentLoaded', function () {
   // under Advanced, whose summary tells what they are set to. It leaves out
   // the editable fields while they are the default, just the message.
   function updateAdvancedHint() {
-    let hint = expire.value ? 'Expires after ' + expireLabel() : 'Never expires';
-    const names = editables.filter(function (box) {
+    let hint = expire.value ? msg('expiresAfter', expireLabel()) : msg('neverExpires');
+    const checked = editables.filter(function (box) {
       return box.checked;
-    }).map(function (box) {
-      return box.dataset.name;
     });
-    if (names.join() !== 'message') {
-      hint += names.length === 0 ? ', nothing editable' : ', ' + names.join(' & ') + ' editable';
+    if (checked.length !== 1 || checked[0] !== messageEditable) {
+      const names = checked.map(function (box) {
+        return box.parentElement.querySelector('span').textContent.toLowerCase();
+      });
+      hint += ', ' + (names.length === 0
+        ? msg('nothingEditable')
+        : msg('editable', names.join(' ' + msg('and') + ' ')));
     }
     advancedHint.textContent = hint;
   }
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     if (missing.length > 0) {
       missing.forEach(markInvalid);
-      showError('Fill in the Swish number and the amount.');
+      showError(msg('missing'));
       missing[0].focus();
       return;
     }
@@ -193,8 +196,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!Number.isInteger(sum) || sum < 1 || sum > maxAmount) {
       markInvalid(amount);
       showError(sum > maxAmount
-        ? 'You can Swish at most ' + maxAmount.toLocaleString('sv-SE') + ' kr.'
-        : 'The amount must be a whole number of kronor, at least 1.');
+        ? msg('tooMuch', maxAmount.toLocaleString('sv-SE'))
+        : msg('wholeKronor'));
       amount.focus();
       return;
     }
@@ -212,14 +215,14 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (!resp.ok) {
         console.log('Error response: ', body);
-        showError(body.reason || 'Something went wrong (' + resp.status + ').', true);
+        showError(body.reason || msg('failed', resp.status), body.field);
         return;
       }
       rememberNumber(req.phone);
       showResult(body.url, req, expiry);
     } catch (err) {
       console.log('Create failed: ', err);
-      showError('Could not reach Swosh. Check your connection and try again.');
+      showError(msg('offline'));
     } finally {
       createBtn.disabled = false;
     }
@@ -235,9 +238,8 @@ document.addEventListener('DOMContentLoaded', function () {
     resultUrl.replaceChildren(baseSpan, document.createElement('wbr'), url.slice(base.length));
     // The server sets the expiry from its own clock; this is close enough.
     resultExpiry.textContent = expiry.seconds
-      ? 'This link expires in ' + expiry.label + ', on ' +
-        dateFormat.format(new Date(Date.now() + expiry.seconds * 1000)) + '.'
-      : 'This link never expires.';
+      ? msg('expiresIn', expiry.label, dateFormat.format(new Date(Date.now() + expiry.seconds * 1000)))
+      : msg('neverExpiresLong');
     // Without redirect=false, phones would jump straight into Swish.
     previewLink.href = url + '?redirect=false';
     const text = req.amount + ' kr' + (req.message.trim() ? ': ' + req.message.trim() : '');
@@ -248,16 +250,15 @@ document.addEventListener('DOMContentLoaded', function () {
     result.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 
-  // showError shows reason and, when it came from the server, marks the
-  // field it is about.
-  function showError(reason, fromServer) {
+  // showError shows reason and marks the field the server said it is about,
+  // if any.
+  function showError(reason, field) {
     errorText.textContent = reason;
     error.hidden = false;
     result.hidden = true;
-    if (fromServer) {
-      if (/phone|mobile/i.test(reason)) markInvalid(phone);
-      if (/amount/i.test(reason)) markInvalid(amount);
-      if (/description/i.test(reason)) markInvalid(message);
+    const input = {phone: phone, amount: amount, message: message}[field];
+    if (input) {
+      markInvalid(input);
     }
     const card = form.closest('.card');
     card.classList.remove('shake');
@@ -288,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function setCopied(copied) {
     copyBtn.querySelector('use').setAttribute('href', '/img/icons.svg#' + (copied ? 'check' : 'copy'));
-    copyBtn.querySelector('span').textContent = copied ? 'Copied!' : 'Copy';
+    copyBtn.querySelector('span').textContent = copied ? msg('copied') : msg('copy');
   }
 
   shareBtn.addEventListener('click', function () {
@@ -297,6 +298,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+// The page's messages in its language, from the JSON in index.html. {0}, {1}
+// and so on are filled in by msg.
+const messages = JSON.parse(document.getElementById('messages').textContent);
+
+function msg(name, ...args) {
+  return (messages[name] || name).replace(/\{(\d)\}/g, function (_, i) {
+    return String(args[i]);
+  });
+}
 
 const numbersKey = 'swosh.numbers';
 const maxNumbers = 3;

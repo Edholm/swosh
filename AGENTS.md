@@ -40,6 +40,9 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 - **Database:** `internal/db` embeds `migrations/*.sql` (golang-migrate format). `db.Migrate` applies them on every `swosh serve` startup.
   - sqlc generates `internal/db/sqlc` from the migrations plus `queries/`. Never edit the generated code. CI runs `sqlc diff` and fails if it is stale.
   - `internal/db/sqlc/log.go` is hand-written: `LogValue` methods that keep payees, messages and password hashes out of the log.
+- **Languages:** the public pages and API error reasons come in English and Swedish. A `lang` cookie (from the footer's switch, `GET /lang?l=sv`) picks the language, else the browser's `Accept-Language`, else English.
+  - Every text is in `messages` in `internal/web/i18n.go`, both languages side by side. Templates write `{{t "key"}}`. `js.*` keys reach `swosh.js` as JSON.
+  - The admin pages are English only.
 - **DB tests:** `dbtest.URL(t)` gives each test a throwaway schema through `search_path`. Combine it with `db.Migrate` + `db.Connect`.
 - **Image:** ko builds it from `.ko.yaml` through the Makefile, which passes `VERSION` for the `-X main.version` ldflag. There is no Dockerfile. The base is static and distroless, with no shell or curl.
   - ko clears the image's arguments, so `compose.yaml` sets `command: [serve]`. Its health check runs `swosh healthcheck`.

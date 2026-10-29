@@ -18,12 +18,11 @@ const (
 	// maxExpiry keeps expiry times far inside what Postgres can store.
 	maxExpiry = 100 * 365 * 24 * time.Hour
 	// maxAmount is the most anyone can Swish in one payment, in kronor.
-	maxAmount          = 150_000
-	maxMessageLength   = 50
-	swedenCountryCode  = 46
-	swishNumberPrefix  = "123"
-	swishNumberLength  = 10
-	invalidInputReason = "Invalid input format!"
+	maxAmount         = 150_000
+	maxMessageLength  = 50
+	swedenCountryCode = 46
+	swishNumberPrefix = "123"
+	swishNumberLength = 10
 )
 
 // createRequest is the body of POST /api/create.
@@ -83,13 +82,21 @@ type newSwosh struct {
 	MessageEditable bool
 }
 
-// validationError is a reason shown to the API caller.
-type validationError string
+// validationError is a reason shown to the API caller, in their language.
+type validationError struct {
+	// field is the request field it is about: phone, amount or message. The
+	// form marks that field.
+	field string
+	key   string
+	args  []any
+}
 
-func (e validationError) Error() string { return string(e) }
+func (e validationError) Error() string { return e.in(english) }
 
-func invalid(format string, args ...any) error {
-	return validationError(fmt.Sprintf(format, args...))
+func (e validationError) in(l lang) string { return mustTr(l, e.key, e.args...) }
+
+func invalid(field, key string, args ...any) error {
+	return validationError{field: field, key: key, args: args}
 }
 
 // validate checks req in the same order and with the same messages as the
@@ -97,19 +104,19 @@ func invalid(format string, args ...any) error {
 // link to store.
 func (req createRequest) validate(now time.Time) (newSwosh, error) {
 	if !req.Amount.valid || req.Phone == nil || strings.TrimSpace(*req.Phone) == "" {
-		return newSwosh{}, invalid("Missing input parameters. 'phone' and 'amount' is required")
+		return newSwosh{}, invalid("", "api.missing")
 	}
 	if req.Amount.value < 1 {
-		return newSwosh{}, invalid("Minimum allowed amount is 1. Got %d", req.Amount.value)
+		return newSwosh{}, invalid("amount", "api.min", req.Amount.value)
 	}
 	if req.Amount.value > maxAmount {
-		return newSwosh{}, invalid("Maximum allowed amount is %d. Got %d", maxAmount, req.Amount.value)
+		return newSwosh{}, invalid("amount", "api.max", maxAmount, req.Amount.value)
 	}
 	var description *string
 	if req.Message != nil {
 		// Kotlin counted UTF-16 code units.
 		if n := len(utf16.Encode([]rune(*req.Message))); n > maxMessageLength {
-			return newSwosh{}, invalid("Description is too long. Max %d chars. Got %d", maxMessageLength, n)
+			return newSwosh{}, invalid("message", "api.toolong", maxMessageLength, n)
 		}
 		if strings.TrimSpace(*req.Message) != "" {
 			description = req.Message
@@ -149,7 +156,7 @@ func (req createRequest) expiresOn(now time.Time) (*time.Time, error) {
 		}
 		secs := req.ExpireAfterSeconds.value
 		if secs < 0 || secs > int64(maxExpiry/time.Second) {
-			return nil, invalid("'expireAfterSeconds' must be between 0 and %d. Got %d", int64(maxExpiry/time.Second), secs)
+			return nil, invalid("", "api.badexpiry", int64(maxExpiry/time.Second), secs)
 		}
 		after = time.Duration(secs) * time.Second
 	}
@@ -165,10 +172,10 @@ func formatPayee(phone string) (string, error) {
 	}
 	num, err := phonenumbers.Parse(phone, "SE")
 	if err != nil {
-		return "", invalid("'%s' is not a valid phone number", phone)
+		return "", invalid("phone", "api.badphone", phone)
 	}
 	if num.GetCountryCode() != swedenCountryCode || phonenumbers.GetNumberType(num) != phonenumbers.MOBILE {
-		return "", invalid("'%s' is not a mobile number", phone)
+		return "", invalid("phone", "api.notmobile", phone)
 	}
 	return phonenumbers.Format(num, phonenumbers.NATIONAL), nil
 }

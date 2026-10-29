@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
-    <title>Swosh – payment links for Swish</title>
+    <title>{{t "index.title"}}</title>
     {{template "head"}}
-    <meta name="description" content="Make a short link that opens Swish with your number, the amount and a message filled in.">
-    <meta property="og:title" content="Swosh – payment links for Swish">
-    <meta property="og:description" content="Make a short link that opens Swish with your number, the amount and a message filled in.">
+    <meta name="description" content="{{t "index.description"}}">
+    <meta property="og:title" content="{{t "index.title"}}">
+    <meta property="og:description" content="{{t "index.description"}}">
+    <meta property="og:locale" content="{{t "og.locale"}}">
     <meta property="og:image" content="{{.BaseURL}}/img/og.png">
     <meta property="og:url" content="{{.BaseURL}}/">
     <meta property="og:type" content="website">
+    <script type="application/json" id="messages">{{js}}</script>
     <script defer src="/js/swosh.js"></script>
 </head>
 <body>
@@ -19,44 +21,44 @@
         <a href="/admin" class="btn btn-ghost">{{template "icon" "lock"}} Admin</a>
         {{end}}
         <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-ghost btn-icon"
-           title="Swosh on GitHub">{{template "icon" "github"}}<span class="visually-hidden">Swosh on GitHub</span></a>
+           title="{{t "github.title"}}">{{template "icon" "github"}}<span class="visually-hidden">{{t "github.title"}}</span></a>
     </nav>
 </header>
 
 <main class="container index">
     <section class="index-intro">
-        <p class="eyebrow">{{template "icon" "sparkles"}} Payment links for Swish</p>
-        <h1>Get paid back <span class="gradient-text">in one tap</span></h1>
+        <p class="eyebrow">{{template "icon" "sparkles"}} {{t "index.eyebrow"}}</p>
+        <h1>{{t "index.heading"}} <span class="gradient-text">{{t "index.heading.accent"}}</span></h1>
         <p class="lead">
-            Make a short link that opens <a href="https://www.swish.nu/" target="_blank" rel="noopener">Swish</a>
-            with your number, the amount and a message filled in. Send it to your friends: they tap it and confirm.
+            {{t "index.lead.before"}} <a href="https://www.swish.nu/" target="_blank" rel="noopener">Swish</a>
+            {{t "index.lead.after"}}
         </p>
         <div class="pays-with">
             {{template "swish-logo"}}
-            <p>Your friends pay with Swish, in their own Swish app. Swosh only makes the link.</p>
+            <p>{{t "index.payswith"}}</p>
         </div>
     </section>
 
     <section class="card create-card" aria-labelledby="create-title">
-        <h2 class="card-title" id="create-title">Create a link</h2>
+        <h2 class="card-title" id="create-title">{{t "create.link"}}</h2>
         <form class="form" id="create-form" novalidate>
             <div class="field-row create-row">
                 <div class="field">
-                    <label class="label" for="phone">Swish number</label>
+                    <label class="label" for="phone">{{t "form.phone"}}</label>
                     <div class="control">
                         {{template "icon" "smartphone"}}
                         <input class="input input-number" type="tel" id="phone" maxlength="20" inputmode="tel"
                                autocomplete="tel" placeholder="070-123 45 67" required>
                         <button type="button" class="control-clear" data-clear="phone" tabindex="-1"
-                                title="Clear the number" aria-label="Clear the number">{{template "icon" "x"}}</button>
+                                title="{{t "form.phone.clear"}}" aria-label="{{t "form.phone.clear"}}">{{template "icon" "x"}}</button>
                     </div>
                 </div>
                 <div class="recent" id="recent-numbers" hidden>
-                    <span class="recent-label" id="recent-label">Recent</span>
+                    <span class="recent-label" id="recent-label">{{t "form.recent"}}</span>
                     <ul class="recent-list" id="recent-list" aria-labelledby="recent-label"></ul>
                 </div>
                 <div class="field">
-                    <label class="label" for="amount">Amount</label>
+                    <label class="label" for="amount">{{t "form.amount"}}</label>
                     <div class="control">
                         {{template "icon" "banknote"}}
                         <input class="input input-number" type="text" id="amount" inputmode="numeric" maxlength="7"
@@ -67,92 +69,92 @@
             </div>
             <div class="field">
                 <div class="label">
-                    <label for="message">Message</label>
+                    <label for="message">{{t "form.message"}}</label>
                     <span class="label-aside" id="message-count"></span>
                 </div>
                 <div class="control">
                     {{template "icon" "message-square-text"}}
                     <input class="input" type="text" id="message" maxlength="50" autocomplete="off"
-                           placeholder="What's it for? (optional)">
+                           placeholder="{{t "form.message.hint"}}">
                     <button type="button" class="control-clear" data-clear="message" tabindex="-1"
-                            title="Clear the message" aria-label="Clear the message">{{template "icon" "x"}}</button>
+                            title="{{t "form.message.clear"}}" aria-label="{{t "form.message.clear"}}">{{template "icon" "x"}}</button>
                 </div>
             </div>
             <details class="advanced">
                 <summary>
                     {{template "icon" "sliders-horizontal"}}
-                    <span>Advanced</span>
-                    <span class="advanced-hint" id="advanced-hint">Expires after 1 week</span>
+                    <span>{{t "form.advanced"}}</span>
+                    <span class="advanced-hint" id="advanced-hint"></span>
                     <svg class="icon advanced-chevron" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                 </summary>
                 <div class="field">
-                    <label class="label" for="expire">Link expires after</label>
+                    <label class="label" for="expire">{{t "form.expire"}}</label>
                     <div class="control">
                         {{template "icon" "clock"}}
                         <select class="input" id="expire">
-                            <option value="600">10 minutes</option>
-                            <option value="1800">30 minutes</option>
-                            <option value="3600">1 hour</option>
-                            <option value="43200">12 hours</option>
-                            <option value="86400">1 day</option>
-                            <option value="604800" selected>1 week</option>
-                            <option value="2628000">1 month</option>
-                            <option value="15768000">6 months</option>
-                            <option value="">Never</option>
+                            <option value="600">{{t "form.expire.10m"}}</option>
+                            <option value="1800">{{t "form.expire.30m"}}</option>
+                            <option value="3600">{{t "form.expire.1h"}}</option>
+                            <option value="43200">{{t "form.expire.12h"}}</option>
+                            <option value="86400">{{t "form.expire.1d"}}</option>
+                            <option value="604800" selected>{{t "form.expire.1w"}}</option>
+                            <option value="2628000">{{t "form.expire.1mo"}}</option>
+                            <option value="15768000">{{t "form.expire.6mo"}}</option>
+                            <option value="">{{t "form.expire.never"}}</option>
                         </select>
                         <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                     </div>
                 </div>
                 <div class="field" role="group" aria-labelledby="editable-label" aria-describedby="editable-hint">
-                    <span class="label" id="editable-label">Can be changed in Swish</span>
+                    <span class="label" id="editable-label">{{t "form.editable"}}</span>
                     <div class="toggles">
                         <label class="toggle">
-                            <input type="checkbox" id="payee-editable" data-name="number">
-                            {{template "icon" "smartphone"}} Number
+                            <input type="checkbox" id="payee-editable">
+                            {{template "icon" "smartphone"}} <span>{{t "form.editable.number"}}</span>
                         </label>
                         <label class="toggle">
-                            <input type="checkbox" id="amount-editable" data-name="amount">
-                            {{template "icon" "banknote"}} Amount
+                            <input type="checkbox" id="amount-editable">
+                            {{template "icon" "banknote"}} <span>{{t "form.editable.amount"}}</span>
                         </label>
                         <label class="toggle">
-                            <input type="checkbox" id="message-editable" data-name="message" checked>
-                            {{template "icon" "message-square-text"}} Message
+                            <input type="checkbox" id="message-editable" checked>
+                            {{template "icon" "message-square-text"}} <span>{{t "form.editable.message"}}</span>
                         </label>
                     </div>
-                    <p class="hint" id="editable-hint">The payer can change these before paying. The rest is locked.</p>
+                    <p class="hint" id="editable-hint">{{t "form.editable.hint"}}</p>
                 </div>
             </details>
             <div class="form-buttons">
-                <button type="reset" class="btn btn-lg" title="Clear the form">
-                    {{template "icon" "eraser"}} Clear
+                <button type="reset" class="btn btn-lg" title="{{t "form.reset.title"}}">
+                    {{template "icon" "eraser"}} {{t "form.reset"}}
                 </button>
                 <button type="submit" class="btn btn-primary btn-lg" id="create-btn">
-                    {{template "icon" "link"}} <span>Create link</span>
+                    {{template "icon" "link"}} <span>{{t "create.link"}}</span>
                 </button>
             </div>
         </form>
 
         <div class="alert alert-danger form-error" id="create-error" role="alert" hidden>
             {{template "icon" "circle-alert"}}
-            <p><strong>Couldn't create the link</strong><span id="create-error-text"></span></p>
+            <p><strong>{{t "form.error"}}</strong><span id="create-error-text"></span></p>
         </div>
 
         <div class="result" id="result" role="status" hidden>
             <div class="result-head">
                 {{template "icon" "circle-check"}}
-                <h3>Your link is ready</h3>
+                <h3>{{t "result.ready"}}</h3>
             </div>
             <div class="input-group">
                 <p class="input result-url" id="result-url"></p>
                 <button type="button" class="btn btn-primary" id="copy-btn">
-                    {{template "icon" "copy"}}<span>Copy</span>
+                    {{template "icon" "copy"}}<span>{{t "result.copy"}}</span>
                 </button>
             </div>
             <p class="result-note">{{template "icon" "clock"}}<span id="result-expiry"></span></p>
             <div class="result-actions">
-                <button type="button" class="btn" id="share-btn" hidden>{{template "icon" "share-2"}} Share</button>
+                <button type="button" class="btn" id="share-btn" hidden>{{template "icon" "share-2"}} {{t "result.share"}}</button>
                 <a class="btn" id="preview-link" href="/" target="_blank" rel="noopener">
-                    {{template "icon" "eye"}} Preview
+                    {{template "icon" "eye"}} {{t "result.preview"}}
                 </a>
             </div>
         </div>
@@ -162,22 +164,22 @@
         <li>
             <span class="icon-badge">{{template "icon" "pencil"}}</span>
             <div>
-                <h2>Fill in the details</h2>
-                <p>Your Swish number, the amount and what it's for.</p>
+                <h2>{{t "steps.fill"}}</h2>
+                <p>{{t "steps.fill.text"}}</p>
             </div>
         </li>
         <li>
             <span class="icon-badge">{{template "icon" "send"}}</span>
             <div>
-                <h2>Share the link</h2>
-                <p>Drop it in the group chat, a text or an email.</p>
+                <h2>{{t "steps.share"}}</h2>
+                <p>{{t "steps.share.text"}}</p>
             </div>
         </li>
         <li>
             <span class="icon-badge">{{template "icon" "smartphone"}}</span>
             <div>
-                <h2>They tap and pay</h2>
-                <p>Swish opens with everything filled in. On a computer, they scan a QR code instead.</p>
+                <h2>{{t "steps.pay"}}</h2>
+                <p>{{t "steps.pay.text"}}</p>
             </div>
         </li>
     </ol>
