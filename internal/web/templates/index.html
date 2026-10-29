@@ -74,24 +74,32 @@
                             title="Clear the message" aria-label="Clear the message">{{template "icon" "x"}}</button>
                 </div>
             </div>
-            <div class="field">
-                <label class="label" for="expire">Link expires after</label>
-                <div class="control">
-                    {{template "icon" "clock"}}
-                    <select class="input" id="expire">
-                        <option value="600">10 minutes</option>
-                        <option value="1800">30 minutes</option>
-                        <option value="3600">1 hour</option>
-                        <option value="43200">12 hours</option>
-                        <option value="86400">1 day</option>
-                        <option value="604800" selected>1 week</option>
-                        <option value="2628000">1 month</option>
-                        <option value="15768000">6 months</option>
-                        <option value="">Never</option>
-                    </select>
-                    <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
+            <details class="advanced">
+                <summary>
+                    {{template "icon" "sliders-horizontal"}}
+                    <span>Advanced</span>
+                    <span class="advanced-hint" id="expire-hint">Expires after 1 week</span>
+                    <svg class="icon advanced-chevron" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
+                </summary>
+                <div class="field">
+                    <label class="label" for="expire">Link expires after</label>
+                    <div class="control">
+                        {{template "icon" "clock"}}
+                        <select class="input" id="expire">
+                            <option value="600">10 minutes</option>
+                            <option value="1800">30 minutes</option>
+                            <option value="3600">1 hour</option>
+                            <option value="43200">12 hours</option>
+                            <option value="86400">1 day</option>
+                            <option value="604800" selected>1 week</option>
+                            <option value="2628000">1 month</option>
+                            <option value="15768000">6 months</option>
+                            <option value="">Never</option>
+                        </select>
+                        <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
+                    </div>
                 </div>
-            </div>
+            </details>
             <div class="form-buttons">
                 <button type="reset" class="btn btn-lg" title="Clear the form">
                     {{template "icon" "eraser"}} Clear
@@ -119,6 +127,7 @@
                     {{template "icon" "copy"}}<span>Copy</span>
                 </button>
             </div>
+            <p class="result-note">{{template "icon" "clock"}}<span id="result-expiry"></span></p>
             <div class="result-actions">
                 <button type="button" class="btn" id="share-btn" hidden>{{template "icon" "share-2"}} Share</button>
                 <a class="btn" id="preview-link" href="/" target="_blank" rel="noopener">

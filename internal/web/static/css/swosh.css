@@ -794,6 +794,55 @@ select.input {
     color: var(--muted);
 }
 
+.advanced summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.2rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--muted);
+    list-style: none;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+.advanced summary::-webkit-details-marker {
+    display: none;
+}
+
+.advanced summary:hover {
+    color: var(--text);
+}
+
+.advanced-hint {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.advanced-hint::before {
+    content: "·";
+    margin-right: 0.5rem;
+}
+
+.advanced-chevron {
+    transition: transform 0.2s;
+}
+
+.advanced[open] .advanced-chevron {
+    transform: rotate(180deg);
+}
+
+.advanced[open] > .field {
+    margin-top: 0.9rem;
+    animation: rise 0.2s ease-out;
+}
+
 .form-buttons {
     display: flex;
     gap: 0.6rem;
@@ -831,6 +880,19 @@ select.input {
     font-weight: 600;
     color: var(--primary);
     text-overflow: ellipsis;
+}
+
+.result-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.result-note .icon {
+    margin-top: 0.15rem;
 }
 
 .result-actions {

@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const copyBtn = document.getElementById('copy-btn');
   const shareBtn = document.getElementById('share-btn');
   const previewLink = document.getElementById('preview-link');
+  const expireHint = document.getElementById('expire-hint');
+  const resultExpiry = document.getElementById('result-expiry');
+  const dateFormat = new Intl.DateTimeFormat(undefined, {dateStyle: 'medium', timeStyle: 'short'});
   let share = null;
   let copyTimer = 0;
 
@@ -119,9 +122,22 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
       updateCount();
       markCurrentNumber();
+      updateExpireHint();
       phone.focus();
     });
   });
+
+  // The expiry sits folded away under Advanced, whose summary tells what it
+  // is set to.
+  function updateExpireHint() {
+    expireHint.textContent = expire.value ? 'Expires after ' + expireLabel() : 'Never expires';
+  }
+  expire.addEventListener('change', updateExpireHint);
+  updateExpireHint();
+
+  function expireLabel() {
+    return expire.selectedOptions[0].text;
+  }
 
   form.addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -143,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
       message: message.value,
       expireAfterSeconds: expire.value,
     };
+    const expiry = {seconds: Number(expire.value), label: expireLabel()};
     createBtn.disabled = true;
     try {
       const resp = await fetch('/api/create', {
@@ -159,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       rememberNumber(req.phone);
-      showResult(body.url, req);
+      showResult(body.url, req, expiry);
     } catch (err) {
       console.log('Create failed: ', err);
       showError('Could not reach Swosh. Check your connection and try again.');
@@ -168,8 +185,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  function showResult(url, req) {
+  function showResult(url, req, expiry) {
     resultUrl.value = url;
+    // The server sets the expiry from its own clock; this is close enough.
+    resultExpiry.textContent = expiry.seconds
+      ? 'This link expires in ' + expiry.label + ', on ' +
+        dateFormat.format(new Date(Date.now() + expiry.seconds * 1000)) + '.'
+      : 'This link never expires.';
     // Without redirect=false, phones would jump straight into Swish.
     previewLink.href = url + '?redirect=false';
     const text = req.amount + ' kr' + (req.message.trim() ? ': ' + req.message.trim() : '');
