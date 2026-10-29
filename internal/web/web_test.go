@@ -170,7 +170,7 @@ func TestPreview(t *testing.T) {
 		`<meta property="og:image" content="https://test.swosh.me/abc123/qr">`,
 		`<dd>&lt;b&gt;pizza&lt;/b&gt;</dd>`,
 		`<dd>2026-10-22T13:00:00Z</dd>`,
-		`href="swish://payment?data=%7B%22version%22:1,`,
+		`href="swish://payment?data=%7B%22version%22%3A1%2C`,
 		`src="/abc123/qr"`,
 	} {
 		if !strings.Contains(body, want) {
