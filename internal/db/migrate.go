@@ -17,7 +17,7 @@ var migrations embed.FS
 
 // Migrate applies all pending migrations to the database at databaseURL. It
 // does nothing if the schema is already up to date.
-func Migrate(databaseURL string, log *slog.Logger) (err error) {
+func Migrate(databaseURL string) (err error) {
 	m, err := newMigrator(databaseURL)
 	if err != nil {
 		return err
@@ -40,9 +40,9 @@ func Migrate(databaseURL string, log *slog.Logger) (err error) {
 	}
 
 	if from == to {
-		log.Info("database schema is up to date", "version", to)
+		slog.Info("database schema is up to date", slog.Uint64("version", uint64(to)))
 	} else {
-		log.Info("applied database migrations", "from", from, "to", to)
+		slog.Info("applied database migrations", slog.Uint64("from", uint64(from)), slog.Uint64("to", uint64(to)))
 	}
 	return nil
 }

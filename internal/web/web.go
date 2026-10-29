@@ -59,7 +59,6 @@ type Config struct {
 	Store   Store
 	QR      QRCoder
 	Metrics *metrics.Metrics
-	Log     *slog.Logger
 	// Scheme and Hostname make up the public URL of links, e.g. https://swosh.me/abc123.
 	Scheme   string
 	Hostname string
@@ -228,7 +227,7 @@ func (s *server) qr(w http.ResponseWriter, r *http.Request) {
 	}
 	png, err := s.QR.PNG(r.Context(), payment(sw))
 	if err != nil {
-		s.Log.ErrorContext(r.Context(), "fetch QR code", "id", sw.ID, "err", err)
+		slog.ErrorContext(r.Context(), "fetch QR code", slog.String("id", sw.ID), slog.Any("err", err))
 		http.Error(w, "Could not get a QR code from Swish", http.StatusBadGateway)
 		return
 	}
@@ -245,7 +244,7 @@ func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, boo
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 	case err != nil:
-		s.Log.ErrorContext(r.Context(), "get link", "id", id, "err", err)
+		slog.ErrorContext(r.Context(), "get link", slog.String("id", id), slog.Any("err", err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return sqlc.Swosh{}, false
 	case sw.ExpiresOn != nil && !sw.ExpiresOn.After(s.now()):
@@ -288,12 +287,12 @@ func (s *server) create(w http.ResponseWriter, r *http.Request) {
 	}
 	sw, err := s.insert(r.Context(), n)
 	if err != nil {
-		s.Log.ErrorContext(r.Context(), "create link", "err", err)
+		slog.ErrorContext(r.Context(), "create link", slog.Any("err", err))
 		s.createFailed(w, http.StatusInternalServerError, "Unable to generate Swosh!")
 		return
 	}
 	s.Metrics.CreateSuccess.Inc()
-	s.Log.InfoContext(r.Context(), "created link", "id", sw.ID, "amount", sw.Amount, "expires_on", sw.ExpiresOn)
+	slog.InfoContext(r.Context(), "created link", slog.Any("link", sw))
 	writeJSON(w, http.StatusOK, createResponse{ID: sw.ID, URL: s.baseURL() + "/" + sw.ID})
 }
 
@@ -329,7 +328,7 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 }
 
 func (s *server) serverError(w http.ResponseWriter, r *http.Request, what string, err error) {
-	s.Log.ErrorContext(r.Context(), what, "err", err)
+	slog.ErrorContext(r.Context(), what, slog.Any("err", err))
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
@@ -340,7 +339,7 @@ func (s *server) render(w http.ResponseWriter, r *http.Request, name string, dat
 func (s *server) renderStatus(w http.ResponseWriter, r *http.Request, code int, name string, data any) {
 	var buf bytes.Buffer
 	if err := s.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
-		s.Log.ErrorContext(r.Context(), "render template", "template", name, "err", err)
+		slog.ErrorContext(r.Context(), "render template", slog.String("template", name), slog.Any("err", err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

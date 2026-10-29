@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -69,7 +68,7 @@ func TestHealthcheck(t *testing.T) {
 	// pingErr and returns its port. With closed set, nothing listens on it.
 	actuatorPort := func(t *testing.T, pingErr error, closed bool) string {
 		t.Helper()
-		srv := httptest.NewServer(healthHandler(fakePinger{pingErr}, slog.New(slog.DiscardHandler)))
+		srv := httptest.NewServer(healthHandler(fakePinger{pingErr}))
 		port := strconv.Itoa(srv.Listener.Addr().(*net.TCPAddr).Port)
 		if closed {
 			srv.Close()
@@ -129,7 +128,7 @@ func TestAdminAddRejectsBadInput(t *testing.T) {
 
 func TestAdminAdd(t *testing.T) {
 	url := dbtest.URL(t)
-	if err := db.Migrate(url, slog.New(slog.DiscardHandler)); err != nil {
+	if err := db.Migrate(url); err != nil {
 		t.Fatal(err)
 	}
 	env := map[string]string{"SWOSH_DATABASE_URL": url}
@@ -182,7 +181,7 @@ func TestHealthHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := healthHandler(fakePinger{tt.pingErr}, slog.New(slog.DiscardHandler))
+			h := healthHandler(fakePinger{tt.pingErr})
 			rec := httptest.NewRecorder()
 			h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil))
 

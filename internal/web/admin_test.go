@@ -3,7 +3,6 @@ package web
 import (
 	"cmp"
 	"context"
-	"log/slog"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -533,8 +532,7 @@ func TestAdminMetricsUseRoutePattern(t *testing.T) {
 // the real queries.
 func TestAdminWithPostgres(t *testing.T) {
 	dbURL := dbtest.URL(t)
-	log := slog.New(slog.DiscardHandler)
-	if err := db.Migrate(dbURL, log); err != nil {
+	if err := db.Migrate(dbURL); err != nil {
 		t.Fatal(err)
 	}
 	pool, err := db.Connect(t.Context(), dbURL)
@@ -543,7 +541,7 @@ func TestAdminWithPostgres(t *testing.T) {
 	}
 	t.Cleanup(pool.Close)
 	q := sqlc.New(pool)
-	if err := auth.Provision(t.Context(), q, "admin", password, log); err != nil {
+	if err := auth.Provision(t.Context(), q, "admin", password); err != nil {
 		t.Fatal(err)
 	}
 	for _, id := range []string{"abc123", "fika"} {
@@ -552,7 +550,7 @@ func TestAdminWithPostgres(t *testing.T) {
 		}
 	}
 
-	s := newServer(Config{Store: q, QR: &fakeQR{}, Metrics: metrics.New(metrics.Labels{}), Log: log, Scheme: "https", Hostname: "test.swosh.me"})
+	s := newServer(Config{Store: q, QR: &fakeQR{}, Metrics: metrics.New(metrics.Labels{}), Scheme: "https", Hostname: "test.swosh.me"})
 	c := (&testServer{server: s, handler: s.routes()}).client()
 	token := c.login(t, "admin")
 

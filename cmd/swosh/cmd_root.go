@@ -31,7 +31,6 @@ func Execute(ctx context.Context) int {
 // in before any subcommand runs.
 type app struct {
 	cfg *config.Config
-	log *slog.Logger
 }
 
 // NewRootCmd builds the command tree. Configuration is read from env.
@@ -48,7 +47,7 @@ func NewRootCmd(env envconfig.Lookuper) *cobra.Command {
 				return err
 			}
 			a.cfg = cfg
-			a.log = slog.New(slog.NewJSONHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{Level: cfg.LogLevel}))
+			slog.SetDefault(slog.New(slog.NewJSONHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{Level: cfg.LogLevel})))
 			return nil
 		},
 	}

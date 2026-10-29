@@ -3,7 +3,6 @@ package db
 import (
 	"errors"
 	"io/fs"
-	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
@@ -16,13 +15,11 @@ import (
 	"github.com/Edholm/swosh/internal/db/sqlc"
 )
 
-var discard = slog.New(slog.DiscardHandler)
-
 // newQueries migrates a fresh schema and returns queries bound to it.
 func newQueries(t *testing.T) *sqlc.Queries {
 	t.Helper()
 	url := dbtest.URL(t)
-	if err := Migrate(url, discard); err != nil {
+	if err := Migrate(url); err != nil {
 		t.Fatalf("Migrate: %v", err)
 	}
 	pool, err := Connect(t.Context(), url)
@@ -65,7 +62,7 @@ func schemaVersionOf(t *testing.T, url string) uint {
 func TestMigrateIsIdempotent(t *testing.T) {
 	url := dbtest.URL(t)
 	for range 2 {
-		if err := Migrate(url, discard); err != nil {
+		if err := Migrate(url); err != nil {
 			t.Fatalf("Migrate: %v", err)
 		}
 	}
@@ -76,7 +73,7 @@ func TestMigrateIsIdempotent(t *testing.T) {
 
 func TestMigrateDownAndUp(t *testing.T) {
 	url := dbtest.URL(t)
-	if err := Migrate(url, discard); err != nil {
+	if err := Migrate(url); err != nil {
 		t.Fatalf("Migrate: %v", err)
 	}
 
@@ -92,13 +89,13 @@ func TestMigrateDownAndUp(t *testing.T) {
 		t.Fatalf("schema version after Down = %d, want 0", got)
 	}
 
-	if err := Migrate(url, discard); err != nil {
+	if err := Migrate(url); err != nil {
 		t.Fatalf("Migrate after Down: %v", err)
 	}
 }
 
 func TestMigrateRejectsNonPostgresURL(t *testing.T) {
-	err := Migrate("mysql://root:secret@localhost/swosh", discard)
+	err := Migrate("mysql://root:secret@localhost/swosh")
 	if err == nil || strings.Contains(err.Error(), "secret") {
 		t.Errorf("Migrate(mysql://…) = %v, want an error without the password", err)
 	}

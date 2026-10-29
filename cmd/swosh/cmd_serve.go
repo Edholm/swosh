@@ -39,9 +39,9 @@ func newServeCmd(a *app) *cobra.Command {
 }
 
 func (a *app) serve(ctx context.Context) error {
-	a.log.Info("starting swosh", "version", version)
+	slog.InfoContext(ctx, "starting swosh", slog.String("version", version))
 
-	if err := db.Migrate(a.cfg.DatabaseURL, a.log); err != nil {
+	if err := db.Migrate(a.cfg.DatabaseURL); err != nil {
 		return err
 	}
 	pool, err := db.Connect(ctx, a.cfg.DatabaseURL)
@@ -58,13 +58,13 @@ func (a *app) serve(ctx context.Context) error {
 	queries := sqlc.New(pool)
 
 	if a.cfg.ProvisionUsers {
-		if err := auth.Provision(ctx, queries, a.cfg.AdminUsername, a.cfg.AdminPassword, a.log); err != nil {
+		if err := auth.Provision(ctx, queries, a.cfg.AdminUsername, a.cfg.AdminPassword); err != nil {
 			return err
 		}
 	}
 	sessionKey := []byte(a.cfg.SessionKey)
 	if len(sessionKey) == 0 {
-		a.log.Warn("SWOSH_SESSION_KEY is not set; using a random key, so restarts log everyone out")
+		slog.WarnContext(ctx, "SWOSH_SESSION_KEY is not set; using a random key, so restarts log everyone out")
 		sessionKey = auth.RandomKey()
 	}
 
@@ -72,22 +72,21 @@ func (a *app) serve(ctx context.Context) error {
 		Store:      queries,
 		QR:         swish.NewQRClient(a.cfg.SwishQREndpoint),
 		Metrics:    m,
-		Log:        a.log,
 		Scheme:     a.cfg.Scheme,
 		Hostname:   a.cfg.Hostname,
 		SessionKey: sessionKey,
 	}))
 
 	mux := http.NewServeMux()
-	mux.Handle("GET /health", healthHandler(pool, a.log))
+	mux.Handle("GET /health", healthHandler(pool))
 	mux.Handle("GET /prometheus", m.Handler())
 	actuator := newHTTPServer(a.cfg.ActuatorPort, mux)
 
 	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error { return runServer(ctx, a.log, public) })
-	g.Go(func() error { return runServer(ctx, a.log, actuator) })
+	g.Go(func() error { return runServer(ctx, public) })
+	g.Go(func() error { return runServer(ctx, actuator) })
 	g.Go(func() error {
-		expiry.Run(ctx, queries, a.cfg.ExpireRate(), m.ExpiredLinks, a.log)
+		expiry.Run(ctx, queries, a.cfg.ExpireRate(), m.ExpiredLinks)
 		return nil
 	})
 	return g.Wait()
@@ -105,13 +104,13 @@ func newHTTPServer(port int, h http.Handler) *http.Server {
 }
 
 // runServer serves srv until ctx is cancelled, then shuts it down gracefully.
-func runServer(ctx context.Context, log *slog.Logger, srv *http.Server) error {
+func runServer(ctx context.Context, srv *http.Server) error {
 	var lc net.ListenConfig
 	lis, err := lc.Listen(ctx, "tcp", srv.Addr)
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
 	}
-	log.Info("listening", "addr", lis.Addr().String())
+	slog.InfoContext(ctx, "listening", slog.String("addr", lis.Addr().String()))
 
 	errc := make(chan error, 1)
 	go func() { errc <- srv.Serve(lis) }()
@@ -122,7 +121,7 @@ func runServer(ctx context.Context, log *slog.Logger, srv *http.Server) error {
 	case <-ctx.Done():
 	}
 
-	log.Info("shutting down")
+	slog.InfoContext(ctx, "shutting down", slog.String("addr", srv.Addr))
 	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), shutdownTimeout)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
@@ -140,14 +139,14 @@ type pinger interface {
 
 // healthHandler reports UP while the database answers and DOWN with a 503
 // otherwise, in the same shape as Spring Boot's actuator.
-func healthHandler(db pinger, log *slog.Logger) http.Handler {
+func healthHandler(db pinger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
 
 		status, code := "UP", http.StatusOK
 		if err := db.Ping(ctx); err != nil {
-			log.WarnContext(ctx, "health check failed", "err", err)
+			slog.WarnContext(ctx, "health check failed", slog.Any("err", err))
 			status, code = "DOWN", http.StatusServiceUnavailable
 		}
 		w.Header().Set("Content-Type", "application/json")

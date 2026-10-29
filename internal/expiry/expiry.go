@@ -20,7 +20,7 @@ type Deleter interface {
 
 // Run deletes expired links every interval until ctx is cancelled. Failed
 // sweeps are logged and retried on the next tick.
-func Run(ctx context.Context, db Deleter, interval time.Duration, expired prometheus.Counter, log *slog.Logger) {
+func Run(ctx context.Context, db Deleter, interval time.Duration, expired prometheus.Counter) {
 	timer := time.NewTimer(initialDelay)
 	defer timer.Stop()
 	for {
@@ -29,23 +29,23 @@ func Run(ctx context.Context, db Deleter, interval time.Duration, expired promet
 			return
 		case <-timer.C:
 		}
-		Sweep(ctx, db, expired, log)
+		Sweep(ctx, db, expired)
 		timer.Reset(interval)
 	}
 }
 
 // Sweep deletes the links that have expired by now.
-func Sweep(ctx context.Context, db Deleter, expired prometheus.Counter, log *slog.Logger) {
+func Sweep(ctx context.Context, db Deleter, expired prometheus.Counter) {
 	now := time.Now()
 	ids, err := db.DeleteExpiredSwoshes(ctx, now)
 	if err != nil {
 		if ctx.Err() == nil {
-			log.ErrorContext(ctx, "delete expired links", "err", err)
+			slog.ErrorContext(ctx, "delete expired links", slog.Any("err", err))
 		}
 		return
 	}
 	if len(ids) > 0 {
-		log.InfoContext(ctx, "deleted expired links", "count", len(ids), "ids", ids, "before", now)
+		slog.InfoContext(ctx, "deleted expired links", slog.Int("count", len(ids)), slog.Any("ids", ids), slog.Time("before", now))
 	}
 	expired.Add(float64(len(ids)))
 }

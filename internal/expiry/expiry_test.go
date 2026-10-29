@@ -1,11 +1,9 @@
 package expiry
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"slices"
 	"testing"
 	"time"
@@ -16,9 +14,8 @@ import (
 	"github.com/Edholm/swosh/internal/db"
 	"github.com/Edholm/swosh/internal/db/dbtest"
 	"github.com/Edholm/swosh/internal/db/sqlc"
+	"github.com/Edholm/swosh/internal/logtest"
 )
-
-var discard = slog.New(slog.DiscardHandler)
 
 type fakeDeleter struct {
 	ids   []string
@@ -35,17 +32,17 @@ func (f *fakeDeleter) DeleteExpiredSwoshes(context.Context, time.Time) ([]string
 
 func TestSweepCounts(t *testing.T) {
 	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "expired_links_total"})
-	Sweep(t.Context(), &fakeDeleter{ids: []string{"a", "b", "c"}}, c, discard)
-	Sweep(t.Context(), &fakeDeleter{err: errors.New("db down")}, c, discard)
+	Sweep(t.Context(), &fakeDeleter{ids: []string{"a", "b", "c"}}, c)
+	Sweep(t.Context(), &fakeDeleter{err: errors.New("db down")}, c)
 	if n := testutil.ToFloat64(c); n != 3 {
 		t.Errorf("expired_links_total = %v, want 3", n)
 	}
 }
 
 func TestSweepLogsIDs(t *testing.T) {
-	var buf bytes.Buffer
+	buf := logtest.Capture(t)
 	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "expired_links_total"})
-	Sweep(t.Context(), &fakeDeleter{ids: []string{"brave-otter-sings", "abc123"}}, c, slog.New(slog.NewJSONHandler(&buf, nil)))
+	Sweep(t.Context(), &fakeDeleter{ids: []string{"brave-otter-sings", "abc123"}}, c)
 	var got struct {
 		Msg   string
 		Count int
@@ -65,7 +62,7 @@ func TestRunSweepsUntilCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan struct{})
 	go func() {
-		Run(ctx, d, time.Millisecond, c, discard)
+		Run(ctx, d, time.Millisecond, c)
 		close(done)
 	}()
 
@@ -92,7 +89,7 @@ func TestRunSweepsUntilCancelled(t *testing.T) {
 
 func TestSweepWithPostgres(t *testing.T) {
 	url := dbtest.URL(t)
-	if err := db.Migrate(url, discard); err != nil {
+	if err := db.Migrate(url); err != nil {
 		t.Fatal(err)
 	}
 	pool, err := db.Connect(t.Context(), url)
@@ -114,7 +111,7 @@ func TestSweepWithPostgres(t *testing.T) {
 	}
 
 	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "expired_links_total"})
-	Sweep(t.Context(), q, c, discard)
+	Sweep(t.Context(), q, c)
 	if n := testutil.ToFloat64(c); n != 1 {
 		t.Errorf("expired_links_total = %v, want 1", n)
 	}

@@ -1,10 +1,8 @@
 package auth
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"log/slog"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +13,7 @@ import (
 	"github.com/Edholm/swosh/internal/db"
 	"github.com/Edholm/swosh/internal/db/dbtest"
 	"github.com/Edholm/swosh/internal/db/sqlc"
+	"github.com/Edholm/swosh/internal/logtest"
 )
 
 func TestCheckPassword(t *testing.T) {
@@ -135,13 +134,12 @@ func TestProvisionWarnsAboutDefaultPassword(t *testing.T) {
 		password string
 		warn     bool
 	}{{"admin", true}, {"hunter2", false}} {
-		var buf bytes.Buffer
-		log := slog.New(slog.NewTextHandler(&buf, nil))
+		buf := logtest.Capture(t)
 		f := &fakeUsers{}
-		if err := Provision(t.Context(), f, "admin", tt.password, log); err != nil {
+		if err := Provision(t.Context(), f, "admin", tt.password); err != nil {
 			t.Fatal(err)
 		}
-		if got := strings.Contains(buf.String(), "level=WARN"); got != tt.warn {
+		if got := strings.Contains(buf.String(), `"level":"WARN"`); got != tt.warn {
 			t.Errorf("password %q: warned = %v, want %v", tt.password, got, tt.warn)
 		}
 		if len(f.created) != 1 || strings.Join(f.created[0].Authorities, ",") != "ROLE_USER,ROLE_ADMIN,DELETE,UPDATE" {
@@ -153,7 +151,7 @@ func TestProvisionWarnsAboutDefaultPassword(t *testing.T) {
 func newQueries(t *testing.T) *sqlc.Queries {
 	t.Helper()
 	url := dbtest.URL(t)
-	if err := db.Migrate(url, slog.New(slog.DiscardHandler)); err != nil {
+	if err := db.Migrate(url); err != nil {
 		t.Fatal(err)
 	}
 	pool, err := db.Connect(t.Context(), url)
@@ -166,14 +164,13 @@ func newQueries(t *testing.T) *sqlc.Queries {
 
 func TestProvisionAndLoginWithPostgres(t *testing.T) {
 	q := newQueries(t)
-	log := slog.New(slog.DiscardHandler)
 	ctx := t.Context()
 
-	if err := Provision(ctx, q, "admin", "first", log); err != nil {
+	if err := Provision(ctx, q, "admin", "first"); err != nil {
 		t.Fatal(err)
 	}
 	// An existing user keeps its password.
-	if err := Provision(ctx, q, "admin", "second", log); err != nil {
+	if err := Provision(ctx, q, "admin", "second"); err != nil {
 		t.Fatal(err)
 	}
 	if err := CreateAdmin(ctx, q, "admin", "second"); !errors.Is(err, ErrUserExists) {

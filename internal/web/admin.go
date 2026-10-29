@@ -159,21 +159,21 @@ func (s *server) adminUpdate(w http.ResponseWriter, r *http.Request, p *principa
 		failed(http.StatusNotFound, fmt.Sprintf("There is no link with id %q.", arg.ID))
 		return
 	}
-	changed := slog.Group("changed", changes(sw, arg)...)
+	changed := slog.GroupAttrs("changed", changes(sw, arg)...)
 	if arg.NewID != arg.ID {
-		s.Log.InfoContext(r.Context(), "renamed link", "from", arg.ID, "to", arg.NewID, "user", p.Name, changed)
+		slog.InfoContext(r.Context(), "renamed link", slog.String("from", arg.ID), slog.String("to", arg.NewID), slog.String("user", p.Name), changed)
 	} else {
-		s.Log.InfoContext(r.Context(), "updated link", "id", arg.ID, "user", p.Name, changed)
+		slog.InfoContext(r.Context(), "updated link", slog.String("id", arg.ID), slog.String("user", p.Name), changed)
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
 // changes returns a group of old and new values for each field an edit
 // changes, so the log shows what an admin did.
-func changes(sw sqlc.Swosh, arg sqlc.UpdateSwoshParams) []any {
-	var attrs []any
+func changes(sw sqlc.Swosh, arg sqlc.UpdateSwoshParams) []slog.Attr {
+	var attrs []slog.Attr
 	change := func(field string, from, to any) {
-		attrs = append(attrs, slog.Group(field, "from", from, "to", to))
+		attrs = append(attrs, slog.GroupAttrs(field, slog.Any("from", from), slog.Any("to", to)))
 	}
 	if arg.Payee != sw.Payee {
 		change("payee", sw.Payee, arg.Payee)
@@ -229,7 +229,7 @@ func (s *server) adminDelete(w http.ResponseWriter, r *http.Request, p *principa
 	}
 	// Like the Kotlin service, deleting a missing link is not an error.
 	if n > 0 {
-		s.Log.InfoContext(r.Context(), "deleted link", "id", id, "user", p.Name)
+		slog.InfoContext(r.Context(), "deleted link", slog.String("id", id), slog.String("user", p.Name))
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }

@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"slices"
@@ -175,7 +176,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 
 	u, err := auth.Login(r.Context(), s.Store, name, password)
 	if errors.Is(err, auth.ErrBadCredentials) {
-		s.Log.InfoContext(r.Context(), "failed login", "username", name)
+		slog.InfoContext(r.Context(), "failed login", slog.String("username", name))
 		s.renderStatus(w, r, http.StatusUnauthorized, "login.html", loginPage{Next: next, Username: name, Error: "Bad credentials"})
 		return
 	}
@@ -185,7 +186,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	sess := s.signer.New(u.Username, u.Password, s.now().Add(sessionTTL))
 	http.SetCookie(w, s.sessionCookie(s.signer.Encode(sess), sess.Expires))
-	s.Log.InfoContext(r.Context(), "logged in", "username", u.Username)
+	slog.InfoContext(r.Context(), "logged in", slog.String("username", u.Username))
 	if next == "" {
 		next = "/admin"
 	}
@@ -240,7 +241,7 @@ func localPath(p string) string {
 func (s *server) currentUser(r *http.Request) *principal {
 	p, err := s.sessionUser(r)
 	if err != nil {
-		s.Log.ErrorContext(r.Context(), "look up session user", "err", err)
+		slog.ErrorContext(r.Context(), "look up session user", slog.Any("err", err))
 	}
 	return p
 }

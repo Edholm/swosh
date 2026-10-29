@@ -124,18 +124,18 @@ func CreateAdmin(ctx context.Context, users UserCreator, username, password stri
 // Provision creates an admin user with the given credentials unless a user
 // with that name exists. An existing user's password and authorities are
 // left as they are.
-func Provision(ctx context.Context, users UserCreator, username, password string, log *slog.Logger) error {
+func Provision(ctx context.Context, users UserCreator, username, password string) error {
 	if password == "admin" {
-		log.WarnContext(ctx, "the admin user is provisioned with the default password; set SWOSH_ADMIN_PWD", "username", username)
+		slog.WarnContext(ctx, "the admin user is provisioned with the default password; set SWOSH_ADMIN_PWD", slog.String("username", username))
 	}
 	err := CreateAdmin(ctx, users, username, password)
 	switch {
 	case errors.Is(err, ErrUserExists):
-		log.DebugContext(ctx, "admin user already exists", "username", username)
+		slog.DebugContext(ctx, "admin user already exists", slog.String("username", username))
 	case err != nil:
 		return fmt.Errorf("provision admin user: %w", err)
 	default:
-		log.InfoContext(ctx, "provisioned admin user", "username", username)
+		slog.InfoContext(ctx, "provisioned admin user", slog.String("username", username))
 	}
 	return nil
 }

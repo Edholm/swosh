@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -21,6 +20,7 @@ import (
 	"github.com/Edholm/swosh/internal/db"
 	"github.com/Edholm/swosh/internal/db/dbtest"
 	"github.com/Edholm/swosh/internal/db/sqlc"
+	"github.com/Edholm/swosh/internal/logtest"
 	"github.com/Edholm/swosh/internal/metrics"
 	"github.com/Edholm/swosh/internal/swish"
 )
@@ -91,7 +91,6 @@ func newTestServer(t *testing.T, links ...sqlc.Swosh) *testServer {
 		Store:    store,
 		QR:       qr,
 		Metrics:  metrics.New(metrics.Labels{}),
-		Log:      slog.New(slog.DiscardHandler),
 		Scheme:   "https",
 		Hostname: "test.swosh.me",
 	})
@@ -113,12 +112,11 @@ func (ts *testServer) do(t *testing.T, method, target, body string) *httptest.Re
 
 func ptr[T any](v T) *T { return &v }
 
-// captureLogs sends the server's logs to a buffer. The function it returns
-// gives the fields of the first record with msg, as JSON.
+// captureLogs sends the logs to a buffer. The function it returns gives the
+// fields of the first record with msg, as JSON.
 func (ts *testServer) captureLogs(t *testing.T) func(msg string) map[string]json.RawMessage {
 	t.Helper()
-	var buf bytes.Buffer
-	ts.Log = slog.New(slog.NewJSONHandler(&buf, nil))
+	buf := logtest.Capture(t)
 	return func(msg string) map[string]json.RawMessage {
 		t.Helper()
 		for line := range bytes.Lines(buf.Bytes()) {
@@ -428,16 +426,10 @@ func TestCreateIsLogged(t *testing.T) {
 	logged := ts.captureLogs(t)
 	ts.newID = func() string { return "brave-otter-sings" }
 	ts.do(t, http.MethodPost, "/api/create", `{"phone":"0700000000","amount":100,"message":"Fika","expireAfterSeconds":3600}`)
-	rec := logged("created link")
-	wantLogged(t, rec, map[string]string{
-		"id": `"brave-otter-sings"`, "amount": "100", "expires_on": `"2026-10-22T13:00:00Z"`,
+	wantLogged(t, logged("created link"), map[string]string{
+		// Anyone can create links, so their phone numbers and messages stay out of the log.
+		"link": `{"id":"brave-otter-sings","amount":100,"expires_on":"2026-10-22T13:00:00Z"}`,
 	})
-	// Anyone can create links, so their phone numbers and messages stay out of the log.
-	for _, k := range []string{"payee", "description"} {
-		if _, ok := rec[k]; ok {
-			t.Errorf("logged %s", k)
-		}
-	}
 }
 
 func TestRequestMetrics(t *testing.T) {
@@ -461,7 +453,7 @@ func TestRequestMetrics(t *testing.T) {
 // TestCreateAndPreviewWithPostgres runs a link through the real queries.
 func TestCreateAndPreviewWithPostgres(t *testing.T) {
 	url := dbtest.URL(t)
-	if err := db.Migrate(url, slog.New(slog.DiscardHandler)); err != nil {
+	if err := db.Migrate(url); err != nil {
 		t.Fatal(err)
 	}
 	pool, err := db.Connect(t.Context(), url)
@@ -474,7 +466,6 @@ func TestCreateAndPreviewWithPostgres(t *testing.T) {
 		Store:    sqlc.New(pool),
 		QR:       &fakeQR{},
 		Metrics:  metrics.New(metrics.Labels{}),
-		Log:      slog.New(slog.DiscardHandler),
 		Scheme:   "https",
 		Hostname: "test.swosh.me",
 	})
