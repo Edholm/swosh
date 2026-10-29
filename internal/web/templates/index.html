@@ -55,8 +55,8 @@
                     <label class="label" for="amount">Amount</label>
                     <div class="control">
                         {{template "icon" "banknote"}}
-                        <input class="input input-number" type="text" id="amount" inputmode="numeric" maxlength="9"
-                               autocomplete="off" placeholder="100" required>
+                        <input class="input input-number" type="text" id="amount" inputmode="numeric" maxlength="7"
+                               autocomplete="off" placeholder="100" required data-max="{{.MaxAmount}}">
                         <span class="control-suffix">kr</span>
                     </div>
                 </div>

@@ -212,8 +212,11 @@ func TestIndexAndStaticFiles(t *testing.T) {
 			t.Errorf("GET %s = %d, want 200", target, rec.Code)
 		}
 	}
-	if want := `<meta property="og:image" content="https://test.swosh.me/img/og.png">`; !strings.Contains(ts.do(t, http.MethodGet, "/", "").Body.String(), want) {
-		t.Errorf("index is missing %s", want)
+	index := ts.do(t, http.MethodGet, "/", "").Body.String()
+	for _, want := range []string{`<meta property="og:image" content="https://test.swosh.me/img/og.png">`, `data-max="150000"`} {
+		if !strings.Contains(index, want) {
+			t.Errorf("index is missing %s", want)
+		}
 	}
 }
 
@@ -225,7 +228,11 @@ func TestCreateErrors(t *testing.T) {
 		{"invalid body", `{"version":1,"payee":{"value":"herp"},"amount":{"value":1},"message":{"value":"derp"}}`, "Invalid input format!"},
 		{"not JSON", `phone=0700000000`, "Invalid input format!"},
 		{"amount not a number", `{"phone":"0700000000","amount":"lots"}`, "Invalid input format!"},
-		{"amount too big", `{"phone":"0700000000","amount":2147483648}`, "Invalid input format!"},
+		{"amount over the Swish limit", `{"phone":"0700000000","amount":150001}`, "Maximum allowed amount is 150000. Got 150001"},
+		{"amount over int32", `{"phone":"0700000000","amount":2147483648}`, "Maximum allowed amount is 150000. Got 2147483648"},
+		{"amount over int64", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 30) + `"}`, "Invalid input format!"},
+		// The body is cut off at maxBodySize, so the decoder never sees all of it.
+		{"huge amount", `{"phone":"0700000000","amount":"` + strings.Repeat("9", 1<<20) + `"}`, "Invalid input format!"},
 		{"missing amount", `{"phone":"0700000000","message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required"},
 		{"empty amount from the form", `{"phone":"0700000000","amount":""}`, "Missing input parameters. 'phone' and 'amount' is required"},
 		{"missing phone", `{"amount":100,"message":"msg","expireAfterSeconds":100}`, "Missing input parameters. 'phone' and 'amount' is required"},
@@ -278,6 +285,11 @@ func TestCreate(t *testing.T) {
 			name: "multi-byte description counted in characters",
 			body: `{"phone":"0700000000","amount":100,"message":"` + strings.Repeat("ö", 50) + `"}`,
 			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr(strings.Repeat("ö", 50)), ExpiresOn: ptr(now.Add(defaultExpiry))},
+		},
+		{
+			name: "largest amount Swish allows",
+			body: `{"phone":"0700000000","amount":150000}`,
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 150000, ExpiresOn: ptr(now.Add(defaultExpiry))},
 		},
 		{
 			name: "missing message",

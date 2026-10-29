@@ -16,7 +16,9 @@ const (
 	// defaultExpiry applies when a request leaves out expireAfterSeconds.
 	defaultExpiry = 2 * 24 * time.Hour
 	// maxExpiry keeps expiry times far inside what Postgres can store.
-	maxExpiry          = 100 * 365 * 24 * time.Hour
+	maxExpiry = 100 * 365 * 24 * time.Hour
+	// maxAmount is the most anyone can Swish in one payment, in kronor.
+	maxAmount          = 150_000
 	maxMessageLength   = 50
 	swedenCountryCode  = 46
 	swishNumberPrefix  = "123"
@@ -83,7 +85,8 @@ func invalid(format string, args ...any) error {
 }
 
 // validate checks req in the same order and with the same messages as the
-// Kotlin service, and returns the link to store.
+// Kotlin service, which had no upper limit on the amount, and returns the
+// link to store.
 func (req createRequest) validate(now time.Time) (newSwosh, error) {
 	if !req.Amount.valid || req.Phone == nil || strings.TrimSpace(*req.Phone) == "" {
 		return newSwosh{}, invalid("Missing input parameters. 'phone' and 'amount' is required")
@@ -91,8 +94,8 @@ func (req createRequest) validate(now time.Time) (newSwosh, error) {
 	if req.Amount.value < 1 {
 		return newSwosh{}, invalid("Minimum allowed amount is 1. Got %d", req.Amount.value)
 	}
-	if req.Amount.value > 1<<31-1 {
-		return newSwosh{}, invalid(invalidInputReason)
+	if req.Amount.value > maxAmount {
+		return newSwosh{}, invalid("Maximum allowed amount is %d. Got %d", maxAmount, req.Amount.value)
 	}
 	var description *string
 	if req.Message != nil {

@@ -170,13 +170,14 @@ func (s *server) baseURL() string {
 }
 
 type indexPage struct {
-	BaseURL string
+	BaseURL   string
+	MaxAmount int
 	// LoggedIn shows the Admin button.
 	LoggedIn bool
 }
 
 func (s *server) index(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, "index.html", indexPage{BaseURL: s.baseURL(), LoggedIn: s.currentUser(r) != nil})
+	s.render(w, r, "index.html", indexPage{BaseURL: s.baseURL(), MaxAmount: maxAmount, LoggedIn: s.currentUser(r) != nil})
 }
 
 type previewData struct {

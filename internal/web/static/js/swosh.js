@@ -99,6 +99,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Only digits and spaces get into the amount, so pasting "150 kr" leaves
+  // the number. maxlength fits "150 000".
+  const maxAmount = Number(amount.dataset.max);
+  amount.addEventListener('input', function () {
+    const cleaned = amount.value.replace(/[^\d ]/g, '');
+    if (cleaned !== amount.value) {
+      amount.value = cleaned;
+    }
+  });
+
   // The × in a field empties just that field.
   for (const btn of form.querySelectorAll('[data-clear]')) {
     btn.addEventListener('click', function () {
@@ -159,6 +169,17 @@ document.addEventListener('DOMContentLoaded', function () {
       message: message.value,
       expireAfterSeconds: expire.value,
     };
+    // The server checks this too; asking here saves a round trip.
+    const sum = Number(req.amount);
+    if (!Number.isInteger(sum) || sum < 1 || sum > maxAmount) {
+      markInvalid(amount);
+      showError(sum > maxAmount
+        ? 'You can Swish at most ' + maxAmount.toLocaleString('sv-SE') + ' kr.'
+        : 'The amount must be a whole number of kronor, at least 1.');
+      amount.focus();
+      return;
+    }
+
     const expiry = {seconds: Number(expire.value), label: expireLabel()};
     createBtn.disabled = true;
     try {
