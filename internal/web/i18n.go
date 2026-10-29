@@ -285,13 +285,14 @@ var messages = map[string]translation{
 	"logout.submit":   {"Log out", "Logga ut"},
 
 	// POST /api/create. The English ones are the Kotlin service's.
-	"api.badinput":  {"Invalid input format!", "Kunde inte läsa förfrågan."},
-	"api.failed":    {"Unable to generate Swosh!", "Kunde inte skapa länken."},
-	"api.missing":   {"Missing input parameters. 'phone' and 'amount' is required", "Swish-nummer och belopp måste fyllas i."},
-	"api.min":       {"Minimum allowed amount is 1. Got %d", "Beloppet måste vara minst 1 kr, inte %d."},
-	"api.max":       {"Maximum allowed amount is %d. Got %d", "Beloppet får vara högst %d kr, inte %d."},
-	"api.toolong":   {"Description is too long. Max %d chars. Got %d", "Meddelandet är för långt: högst %d tecken, men det har %d."},
-	"api.badphone":  {"'%s' is not a valid phone number", "'%s' är inte ett giltigt telefonnummer."},
-	"api.notmobile": {"'%s' is not a mobile number", "'%s' är inte ett mobilnummer."},
-	"api.badexpiry": {"'expireAfterSeconds' must be between 0 and %d. Got %d", "'expireAfterSeconds' måste vara mellan 0 och %d, inte %d."},
+	"api.badinput":    {"Invalid input format!", "Kunde inte läsa förfrågan."},
+	"api.failed":      {"Unable to generate Swosh!", "Kunde inte skapa länken."},
+	"api.missing":     {"Missing input parameters. 'phone' and 'amount' is required", "Swish-nummer och belopp måste fyllas i."},
+	"api.min":         {"Minimum allowed amount is 1. Got %d", "Beloppet måste vara minst 1 kr, inte %d."},
+	"api.max":         {"Maximum allowed amount is %d. Got %d", "Beloppet får vara högst %d kr, inte %d."},
+	"api.toolong":     {"Description is too long. Max %d chars. Got %d", "Meddelandet är för långt: högst %d tecken, men det har %d."},
+	"api.badphone":    {"'%s' is not a valid phone number", "'%s' är inte ett giltigt telefonnummer."},
+	"api.notmobile":   {"'%s' is not a mobile number", "'%s' är inte ett mobilnummer."},
+	"api.needmessage": {"A message is required for links that expire after 6 months or more, or never", "Länkar som gäller i 6 månader eller längre, eller aldrig slutar gälla, måste ha ett meddelande."},
+	"api.badexpiry":   {"'expireAfterSeconds' must be between 0 and %d. Got %d", "'expireAfterSeconds' måste vara mellan 0 och %d, inte %d."},
 }

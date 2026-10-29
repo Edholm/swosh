@@ -17,6 +17,9 @@ const (
 	defaultExpiry = 2 * 24 * time.Hour
 	// maxExpiry keeps expiry times far inside what Postgres can store.
 	maxExpiry = 100 * 365 * 24 * time.Hour
+	// longExpiry is half a year, the form's "6 months". Links that live this
+	// long, or forever, need a message to tell them apart.
+	longExpiry = 15_768_000 * time.Second
 	// maxAmount is the most anyone can Swish in one payment, in kronor.
 	maxAmount         = 150_000
 	maxMessageLength  = 50
@@ -129,6 +132,9 @@ func (req createRequest) validate(now time.Time) (newSwosh, error) {
 	expiresOn, err := req.expiresOn(now)
 	if err != nil {
 		return newSwosh{}, err
+	}
+	if description == nil && (expiresOn == nil || expiresOn.Sub(now) >= longExpiry) {
+		return newSwosh{}, invalid("message", "api.needmessage")
 	}
 	return newSwosh{
 		Payee:           payee,

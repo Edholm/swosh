@@ -255,6 +255,7 @@ func TestIndexAndStaticFiles(t *testing.T) {
 
 func TestCreateErrors(t *testing.T) {
 	long := strings.Repeat("a", 51)
+	const needMessage = "A message is required for links that expire after 6 months or more, or never"
 	tests := []struct {
 		name, body, reason, field string
 	}{
@@ -277,6 +278,11 @@ func TestCreateErrors(t *testing.T) {
 		{"unparsable phone number", `{"phone":"x","amount":100}`, "'x' is not a valid phone number", "phone"},
 		{"landline", `{"phone":"08-123 456","amount":100}`, "'08-123 456' is not a mobile number", "phone"},
 		{"foreign mobile", `{"phone":"+4791234567","amount":100}`, "'+4791234567' is not a mobile number", "phone"},
+		{"no message for 6 months", `{"phone":"0700000000","amount":100,"expireAfterSeconds":15768000}`, needMessage, "message"},
+		{"blank message for 6 months", `{"phone":"0700000000","amount":100,"message":"  ","expireAfterSeconds":"15768000"}`, needMessage, "message"},
+		{"no message for a year", `{"phone":"0700000000","amount":100,"expireAfterSeconds":31536000}`, needMessage, "message"},
+		{"no message, never expires", `{"phone":"0700000000","amount":100,"expireAfterSeconds":null}`, needMessage, "message"},
+		{"no message, never expires from the form", `{"phone":"1230000000","amount":"25","message":"","expireAfterSeconds":""}`, needMessage, "message"},
 		{"negative expiry", `{"phone":"0700000000","amount":100,"expireAfterSeconds":-1}`, "'expireAfterSeconds' must be between 0 and 3153600000. Got -1", ""},
 	}
 	for _, tt := range tests {
@@ -352,8 +358,18 @@ func TestCreate(t *testing.T) {
 		{
 			// The web form sends every value as a string, and "" for "Never".
 			name: "form values as strings",
-			body: `{"phone":"1230000000","amount":"25","message":"","expireAfterSeconds":""}`,
-			want: sqlc.CreateSwoshParams{Payee: "1230000000", Amount: 25, MessageEditable: true},
+			body: `{"phone":"1230000000","amount":"25","message":"msg","expireAfterSeconds":""}`,
+			want: sqlc.CreateSwoshParams{Payee: "1230000000", Amount: 25, Description: ptr("msg"), MessageEditable: true},
+		},
+		{
+			name: "no message just under 6 months",
+			body: `{"phone":"0700000000","amount":100,"expireAfterSeconds":15767999}`,
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, ExpiresOn: ptr(now.Add(15767999 * time.Second)), MessageEditable: true},
+		},
+		{
+			name: "message for 6 months",
+			body: `{"phone":"0700000000","amount":100,"message":"Hyra","expireAfterSeconds":15768000}`,
+			want: sqlc.CreateSwoshParams{Payee: "070-000 00 00", Amount: 100, Description: ptr("Hyra"), ExpiresOn: ptr(now.Add(longExpiry)), MessageEditable: true},
 		},
 		{
 			name: "form values with expiry",
