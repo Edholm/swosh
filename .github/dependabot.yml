@@ -6,20 +6,17 @@ multi-ecosystem-groups:
   deps:
     schedule:
       interval: weekly
+    # Dependabot adds the colon after a prefix that ends in ")".
+    commit-message:
+      prefix: chore(deps)
 
 updates:
   - package-ecosystem: github-actions
     directory: /
     patterns: ["*"]
     multi-ecosystem-group: deps
-    commit-message:
-      prefix: chore
-      include: scope
 
   - package-ecosystem: gomod
     directory: /
     patterns: ["*"]
     multi-ecosystem-group: deps
-    commit-message:
-      prefix: chore
-      include: scope
