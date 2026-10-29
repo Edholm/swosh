@@ -98,8 +98,9 @@ with a personal access token that has `write:packages`. CI pushes the image for 
 commit on master, with its `GITHUB_TOKEN`.
 
 CI releases with [semantic-release](https://semantic-release.gitbook.io/) on every push to
-master: when the Conventional Commits since the last `v*` tag include a `fix` (patch), or
-a `feat` or breaking change (minor; breaking changes never bump the major version), it
+master: when the Conventional Commits since the last `v*` tag include a `fix` or
+`chore(deps)` (patch), or a `feat` or breaking change (minor; breaking changes never bump
+the major version), it
 tags the commit with the next version and creates a GitHub release with the notes. See
 `.releaserc.json`.
 
