@@ -207,7 +207,7 @@ func TestQR(t *testing.T) {
 
 func TestIndexAndStaticFiles(t *testing.T) {
 	ts := newTestServer(t)
-	for _, target := range []string{"/", "/css/swosh.css", "/js/swosh.js", "/js/preview.js", "/img/money.svg"} {
+	for _, target := range []string{"/", "/css/swosh.css", "/js/swosh.js", "/js/preview.js", "/img/icon.svg"} {
 		if rec := ts.do(t, http.MethodGet, target, ""); rec.Code != http.StatusOK {
 			t.Errorf("GET %s = %d, want 200", target, rec.Code)
 		}
