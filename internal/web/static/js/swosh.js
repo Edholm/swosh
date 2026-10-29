@@ -18,8 +18,71 @@ document.addEventListener('DOMContentLoaded', function () {
   let share = null;
   let copyTimer = 0;
 
-  // People mostly make links to their own number, so remember the last one.
-  phone.value = load('swosh.phone');
+  // People mostly make links to their own number, so the last few numbers
+  // are kept on this device: the latest fills the field and all of them are
+  // offered as buttons below it.
+  const recent = document.getElementById('recent-numbers');
+  const recentList = document.getElementById('recent-list');
+  let numbers = loadNumbers();
+  phone.value = numbers[0] || '';
+  renderNumbers();
+  phone.addEventListener('input', markCurrentNumber);
+
+  function renderNumbers() {
+    recentList.replaceChildren(...numbers.map(numberChip));
+    recent.hidden = numbers.length === 0;
+    markCurrentNumber();
+  }
+
+  function numberChip(number) {
+    const pick = document.createElement('button');
+    pick.type = 'button';
+    pick.className = 'chip-pick';
+    pick.textContent = number;
+    pick.dataset.key = numberKey(number);
+    pick.addEventListener('click', function () {
+      phone.value = number;
+      phone.removeAttribute('aria-invalid');
+      markCurrentNumber();
+      amount.focus();
+    });
+
+    const forget = document.createElement('button');
+    forget.type = 'button';
+    forget.className = 'chip-forget';
+    forget.title = 'Forget this number';
+    forget.setAttribute('aria-label', 'Forget ' + number);
+    forget.append(icon('x'));
+    forget.addEventListener('click', function () {
+      numbers = numbers.filter(function (n) {
+        return numberKey(n) !== numberKey(number);
+      });
+      saveNumbers(numbers);
+      renderNumbers();
+      // The button is gone, so focus would fall back to the page.
+      phone.focus();
+    });
+
+    const chip = document.createElement('li');
+    chip.className = 'chip';
+    chip.append(pick, forget);
+    return chip;
+  }
+
+  function markCurrentNumber() {
+    const key = numberKey(phone.value);
+    for (const pick of recentList.querySelectorAll('.chip-pick')) {
+      pick.setAttribute('aria-current', String(pick.dataset.key === key));
+    }
+  }
+
+  function rememberNumber(number) {
+    numbers = [number].concat(numbers.filter(function (n) {
+      return numberKey(n) !== numberKey(number);
+    })).slice(0, maxNumbers);
+    saveNumbers(numbers);
+    renderNumbers();
+  }
 
   function updateCount() {
     count.textContent = message.value.length + '/' + message.maxLength;
@@ -68,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showError(body.reason || 'Something went wrong (' + resp.status + ').', true);
         return;
       }
-      save('swosh.phone', req.phone);
+      rememberNumber(req.phone);
       showResult(body.url, req);
     } catch (err) {
       console.log('Create failed: ', err);
@@ -140,19 +203,46 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-// load and save use localStorage, which may be missing or full.
-function load(key) {
+const numbersKey = 'swosh.numbers';
+const maxNumbers = 3;
+
+// numberKey makes "070-123 45 67", "0701234567" and "+46 70 123 45 67" the
+// same number.
+function numberKey(number) {
+  return number.replace(/[^\d+]/g, '').replace(/^(\+|00)46/, '0');
+}
+
+// loadNumbers and saveNumbers use localStorage, which may be missing, full
+// or hold something else under the key.
+function loadNumbers() {
   try {
-    return localStorage.getItem(key) || '';
+    const numbers = JSON.parse(localStorage.getItem(numbersKey));
+    if (!Array.isArray(numbers)) {
+      return [];
+    }
+    return numbers.filter(function (n) {
+      return typeof n === 'string' && n !== '';
+    }).slice(0, maxNumbers);
   } catch {
-    return '';
+    return [];
   }
 }
 
-function save(key, value) {
+function saveNumbers(numbers) {
   try {
-    localStorage.setItem(key, value);
+    localStorage.setItem(numbersKey, JSON.stringify(numbers));
   } catch {
     // Not remembered, then.
   }
+}
+
+function icon(name) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(ns, 'use');
+  use.setAttribute('href', '/img/icons.svg#' + name);
+  svg.append(use);
+  return svg;
 }

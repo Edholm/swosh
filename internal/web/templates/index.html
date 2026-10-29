@@ -36,7 +36,7 @@
     <section class="card create-card" aria-labelledby="create-title">
         <h2 class="card-title" id="create-title">Create a link</h2>
         <form class="form" id="create-form" novalidate>
-            <div class="field-row">
+            <div class="field-row create-row">
                 <div class="field">
                     <label class="label" for="phone">Swish number</label>
                     <div class="control">
@@ -44,6 +44,10 @@
                         <input class="input input-number" type="tel" id="phone" maxlength="20" inputmode="tel"
                                autocomplete="tel" placeholder="070-123 45 67" required>
                     </div>
+                </div>
+                <div class="recent" id="recent-numbers" hidden>
+                    <span class="recent-label" id="recent-label">Recent</span>
+                    <ul class="recent-list" id="recent-list" aria-labelledby="recent-label"></ul>
                 </div>
                 <div class="field">
                     <label class="label" for="amount">Amount</label>

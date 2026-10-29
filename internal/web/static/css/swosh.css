@@ -647,6 +647,92 @@ select.input {
         grid-template-columns: 3fr 2fr;
         gap: 0.9rem;
     }
+
+    /* The recent numbers come right after the number in the page, but sit
+       below both fields when they are side by side. */
+    .create-row .recent {
+        grid-column: 1 / -1;
+        order: 1;
+    }
+}
+
+.recent {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-top: -0.4rem;
+}
+
+.recent-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.recent-list {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.chip:has([aria-current="true"]) {
+    color: var(--primary);
+    background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+    border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+.chip button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.chip button:hover {
+    color: var(--primary);
+}
+
+.chip button:focus-visible {
+    outline-offset: -3px;
+}
+
+.chip-pick {
+    padding: 0.3rem 0.35rem 0.3rem 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.chip .chip-forget {
+    padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+    color: var(--muted);
+}
+
+.chip .chip-forget:hover {
+    color: var(--danger);
+}
+
+.chip-forget .icon {
+    width: 0.95rem;
+    height: 0.95rem;
 }
 
 .steps {
