@@ -130,7 +130,8 @@ IMAGE_TAGS = $(shell git rev-parse --short HEAD)$(foreach t,$(RELEASE_TAGS),$(co
 # The source label links the GHCR package to the repository, which lets CI's
 # GITHUB_TOKEN push to it even when the package was created by a local push.
 IMAGE_SOURCE := https://github.com/Edholm/swosh
-KO_BUILD = VERSION='$(VERSION)' $(KO) build --bare --tags='$(IMAGE_TAGS)' \
+# --sbom=none skips the SBOM ko would otherwise push as an extra image-index entry.
+KO_BUILD = VERSION='$(VERSION)' $(KO) build --bare --sbom=none --tags='$(IMAGE_TAGS)' \
 	--image-label=org.opencontainers.image.source=$(IMAGE_SOURCE) ./cmd/swosh
 KO_DEP := $(if $(filter $(BIN)/ko,$(KO)),$(KO_STAMP))
 
