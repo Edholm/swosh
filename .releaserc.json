@@ -12,7 +12,29 @@
         ]
       }
     ],
-    ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "Features" },
+            { "type": "feature", "section": "Features" },
+            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "perf", "section": "Performance Improvements" },
+            { "type": "revert", "section": "Reverts" },
+            { "type": "chore", "scope": "deps", "section": "Dependencies" },
+            { "type": "docs", "section": "Documentation", "effect": "hidden" },
+            { "type": "style", "section": "Styles", "effect": "hidden" },
+            { "type": "chore", "section": "Miscellaneous Chores", "effect": "hidden" },
+            { "type": "refactor", "section": "Code Refactoring", "effect": "hidden" },
+            { "type": "test", "section": "Tests", "effect": "hidden" },
+            { "type": "build", "section": "Build System", "effect": "hidden" },
+            { "type": "ci", "section": "Continuous Integration", "effect": "hidden" }
+          ]
+        }
+      }
+    ],
     [
       "@semantic-release/github",
       { "successComment": false, "failComment": false, "releasedLabels": false }
