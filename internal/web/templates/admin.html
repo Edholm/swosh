@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Admin panel</title>
+    <title>Links · Swosh admin</title>
     {{template "admin-head" .}}
 </head>
-<body class="container">
-<div class="row justify-content-center margin-top-2">
-    <div class="col-lg-7">
-        <div class="margin-bottom-2">
-            {{template "admin-title" .}}
-            <a href="/" class="btn btn-light float-right"><i class="fad fa-caret-left"></i> Back</a>
-            <h3>All Swosh entities</h3>
-            <h5 class="margin-bottom-1">Total count: {{.Count}}</h5>
+<body>
+{{template "admin-topbar" .}}
+
+<main class="container admin">
+    <div class="page-head">
+        <div>
+            <h1>Links</h1>
+            <p class="muted"><strong>{{.Count}}</strong> {{if eq .Count 1}}link{{else}}links{{end}} in total</p>
         </div>
-        {{template "admin-error" .}}
-        {{template "admin-links" .}}
+        {{if .Links}}
+        <div class="control search">
+            {{template "icon" "search"}}
+            <input class="input" type="search" id="filter" placeholder="Filter by id, number or message"
+                   aria-label="Filter links" autocomplete="off">
+        </div>
+        {{end}}
     </div>
-</div>
+    {{template "admin-error" .}}
+    {{if .Links}}
+    {{template "admin-links" .}}
+    <p class="empty" id="no-matches" hidden>No links match the filter.</p>
+    {{else}}
+    <p class="empty">No links yet. <a href="/">Create one</a></p>
+    {{end}}
+</main>
+
+{{template "delete-dialog"}}
 </body>
 </html>

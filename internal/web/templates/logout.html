@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Log out</title>
+    <title>Log out · Swosh</title>
     {{template "head"}}
 </head>
-<body class="container">
-<div class="row justify-content-center margin-top-2">
-    <div class="col-lg-5">
-        <h1>Are you sure you want to log out?</h1>
-        <form method="post" action="/logout" class="margin-top-1">
-            <a href="/admin" class="btn btn-light"><i class="fad fa-caret-left"></i> Back</a>
-            <button type="submit" class="btn btn-primary float-right"><i class="fad fa-sign-out-alt"></i> Log out</button>
+<body>
+<header class="container topbar">
+    {{template "brand"}}
+</header>
+
+<main class="container center-page">
+    <div class="card narrow-card">
+        <span class="icon-badge">{{template "icon" "log-out"}}</span>
+        <h1>Log out?</h1>
+        <p>You will have to sign in again to get back to the admin pages.</p>
+        <form method="post" action="/logout" class="form-actions">
+            <a href="/admin" class="btn btn-ghost">{{template "icon" "arrow-left"}} Back</a>
+            <button type="submit" class="btn btn-primary">{{template "icon" "log-out"}} Log out</button>
         </form>
     </div>
-</div>
+</main>
 </body>
 </html>

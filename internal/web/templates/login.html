@@ -1,35 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Log in</title>
+    <title>Sign in · Swosh</title>
     {{template "head"}}
 </head>
-<body class="container">
-<div class="row justify-content-center margin-top-2">
-    <div class="col-lg-5">
-        <h1><i class="fad fa-unlock-alt"></i> Please log in</h1>
+<body>
+<header class="container topbar">
+    {{template "brand"}}
+</header>
+
+<main class="container center-page">
+    <div class="card narrow-card">
+        <span class="icon-badge">{{template "icon" "lock"}}</span>
+        <h1>Admin sign in</h1>
+        <p>Sign in to manage Swosh links.</p>
         {{if .LoggedOut}}
-        <div class="alert alert-success" role="alert">You have been logged out.</div>
+        <div class="alert alert-success" role="status">
+            {{template "icon" "circle-check"}}<p>You have been logged out.</p>
+        </div>
         {{end}}
         {{with .Error}}
-        <div class="alert alert-danger" role="alert">{{.}}</div>
+        <div class="alert alert-danger" role="alert">{{template "icon" "circle-alert"}}<p>{{.}}</p></div>
         {{end}}
-        <form method="post" action="/login" class="margin-top-1">
+        <form method="post" action="/login" class="form">
             {{with .Next}}<input type="hidden" name="next" value="{{.}}">{{end}}
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" value="{{.Username}}" class="form-control"
-                       autocomplete="username" required autofocus>
+            <div class="field">
+                <label class="label" for="username">Username</label>
+                <div class="control">
+                    {{template "icon" "user-round"}}
+                    <input class="input" type="text" id="username" name="username" value="{{.Username}}"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control"
-                       autocomplete="current-password" required>
+            <div class="field">
+                <label class="label" for="password">Password</label>
+                <div class="control">
+                    {{template "icon" "lock"}}
+                    <input class="input" type="password" id="password" name="password"
+                           autocomplete="current-password" required>
+                </div>
             </div>
-            <a href="/" class="btn btn-light"><i class="fad fa-caret-left"></i> Back</a>
-            <button type="submit" class="btn btn-primary float-right"><i class="fad fa-sign-in-alt"></i> Log in</button>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">{{template "icon" "log-in"}} Sign in</button>
         </form>
     </div>
-</div>
+    <a href="/" class="back-link">{{template "icon" "arrow-left"}} Back to Swosh</a>
+</main>
 </body>
 </html>

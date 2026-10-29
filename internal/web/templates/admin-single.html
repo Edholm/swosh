@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Admin panel</title>
+    <title>Edit link · Swosh admin</title>
     {{template "admin-head" .}}
 </head>
-<body class="container">
-<div class="row justify-content-center margin-top-2">
-    <div class="col-lg-7">
-        <div class="margin-bottom-2">
-            {{template "admin-title" .}}
-            <a href="/admin" class="btn btn-light float-right"><i class="fad fa-caret-left"></i> Back</a>
-        </div>
-        {{template "admin-error" .}}
-        {{template "admin-links" .}}
+<body>
+{{template "admin-topbar" .}}
+
+<main class="container admin">
+    <a href="/admin" class="back-link">{{template "icon" "arrow-left"}} All links</a>
+    <div class="page-head">
+        <h1>Edit link</h1>
     </div>
-</div>
+    {{template "admin-error" .}}
+    {{if .Links}}{{template "admin-links" .}}{{end}}
+</main>
+
+{{template "delete-dialog"}}
 </body>
 </html>

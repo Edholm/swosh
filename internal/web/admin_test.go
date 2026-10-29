@@ -270,7 +270,7 @@ func TestBasicAuth(t *testing.T) {
 	c.header.Set("Authorization", "Basic "+basic("admin", password))
 	rec := c.do(t, http.MethodGet, "/admin", nil)
 	wantStatus(t, rec, http.StatusOK)
-	if !strings.Contains(rec.Body.String(), "Total count: 1") {
+	if !strings.Contains(rec.Body.String(), "<strong>1</strong> link in total") {
 		t.Error("list does not show the count")
 	}
 	// Basic requests have no session and so no CSRF token.
@@ -293,7 +293,7 @@ func TestMissingAuthority(t *testing.T) {
 	token := c.login(t, "viewer")
 	rec := c.do(t, http.MethodGet, "/admin", nil)
 	wantStatus(t, rec, http.StatusOK)
-	if body := rec.Body.String(); strings.Contains(body, "delete-btn") || strings.Contains(body, "Update") {
+	if body := rec.Body.String(); strings.Contains(body, "delete-btn") || strings.Contains(body, "Save changes") {
 		t.Error("the list offers buttons the user may not use")
 	}
 	form := url.Values{"_csrf": {token}, "id": {"abc123"}, "payee": {"1"}, "amount": {"2"}}
@@ -463,7 +463,7 @@ func TestAdminPages(t *testing.T) {
 	rec := c.do(t, http.MethodGet, "/admin/", nil)
 	wantStatus(t, rec, http.StatusOK)
 	body := rec.Body.String()
-	for _, want := range []string{"Total count: 2", "Logged in user: admin", `href="/abc123/qr"`, "2026-10-22T12:00:00Z", "&lt;b&gt;&#34;hi&#34;&lt;/b&gt;"} {
+	for _, want := range []string{"<strong>2</strong> links in total", "Signed in as <strong>admin</strong>", `href="/abc123/qr"`, "2026-10-22T12:00:00Z", "&lt;b&gt;&#34;hi&#34;&lt;/b&gt;"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("list is missing %s", want)
 		}
@@ -497,7 +497,7 @@ func TestSecurityHeaders(t *testing.T) {
 	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
 	for _, target := range []string{"/", "/abc123", "/admin", "/login", "/nope/nope/nope"} {
 		h := ts.do(t, http.MethodGet, target, "").Header()
-		if csp := h.Get("Content-Security-Policy"); !strings.Contains(csp, "https://maxcdn.bootstrapcdn.com") || !strings.Contains(csp, "frame-ancestors 'none'") {
+		if csp := h.Get("Content-Security-Policy"); !strings.Contains(csp, "style-src 'self';") || !strings.Contains(csp, "frame-ancestors 'none'") {
 			t.Errorf("%s: Content-Security-Policy = %q", target, csp)
 		}
 		if h.Get("X-Content-Type-Options") != "nosniff" || h.Get("X-Frame-Options") != "DENY" {
@@ -558,7 +558,7 @@ func TestAdminWithPostgres(t *testing.T) {
 	c.header.Set(csrfHeader, token)
 	wantStatus(t, c.do(t, http.MethodDelete, "/admin/fika", nil), http.StatusSeeOther)
 	rec := c.do(t, http.MethodGet, "/admin", nil)
-	if !strings.Contains(rec.Body.String(), "Total count: 1") {
+	if !strings.Contains(rec.Body.String(), "<strong>1</strong> link in total") {
 		t.Errorf("list after delete: %s", rec.Body)
 	}
 }

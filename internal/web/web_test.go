@@ -169,7 +169,7 @@ func TestPreview(t *testing.T) {
 		`<meta property="og:title" content="Swish 100kr to 070-000 00 00"/>`,
 		`<meta property="og:image" content="https://test.swosh.me/abc123/qr">`,
 		`<dd>&lt;b&gt;pizza&lt;/b&gt;</dd>`,
-		`<dd>2026-10-22T13:00:00Z</dd>`,
+		`<time datetime="2026-10-22T13:00:00Z">`,
 		`href="swish://payment?data=%7B%22version%22%3A1%2C`,
 		`src="/abc123/qr"`,
 	} {
@@ -179,12 +179,12 @@ func TestPreview(t *testing.T) {
 	}
 
 	body = ts.do(t, http.MethodGet, "/forevr", "").Body.String()
-	for _, want := range []string{`content="No message given..."`, `<dd>never!</dd>`} {
+	for _, want := range []string{`content="No message given..."`, `<dd>Never</dd>`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("preview of a link without message and expiry is missing %s", want)
 		}
 	}
-	if strings.Contains(body, "<dt>Description</dt>") {
+	if strings.Contains(body, "<dt>Message</dt>") {
 		t.Error("preview of a link without message shows a description")
 	}
 }
@@ -207,10 +207,13 @@ func TestQR(t *testing.T) {
 
 func TestIndexAndStaticFiles(t *testing.T) {
 	ts := newTestServer(t)
-	for _, target := range []string{"/", "/css/swosh.css", "/js/swosh.js", "/js/preview.js", "/img/icon.svg"} {
+	for _, target := range []string{"/", "/css/swosh.css", "/js/swosh.js", "/js/preview.js", "/js/time.js", "/img/icon.svg", "/img/icons.svg", "/img/og.png"} {
 		if rec := ts.do(t, http.MethodGet, target, ""); rec.Code != http.StatusOK {
 			t.Errorf("GET %s = %d, want 200", target, rec.Code)
 		}
+	}
+	if want := `<meta property="og:image" content="https://test.swosh.me/img/og.png">`; !strings.Contains(ts.do(t, http.MethodGet, "/", "").Body.String(), want) {
+		t.Errorf("index is missing %s", want)
 	}
 }
 

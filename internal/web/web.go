@@ -138,13 +138,12 @@ func (s *server) routes() http.Handler {
 	})))
 }
 
-// contentSecurityPolicy is the Kotlin service's policy, minus jQuery, which
-// the admin page no longer needs, and the unused getbootstrap.com, and with
-// rules added for forms, framing and <base>. Font Awesome's script injects a
-// <style> element, hence 'unsafe-inline' for styles.
+// contentSecurityPolicy is the Kotlin service's policy, with rules added for
+// forms, framing and <base>. Every script, style and icon is served from
+// static, so nothing comes from a CDN.
 const contentSecurityPolicy = "default-src 'self'; " +
 	"script-src 'self'; " +
-	"style-src 'self' 'unsafe-inline' https://maxcdn.bootstrapcdn.com; " +
+	"style-src 'self'; " +
 	"img-src 'self' data:; " +
 	"font-src 'self'; " +
 	"object-src 'none'; " +
@@ -171,12 +170,13 @@ func (s *server) baseURL() string {
 }
 
 type indexPage struct {
+	BaseURL string
 	// LoggedIn shows the Admin button.
 	LoggedIn bool
 }
 
 func (s *server) index(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, "index.html", indexPage{LoggedIn: s.currentUser(r) != nil})
+	s.render(w, r, "index.html", indexPage{BaseURL: s.baseURL(), LoggedIn: s.currentUser(r) != nil})
 }
 
 type previewData struct {

@@ -1,129 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Swosh</title>
+    <title>Swosh – payment links for Swish</title>
     {{template "head"}}
+    <meta name="description" content="Make a short link that opens Swish with your number, the amount and a message filled in.">
+    <meta property="og:title" content="Swosh – payment links for Swish">
+    <meta property="og:description" content="Make a short link that opens Swish with your number, the amount and a message filled in.">
+    <meta property="og:image" content="{{.BaseURL}}/img/og.png">
+    <meta property="og:url" content="{{.BaseURL}}/">
+    <meta property="og:type" content="website">
     <script defer src="/js/swosh.js"></script>
 </head>
-<body class="container">
-<div class="row justify-content-center margin-top-2">
-    <div class="col-lg-7">
-        <h1>Generate Swosh link</h1>
-        <div class="card">
-            <div class="card-body">
-                Fill in the information below to generate a link that you can send to your friends, that when clicked
-                opens
-                <a href="https://www.swish.nu/"target="_blank" rel="noopener">Swish</a> with these values prefilled
-                <br>
-                <i>Note: the links only work on devices where the Swish app is installed</i>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row justify-content-center margin-top-1">
-    <div class="col-lg-7">
-        <form class="margin-top-1">
-            <div class="row">
-                <div class="form-group col-lg-6">
-                    <label for="phone">Swish number</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text"><i
-                                class="fad fa-mobile-android-alt"></i></span></div>
-                        <input type="text" class="form-control text-muted" maxlength="15" id="phone"
-                               placeholder="1230000000">
+<body>
+<header class="container topbar">
+    {{template "brand"}}
+    <nav class="nav">
+        {{if .LoggedIn}}
+        <a href="/admin" class="btn btn-ghost">{{template "icon" "lock"}} Admin</a>
+        {{end}}
+        <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-ghost btn-icon"
+           title="Swosh on GitHub">{{template "icon" "github"}}<span class="visually-hidden">Swosh on GitHub</span></a>
+    </nav>
+</header>
+
+<main class="container index">
+    <section class="index-intro">
+        <p class="eyebrow">{{template "icon" "sparkles"}} Payment links for Swish</p>
+        <h1>Get paid back <span class="gradient-text">in one tap</span></h1>
+        <p class="lead">
+            Make a short link that opens <a href="https://www.swish.nu/" target="_blank" rel="noopener">Swish</a>
+            with your number, the amount and a message filled in. Send it to your friends: they tap it and confirm.
+        </p>
+    </section>
+
+    <section class="card create-card" aria-labelledby="create-title">
+        <h2 class="card-title" id="create-title">Create a link</h2>
+        <form class="form" id="create-form" novalidate>
+            <div class="field-row">
+                <div class="field">
+                    <label class="label" for="phone">Swish number</label>
+                    <div class="control">
+                        {{template "icon" "smartphone"}}
+                        <input class="input input-number" type="tel" id="phone" maxlength="20" inputmode="tel"
+                               autocomplete="tel" placeholder="070-123 45 67" required>
                     </div>
                 </div>
-                <div class="form-group col-lg-6">
-                    <label for="amount">Amount you want</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text"><i class="fad fa-money-bill-wave"
-                                                                                           aria-hidden="true"></i></span>
-                        </div>
-                        <input type="number" min="1" max="125000" class="form-control" id="amount"
-                               placeholder="Amount">
+                <div class="field">
+                    <label class="label" for="amount">Amount</label>
+                    <div class="control">
+                        {{template "icon" "banknote"}}
+                        <input class="input input-number" type="text" id="amount" inputmode="numeric" maxlength="9"
+                               autocomplete="off" placeholder="100" required>
+                        <span class="control-suffix">kr</span>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="form-group col-lg-12">
+            <div class="field">
+                <div class="label">
                     <label for="message">Message</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text"><i class="fad fa-envelope-open-text"
-                                                                                           aria-hidden="true"></i></span>
-                        </div>
-                        <input type="text" class="form-control" maxlength="50" id="message"
-                               placeholder="Message (optional)">
-                    </div>
+                    <span class="label-aside" id="message-count"></span>
+                </div>
+                <div class="control">
+                    {{template "icon" "message-square-text"}}
+                    <input class="input" type="text" id="message" maxlength="50" autocomplete="off"
+                           placeholder="What's it for? (optional)">
                 </div>
             </div>
-            <div class="row">
-                <div class="form-group col-lg-12">
-                    <label title="The link will stop working after the selected amount of time" for="expire">Expires
-                        in</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text"><i
-                                class="fad fa-calendar-alt"
-                                aria-hidden="true"></i></span></div>
-                        <select class="form-control" id="expire">
-                            <option value="604800">1 week</option>
-                            <option value="15768000">6 month</option>
-                            <option value="2628000">1 month</option>
-                            <option value="86400">1 day</option>
-                            <option value="43200">12 hours</option>
-                            <option value="3600">1 hour</option>
-                            <option value="1800">30 minutes</option>
-                            <option value="600">10 minutes</option>
-                            <option value="">Never</option>
-                        </select>
-                    </div>
+            <div class="field">
+                <label class="label" for="expire">Link expires after</label>
+                <div class="control">
+                    {{template "icon" "clock"}}
+                    <select class="input" id="expire">
+                        <option value="600">10 minutes</option>
+                        <option value="1800">30 minutes</option>
+                        <option value="3600">1 hour</option>
+                        <option value="43200">12 hours</option>
+                        <option value="86400">1 day</option>
+                        <option value="604800" selected>1 week</option>
+                        <option value="2628000">1 month</option>
+                        <option value="15768000">6 months</option>
+                        <option value="">Never</option>
+                    </select>
+                    <svg class="icon icon-end" aria-hidden="true"><use href="/img/icons.svg#chevron-down"></use></svg>
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <button type="button" id="generate-link-btn" class="btn btn-success float-right"><i
-                            class="fad fa-link"></i> Give me my link!
-                    </button>
-                </div>
-            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="create-btn">
+                {{template "icon" "link"}} <span>Create link</span>
+            </button>
         </form>
-    </div>
-</div>
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="alert alert-danger error-position hidden" role="alert" id="erroralert">
-            <strong>Oh snap!</strong> Change a few things up and try submitting again.
-            <br/>
-            <i id="errortxt"></i>
+
+        <div class="alert alert-danger form-error" id="create-error" role="alert" hidden>
+            {{template "icon" "circle-alert"}}
+            <p><strong>Couldn't create the link</strong><span id="create-error-text"></span></p>
         </div>
-        <div class="card hidden" id="cardlinkdiv">
-            <h3 class="card-header">Your swosh url</h3>
-            <div class="card-block">
-                <div class="col-lg-12">
-                    <a href="#" id="swoshurl">https://swosh.me/herp</a>
-                    <button id="copy-to-clipboard-btn" class="btn btn-secondary margin-left-1" title="Copy to clipboard">
-                        <i class="fad fa-copy" aria-hidden="true"></i>
-                    </button>
-                </div>
+
+        <div class="result" id="result" role="status" hidden>
+            <div class="result-head">
+                {{template "icon" "circle-check"}}
+                <h3>Your link is ready</h3>
+            </div>
+            <div class="input-group">
+                <label class="visually-hidden" for="result-url">Your Swosh link</label>
+                <input class="input result-url" id="result-url" type="text" readonly>
+                <button type="button" class="btn btn-primary" id="copy-btn">
+                    {{template "icon" "copy"}}<span>Copy</span>
+                </button>
+            </div>
+            <div class="result-actions">
+                <button type="button" class="btn" id="share-btn" hidden>{{template "icon" "share-2"}} Share</button>
+                <a class="btn" id="preview-link" href="/" target="_blank" rel="noopener">
+                    {{template "icon" "eye"}} Preview
+                </a>
             </div>
         </div>
-    </div>
-</div>
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <hr>
-        <div class="row justify-content-left">
-            <div class="col">
-                <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener" class="btn btn-secondary">
-                    <span><i class="fad fa-code-branch"></i> Swosh on Github</span>
-                </a>
-                {{if .LoggedIn}}
-                <a href="/admin" class="btn btn-light float-right">
-                    <span><i class="fad fa-unlock-alt"></i> Admin</span>
-                </a>
-                {{end}}
+    </section>
+
+    <ol class="steps">
+        <li>
+            <span class="icon-badge">{{template "icon" "pencil"}}</span>
+            <div>
+                <h2>Fill in the details</h2>
+                <p>Your Swish number, the amount and what it's for.</p>
             </div>
-        </div>
-    </div>
-</div>
+        </li>
+        <li>
+            <span class="icon-badge">{{template "icon" "send"}}</span>
+            <div>
+                <h2>Share the link</h2>
+                <p>Drop it in the group chat, a text or an email.</p>
+            </div>
+        </li>
+        <li>
+            <span class="icon-badge">{{template "icon" "smartphone"}}</span>
+            <div>
+                <h2>They tap and pay</h2>
+                <p>Swish opens with everything filled in. On a computer, they scan a QR code instead.</p>
+            </div>
+        </li>
+    </ol>
+</main>
+
+{{template "footer"}}
 </body>
 </html>

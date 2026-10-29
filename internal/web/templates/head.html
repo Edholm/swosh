@@ -1,10 +1,26 @@
 {{define "head"}}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f6fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0c16" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/img/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
 <link href="/css/swosh.css" rel="stylesheet">
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<script defer src="/js/fontawesome.min.js"></script>
-<script defer src="/js/duotone.min.js"></script>
+{{end}}
+
+{{/* icon draws a symbol from img/icons.svg, e.g. {{template "icon" "link"}}. */}}
+{{define "icon"}}<svg class="icon" aria-hidden="true"><use href="/img/icons.svg#{{.}}"></use></svg>{{end}}
+
+{{define "brand"}}
+<a href="/" class="brand"><img src="/img/icon.svg" alt="" width="32" height="32">Swosh</a>
+{{end}}
+
+{{define "footer"}}
+<footer class="site-footer">
+    <div class="container">
+        <span>Swosh is open source on <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener">GitHub</a>.</span>
+        <span>Not affiliated with Swish.</span>
+    </div>
+</footer>
 {{end}}
