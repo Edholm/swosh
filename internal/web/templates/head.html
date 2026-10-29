@@ -16,11 +16,23 @@
 <a href="/" class="brand"><img src="/img/icon.svg" alt="" width="32" height="32">Swosh</a>
 {{end}}
 
+{{/*
+swish-logo is Swish's official primary logo, unedited, as their guidelines
+(swish.nu/marketing-toolbox/logotype) require: the dark-background file in
+dark mode, and always with clear space around it (see .swish-logo).
+*/}}
+{{define "swish-logo"}}
+<picture class="swish-logo">
+    <source srcset="/img/swish-logo-dark.png" media="(prefers-color-scheme: dark)">
+    <img src="/img/swish-logo-light.png" alt="Swish" width="600" height="808">
+</picture>
+{{end}}
+
 {{define "footer"}}
 <footer class="site-footer">
     <div class="container">
         <span>Swosh is open source on <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener">GitHub</a>.</span>
-        <span>Not affiliated with Swish.</span>
+        <span>Swosh is an independent service, not part of Swish.</span>
     </div>
 </footer>
 {{end}}

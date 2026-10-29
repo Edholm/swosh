@@ -644,6 +644,35 @@ select.input {
     letter-spacing: -0.04em;
 }
 
+/*
+ * Swish wants the height of its wordmark as clear space around the logo,
+ * about a sixth of the logo's height. Wherever the logo goes, keep at least
+ * 0.75rem around it free, through the gaps and padding of its container.
+ */
+.swish-logo {
+    flex: none;
+}
+
+.swish-logo img {
+    display: block;
+    width: auto;
+    height: 4rem;
+}
+
+.pays-with {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.pays-with p {
+    max-width: 22rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
 .gradient-text {
     background: var(--text-gradient);
     -webkit-background-clip: text;
@@ -993,6 +1022,13 @@ select.input {
         align-items: center;
         gap: 3.5rem;
     }
+}
+
+.pay-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
 }
 
 .pay-amount {

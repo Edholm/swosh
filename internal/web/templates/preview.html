@@ -23,7 +23,10 @@
 <main class="preview">
     <article class="card pay">
         <div>
-            <p class="eyebrow">{{template "icon" "hand-coins"}} Payment request</p>
+            <div class="pay-head">
+                <p class="eyebrow">{{template "icon" "hand-coins"}} Payment request</p>
+                {{template "swish-logo"}}
+            </div>
             <p class="pay-amount">{{.Amount}}<span class="pay-currency">kr</span></p>
             <dl class="pay-details">
                 <div>
@@ -42,7 +45,7 @@
                 </div>
             </dl>
             <a href="{{.SwishURI}}" class="btn btn-primary btn-lg btn-block" id="openSwish">
-                Open in Swish {{template "icon" "arrow-right"}}
+                Pay with Swish {{template "icon" "arrow-right"}}
             </a>
             <p class="pay-hint">You check and confirm the payment in Swish{{with .Editable}}, where you can change {{.}}{{end}}.</p>
         </div>
