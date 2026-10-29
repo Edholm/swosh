@@ -102,11 +102,6 @@ command has to be given: `compose.yaml` sets `command: [serve]`, and by hand it
 is `docker run ko.local/swosh serve`. Without a shell or curl in the image, health
 checks run `swosh healthcheck`, which requests `/health` on the actuator port.
 
-## Moving from the Kotlin service
-
-The one-time move from the old Kotlin service and its MongoDB is described in
-[docs/cutover.md](docs/cutover.md).
-
 ## License
 
 See the [LICENSE](LICENSE.md) file for license rights and limitations (MIT).

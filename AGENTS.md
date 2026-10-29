@@ -6,13 +6,9 @@ This file provides guidance to AI coding agents when working with code in this r
 
 Swosh creates short links that open Swish (Swedish mobile payments) with a prefilled payee, amount and message.
 
-It was ported from Kotlin/Spring Boot + MongoDB to Go + PostgreSQL, in steps:
-1. Foundation: done.
-2. `feat/public-api`: create API, preview/redirect/QR pages, expiry job, metrics: done.
-3. `feat/admin`: login and admin CRUD: done.
-4. `refactor/cutover`: ko image, compose, data move runbook (`docs/cutover.md`), removal of Kotlin and `cmd/mongo-migrate`: done. The deploy script is being redone separately.
+It was ported from Kotlin/Spring Boot + MongoDB to Go + PostgreSQL, and production moved over on 2026-10-29. The production deploy setup lives on the server, not in this repo.
 
-The Kotlin service is only in git history now, up to the commit before `refactor!: remove the Kotlin service`. Comments that say "like the Kotlin service" refer to its behaviour, which the Go code keeps.
+The Kotlin service, `cmd/mongo-migrate` and the cutover runbook (`docs/cutover.md`) are only in git history now. Comments that say "like the Kotlin service" refer to its behaviour, which the Go code keeps.
 
 ## Commands
 
