@@ -49,7 +49,7 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
 ## Data model gotchas
 
 - The tables mirror the Spring Data documents.
-  - Link IDs are usually 6 random base-32 characters; admins renamed a few to shorter IDs.
+  - New link IDs are three words, like `brave-otter-sings` (`internal/linkid`). Older ones are usually 6 random base-32 characters, and admins renamed a few to shorter IDs.
   - Almost all real links never expire (`expires_on` NULL).
 - Passwords keep Spring's `{bcrypt}$2a$…` format. Strip the `{bcrypt}` prefix before checking them with `x/crypto/bcrypt`.
 - There are no CHECK constraints on `amount`/`description`, on purpose: legacy rows break the API rules. Validate in Go.

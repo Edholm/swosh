@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -387,15 +386,6 @@ func TestCreateDatabaseError(t *testing.T) {
 	rec := ts.do(t, http.MethodPost, "/api/create", `{"phone":"0700000000","amount":1}`)
 	if rec.Code != http.StatusInternalServerError || !strings.Contains(rec.Body.String(), "Unable to generate Swosh!") {
 		t.Errorf("got %d %s, want 500 with a reason", rec.Code, rec.Body)
-	}
-}
-
-func TestNewID(t *testing.T) {
-	valid := regexp.MustCompile(`^[0-9a-v]{6}$`)
-	for range 1000 {
-		if id := newID(); !valid.MatchString(id) {
-			t.Fatalf("newID() = %q, want 6 base-32 characters", id)
-		}
 	}
 }
 

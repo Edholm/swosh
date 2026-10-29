@@ -5,7 +5,6 @@ package web
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -22,6 +21,7 @@ import (
 
 	"github.com/Edholm/swosh/internal/auth"
 	"github.com/Edholm/swosh/internal/db/sqlc"
+	"github.com/Edholm/swosh/internal/linkid"
 	"github.com/Edholm/swosh/internal/metrics"
 	"github.com/Edholm/swosh/internal/swish"
 )
@@ -34,8 +34,6 @@ var (
 )
 
 const (
-	idLength   = 6
-	idAlphabet = "0123456789abcdefghijklmnopqrstuv"
 	// createAttempts bounds retries when a random id is already taken.
 	createAttempts = 5
 	maxBodySize    = 64 << 10
@@ -92,7 +90,7 @@ func newServer(c Config) *server {
 		Config:      c,
 		tmpl:        template.Must(template.ParseFS(templateFiles, "templates/*.html")),
 		now:         time.Now,
-		newID:       newID,
+		newID:       linkid.New,
 		signer:      auth.NewSigner(key),
 		crossOrigin: http.NewCrossOriginProtection(),
 	}
@@ -349,17 +347,6 @@ func (s *server) renderStatus(w http.ResponseWriter, r *http.Request, code int, 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(code)
 	_, _ = buf.WriteTo(w)
-}
-
-// newID returns a random link id like the Kotlin service made: six base-32
-// characters.
-func newID() string {
-	b := make([]byte, idLength)
-	_, _ = rand.Read(b) // never fails
-	for i := range b {
-		b[i] = idAlphabet[b[i]%byte(len(idAlphabet))]
-	}
-	return string(b)
 }
 
 // instrument records request durations, labelled by route pattern the way
