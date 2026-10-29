@@ -64,6 +64,9 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
     steps:
       - uses: actions/checkout@v7
         with:
@@ -82,3 +85,15 @@ jobs:
 
       # Tags the image with the short commit SHA and latest.
       - run: make image-push KO=ko
+
+      # The same short SHA as IMAGE_TAGS in the Makefile, for the deploy job.
+      - id: tag
+        run: echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy
+    needs: image
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag: ${{ needs.image.outputs.tag }}
+    secrets: inherit

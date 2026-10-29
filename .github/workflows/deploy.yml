@@ -1,0 +1,45 @@
+name: Deploy
+
+# Runs after every master build (from go.yml), or by hand from the Actions tab
+# to deploy or roll back to any tag that is in ghcr.io/edholm/swosh.
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Image tag, e.g. a short commit SHA or v1.2.3
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    # One deploy at a time, and a newer one waits instead of cancelling one
+    # that is halfway done.
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+
+    steps:
+      - uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      # The swosh user's login shell only runs `deploy <tag>` and `status`,
+      # and checks the tag. Container logs stay on the server, as this repo's
+      # CI logs are public.
+      - name: Deploy ${{ inputs.tag }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          TAG: ${{ inputs.tag }}
+        run: ssh -o StrictHostKeyChecking=accept-new "swosh@$DEPLOY_HOST" deploy "$TAG"
