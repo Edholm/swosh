@@ -69,7 +69,7 @@ type Config struct {
 
 type server struct {
 	Config
-	tmpl        map[lang]*template.Template
+	tmpl        map[look]*template.Template
 	now         func() time.Time
 	newID       func() string
 	signer      *auth.Signer
@@ -115,6 +115,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("GET /logout", s.logoutForm)
 	mux.HandleFunc("POST /logout", s.logout)
 	mux.HandleFunc("GET /lang", s.setLang)
+	mux.HandleFunc("GET /theme", s.setTheme)
 	mux.HandleFunc("POST /api/create", s.create)
 	mux.HandleFunc("GET /{id}", s.preview)
 	mux.HandleFunc("GET /{id}/redir", s.redirect)
@@ -394,7 +395,7 @@ func (s *server) render(w http.ResponseWriter, r *http.Request, name string, dat
 
 func (s *server) renderStatus(w http.ResponseWriter, r *http.Request, code int, name string, data any) {
 	var buf bytes.Buffer
-	if err := s.tmpl[requestLang(r)].ExecuteTemplate(&buf, name, data); err != nil {
+	if err := s.tmpl[look{requestLang(r), requestTheme(r)}].ExecuteTemplate(&buf, name, data); err != nil {
 		slog.ErrorContext(r.Context(), "render template", slog.String("template", name), slog.Any("err", err))
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

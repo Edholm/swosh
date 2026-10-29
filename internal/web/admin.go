@@ -25,7 +25,7 @@ var validID = regexp.MustCompile(`^[A-Za-z0-9_-]{1,64}$`)
 
 // reservedIDs are first path segments the site uses itself. A link with one
 // of these ids could never be opened.
-var reservedIDs = []string{"admin", "api", "lang", "login", "logout"}
+var reservedIDs = []string{"admin", "api", "lang", "login", "logout", "theme"}
 
 type adminPage struct {
 	User  string

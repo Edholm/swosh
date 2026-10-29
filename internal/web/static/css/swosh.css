@@ -1,7 +1,8 @@
 /*
  * Swosh's styles. There is no framework: the pages are few and small, so a
  * theme in custom properties and a handful of components cover them.
- * Dark mode follows the system through prefers-color-scheme.
+ * Dark mode follows the system through prefers-color-scheme, unless the
+ * footer's switch picked a theme (data-theme on <html>).
  */
 
 :root {
@@ -39,8 +40,34 @@
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* The theme picked in the footer, else the system's. Keep the two dark
+   blocks the same. */
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --text-gradient: linear-gradient(100deg, #a5b4fc, #67e8f9);
+
+    --bg: #0a0c16;
+    --surface: #12152a;
+    --surface-2: #1a1e36;
+    --border: #252a47;
+    --border-strong: #353b5f;
+    --text: #e9ebf7;
+    --muted: #9ba1bf;
+    --primary: #949bff;
+    --primary-hover: #b4b9ff;
+    --success: #34d399;
+    --success-bg: #0b2a22;
+    --danger: #fca5a5;
+    --danger-bg: #2d1219;
+    --shadow-color: 230deg 50% 3%;
+}
+
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme]) {
         --text-gradient: linear-gradient(100deg, #a5b4fc, #67e8f9);
 
         --bg: #0a0c16;
@@ -228,6 +255,30 @@ code {
 
 .site-footer a:hover {
     color: var(--text);
+}
+
+.footer-switches {
+    display: flex;
+    gap: 1.25rem;
+}
+
+.theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Following the system, offer the theme it isn't in. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) .theme-switch-light {
+        display: none;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .theme-switch-dark {
+        display: none;
+    }
 }
 
 /* Buttons */

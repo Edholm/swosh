@@ -1,9 +1,17 @@
 {{define "head"}}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{{- if eq theme "light"}}
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f5f6fb">
+{{- else if eq theme "dark"}}
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0c16">
+{{- else}}
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f5f6fb" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0c16" media="(prefers-color-scheme: dark)">
+{{- end}}
 <link rel="icon" href="/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
 <link href="/css/swosh.css" rel="stylesheet">
@@ -23,9 +31,28 @@ dark mode, and always with clear space around it (see .swish-logo).
 */}}
 {{define "swish-logo"}}
 <picture class="swish-logo">
+    {{- if eq theme "dark"}}
+    <img src="/img/swish-logo-dark.png" alt="Swish" width="600" height="808">
+    {{- else}}
+    {{- if not theme}}
     <source srcset="/img/swish-logo-dark.png" media="(prefers-color-scheme: dark)">
+    {{- end}}
     <img src="/img/swish-logo-light.png" alt="Swish" width="600" height="808">
+    {{- end}}
 </picture>
+{{end}}
+
+{{/*
+theme-switch offers the theme the page isn't in. Without a picked theme the
+page follows the system, so it has both links and the CSS hides one.
+*/}}
+{{define "theme-switch"}}
+{{- if ne theme "dark"}}
+<a href="/theme?t=dark" class="theme-switch theme-switch-dark" rel="nofollow">{{template "icon" "moon"}} {{t "theme.dark"}}</a>
+{{- end}}
+{{- if ne theme "light"}}
+<a href="/theme?t=light" class="theme-switch theme-switch-light" rel="nofollow">{{template "icon" "sun"}} {{t "theme.light"}}</a>
+{{- end}}
 {{end}}
 
 {{define "footer"}}
@@ -33,8 +60,11 @@ dark mode, and always with clear space around it (see .swish-logo).
     <div class="container">
         <span>{{t "footer.source"}} <a href="https://github.com/Edholm/swosh" target="_blank" rel="noopener">GitHub</a>.</span>
         <span>{{t "footer.notswish"}}</span>
-        <a href="/lang?l={{t "lang.switch.code"}}" class="lang-switch" lang="{{t "lang.switch.code"}}"
-           hreflang="{{t "lang.switch.code"}}" rel="nofollow">{{t "lang.switch"}}</a>
+        <span class="footer-switches">
+            {{- template "theme-switch"}}
+            <a href="/lang?l={{t "lang.switch.code"}}" class="lang-switch" lang="{{t "lang.switch.code"}}"
+               hreflang="{{t "lang.switch.code"}}" rel="nofollow">{{t "lang.switch"}}</a>
+        </span>
     </div>
 </footer>
 {{end}}

@@ -140,16 +140,26 @@ func jsMessages(l lang) map[string]string {
 	return out
 }
 
-// parseTemplates parses the templates once per language. Templates write
-// {{t "key"}} for a message and {{lang}} for the language code.
-func parseTemplates() map[lang]*template.Template {
-	sets := map[lang]*template.Template{}
+// look is what a page is rendered in: a language and a theme.
+type look struct {
+	lang  lang
+	theme theme
+}
+
+// parseTemplates parses the templates once per language and theme. Templates
+// write {{t "key"}} for a message, {{lang}} for the language code and
+// {{theme}} for the theme picked in the footer, empty for the system's.
+func parseTemplates() map[look]*template.Template {
+	sets := map[look]*template.Template{}
 	for _, l := range langs {
-		sets[l] = template.Must(template.New("").Funcs(template.FuncMap{
-			"t":    func(key string, args ...any) (string, error) { return tr(l, key, args...) },
-			"lang": func() string { return string(l) },
-			"js":   func() map[string]string { return jsMessages(l) },
-		}).ParseFS(templateFiles, "templates/*.html"))
+		for _, th := range themes {
+			sets[look{l, th}] = template.Must(template.New("").Funcs(template.FuncMap{
+				"t":     func(key string, args ...any) (string, error) { return tr(l, key, args...) },
+				"lang":  func() string { return string(l) },
+				"theme": func() string { return string(th) },
+				"js":    func() map[string]string { return jsMessages(l) },
+			}).ParseFS(templateFiles, "templates/*.html"))
+		}
 	}
 	return sets
 }
@@ -163,6 +173,8 @@ var messages = map[string]translation{
 	// The switch offers the other language, named in that language.
 	"lang.switch":      {"Svenska", "English"},
 	"lang.switch.code": {"sv", "en"},
+	"theme.light":      {"Light", "Ljust"},
+	"theme.dark":       {"Dark", "Mörkt"},
 	"github.title":     {"Swosh on GitHub", "Swosh på GitHub"},
 	"create.link":      {"Create a link", "Skapa en länk"},
 

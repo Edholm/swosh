@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{lang}}">
+<html lang="{{lang}}"{{with theme}} data-theme="{{.}}"{{end}}>
 <head>
     <meta property="og:title" content="{{t "preview.og.title" .Amount .Payee}}"/>
     <meta property="og:image" content="{{.BaseURL}}/{{.ID}}/qr">
