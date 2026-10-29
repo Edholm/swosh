@@ -57,7 +57,6 @@ Use the tools in `./bin`, not global ones. A globally installed golangci-lint v1
   - Almost all real links never expire (`expires_on` NULL).
 - Passwords keep Spring's `{bcrypt}$2a$…` format. Strip the `{bcrypt}` prefix before checking them with `x/crypto/bcrypt`.
 - There are no CHECK constraints on `amount`/`description`, on purpose: legacy rows break the API rules. Validate in Go.
-- `ListSwoshes` sorts `expires_on DESC NULLS LAST` to match the old Mongo ordering.
 
 ## Conventions
 

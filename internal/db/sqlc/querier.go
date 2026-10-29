@@ -15,11 +15,13 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (int64, error)
 	DeleteExpiredSwoshes(ctx context.Context, now time.Time) ([]string, error)
 	DeleteSwosh(ctx context.Context, id string) (int64, error)
+	// Returns the ids that existed.
+	DeleteSwoshes(ctx context.Context, ids []string) ([]string, error)
 	GetSwosh(ctx context.Context, id string) (Swosh, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	// Leaves an existing link with the same id untouched, so imports can be re-run.
 	ImportSwosh(ctx context.Context, arg ImportSwoshParams) (int64, error)
-	// Latest expiry first and links that never expire last, like the old Mongo sort.
+	// Newest first.
 	ListSwoshes(ctx context.Context) ([]Swosh, error)
 	// Renames the link when new_id differs from id.
 	UpdateSwosh(ctx context.Context, arg UpdateSwoshParams) (int64, error)

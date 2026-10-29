@@ -46,6 +46,7 @@ type Store interface {
 	ListSwoshes(ctx context.Context) ([]sqlc.Swosh, error)
 	UpdateSwosh(ctx context.Context, arg sqlc.UpdateSwoshParams) (int64, error)
 	DeleteSwosh(ctx context.Context, id string) (int64, error)
+	DeleteSwoshes(ctx context.Context, ids []string) ([]string, error)
 	GetUserByUsername(ctx context.Context, username string) (sqlc.User, error)
 }
 
@@ -104,6 +105,8 @@ func (s *server) routes() http.Handler {
 	admin.Handle("GET /admin/{id}", s.admin("", s.adminSingle))
 	admin.Handle("POST /admin/{id}", s.admin(auth.Update, s.adminUpdate))
 	admin.Handle("DELETE /admin/{id}", s.admin(auth.Delete, s.adminDelete))
+	admin.Handle("DELETE /admin", s.admin(auth.Delete, s.adminDeleteMany))
+	admin.Handle("DELETE /admin/{$}", s.admin(auth.Delete, s.adminDeleteMany))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", s.index)

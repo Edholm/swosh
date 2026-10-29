@@ -26,13 +26,19 @@
 {{define "admin-links"}}
 <ul class="link-list" id="link-list">
     {{range .Links}}
-    <li data-search="{{.OriginalID}} {{.Payee}} {{.Description}}">
+    <li data-search="{{.OriginalID}} {{.Payee}} {{.Description}}"{{if $.CanDelete}} class="selectable"{{end}}>
+        {{if $.CanDelete}}
+        <input type="checkbox" class="link-select" value="{{.OriginalID}}" aria-label="Select {{.OriginalID}}">
+        {{end}}
         <details class="link"{{if eq (len $.Links) 1}} open{{end}}>
             <summary>
                 <span class="link-id">{{.OriginalID}}</span>
                 <span class="link-amount">{{.Amount}} kr</span>
                 <span class="link-payee">{{.Payee}}</span>
                 <span class="link-desc">{{.Description}}</span>
+                <span class="link-created" title="Created">
+                    {{template "icon" "plus"}}<time datetime="{{.CreatedAt}}" data-relative>{{.CreatedAt}}</time>
+                </span>
                 <span class="link-expiry badge">
                     {{template "icon" "clock"}}
                     {{with .ExpiresOn}}<time datetime="{{.}}" data-relative>{{.}}</time>{{else}}Never{{end}}
@@ -105,12 +111,24 @@
 </ul>
 {{end}}
 
+{{/* bulk-bar floats at the bottom of the list page while links are checked. */}}
+{{define "bulk-bar"}}
+<div class="bulk-bar" id="bulk-bar" role="region" aria-label="Selected links" hidden>
+    <span class="bulk-count"><strong id="bulk-count">0</strong> selected</span>
+    <button type="button" class="btn btn-sm btn-ghost" id="bulk-all">Select all</button>
+    <button type="button" class="btn btn-sm btn-ghost" id="bulk-clear">Clear</button>
+    <button type="button" class="btn btn-sm btn-danger-solid" id="bulk-delete">
+        {{template "icon" "trash-2"}} Delete
+    </button>
+</div>
+{{end}}
+
 {{define "delete-dialog"}}
 <dialog class="dialog" id="delete-dialog" aria-labelledby="delete-title">
     <form method="dialog">
         <span class="icon-badge icon-badge-danger">{{template "icon" "trash-2"}}</span>
-        <h2 id="delete-title">Delete <code id="delete-id"></code>?</h2>
-        <p>The link stops working right away. This can't be undone.</p>
+        <h2 id="delete-title">Delete <span id="delete-what"></span>?</h2>
+        <p id="delete-text"></p>
         <div class="alert alert-danger" id="delete-error" role="alert" hidden>
             {{template "icon" "circle-alert"}}<p id="delete-error-text"></p>
         </div>

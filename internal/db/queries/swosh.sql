@@ -3,9 +3,9 @@ SELECT * FROM swosh
 WHERE id = $1;
 
 -- name: ListSwoshes :many
--- Latest expiry first and links that never expire last, like the old Mongo sort.
+-- Newest first.
 SELECT * FROM swosh
-ORDER BY expires_on DESC NULLS LAST, created_at DESC;
+ORDER BY created_at DESC, id;
 
 -- name: CreateSwosh :one
 INSERT INTO swosh (id, payee, amount, description, expires_on, payee_editable, amount_editable, message_editable)
@@ -21,6 +21,12 @@ WHERE id = @id;
 -- name: DeleteSwosh :execrows
 DELETE FROM swosh
 WHERE id = $1;
+
+-- name: DeleteSwoshes :many
+-- Returns the ids that existed.
+DELETE FROM swosh
+WHERE id = ANY(sqlc.arg(ids)::text[])
+RETURNING id;
 
 -- name: DeleteExpiredSwoshes :many
 DELETE FROM swosh

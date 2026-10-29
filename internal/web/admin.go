@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -30,9 +31,10 @@ type adminPage struct {
 	User  string
 	CSRF  string
 	Error string
-	// Count is shown on the list page only.
-	Count int
-	Links []adminLink
+	// Count and CanDelete are used on the list page only.
+	Count     int
+	CanDelete bool
+	Links     []adminLink
 }
 
 // adminLink is one link's edit form. The fields hold form values as typed,
@@ -82,6 +84,7 @@ func (s *server) adminList(w http.ResponseWriter, r *http.Request, p *principal)
 	}
 	page := s.newAdminPage(p)
 	page.Count = len(links)
+	page.CanDelete = p.has(auth.Delete)
 	for _, sw := range links {
 		page.Links = append(page.Links, s.adminLinkOf(sw, p))
 	}
@@ -232,4 +235,32 @@ func (s *server) adminDelete(w http.ResponseWriter, r *http.Request, p *principa
 		slog.InfoContext(r.Context(), "deleted link", slog.String("id", id), slog.String("user", p.Name))
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+// maxDeleteMany caps how many links one bulk delete may name.
+const maxDeleteMany = 1000
+
+// adminDeleteMany deletes the links whose ids are in the JSON body
+// {"ids": [...]}. Missing links are skipped, like in adminDelete.
+func (s *server) adminDeleteMany(w http.ResponseWriter, r *http.Request, p *principal) {
+	var body struct {
+		IDs []string `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Body must be JSON like {\"ids\": [\"abc123\"]}", http.StatusBadRequest)
+		return
+	}
+	if len(body.IDs) == 0 || len(body.IDs) > maxDeleteMany {
+		http.Error(w, fmt.Sprintf("Name between 1 and %d ids", maxDeleteMany), http.StatusBadRequest)
+		return
+	}
+	deleted, err := s.Store.DeleteSwoshes(r.Context(), body.IDs)
+	if err != nil {
+		s.serverError(w, r, "delete links", err)
+		return
+	}
+	if len(deleted) > 0 {
+		slog.InfoContext(r.Context(), "deleted links", slog.Any("ids", deleted), slog.String("user", p.Name))
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

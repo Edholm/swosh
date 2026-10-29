@@ -30,6 +30,7 @@
     {{end}}
 </main>
 
+{{if and .Links .CanDelete}}{{template "bulk-bar"}}{{end}}
 {{template "delete-dialog"}}
 </body>
 </html>

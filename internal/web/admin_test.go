@@ -27,7 +27,9 @@ func (f *fakeStore) ListSwoshes(context.Context) ([]sqlc.Swosh, error) {
 	if f.err != nil {
 		return nil, f.err
 	}
-	return slices.SortedFunc(maps.Values(f.links), func(a, b sqlc.Swosh) int { return cmp.Compare(a.ID, b.ID) }), nil
+	return slices.SortedFunc(maps.Values(f.links), func(a, b sqlc.Swosh) int {
+		return cmp.Or(b.CreatedAt.Compare(a.CreatedAt), cmp.Compare(a.ID, b.ID))
+	}), nil
 }
 
 // UpdateSwosh fails with a unique violation when renaming onto a taken id,
@@ -58,6 +60,20 @@ func (f *fakeStore) DeleteSwosh(_ context.Context, id string) (int64, error) {
 	}
 	delete(f.links, id)
 	return 1, nil
+}
+
+func (f *fakeStore) DeleteSwoshes(_ context.Context, ids []string) ([]string, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	var deleted []string
+	for _, id := range ids {
+		if _, ok := f.links[id]; ok {
+			delete(f.links, id)
+			deleted = append(deleted, id)
+		}
+	}
+	return deleted, nil
 }
 
 func (f *fakeStore) GetUserByUsername(_ context.Context, name string) (sqlc.User, error) {
@@ -460,6 +476,51 @@ func TestDelete(t *testing.T) {
 	wantLogged(t, logged("deleted link"), map[string]string{"id": `"abc123"`, "user": `"admin"`})
 	// Deleting it again is no error, as in the Kotlin service.
 	wantStatus(t, c.do(t, http.MethodDelete, "/admin/abc123", nil), http.StatusSeeOther)
+}
+
+func TestDeleteMany(t *testing.T) {
+	ts := newTestServer(t,
+		sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1},
+		sqlc.Swosh{ID: "def456", Payee: "1230000000", Amount: 1},
+		sqlc.Swosh{ID: "keep12", Payee: "1230000000", Amount: 1},
+	)
+	ts.addUser(t, "admin", allAuthorities...)
+	logged := ts.captureLogs(t)
+	c := ts.client()
+	c.header.Set(csrfHeader, c.login(t, "admin"))
+
+	del := func(body string) *httptest.ResponseRecorder {
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodDelete, "/admin", strings.NewReader(body))
+		req.Header = c.header.Clone()
+		req.AddCookie(c.cookie)
+		rec := httptest.NewRecorder()
+		ts.handler.ServeHTTP(rec, req)
+		return rec
+	}
+	wantStatus(t, del(`{"ids": ["abc123", "def456", "missing"]}`), http.StatusNoContent)
+	if got := slices.Sorted(maps.Keys(ts.store.links)); !slices.Equal(got, []string{"keep12"}) {
+		t.Errorf("links left = %v, want [keep12]", got)
+	}
+	wantLogged(t, logged("deleted links"), map[string]string{"ids": `["abc123","def456"]`, "user": `"admin"`})
+
+	wantStatus(t, del(`{"ids": []}`), http.StatusBadRequest)
+	wantStatus(t, del(`not json`), http.StatusBadRequest)
+}
+
+func TestDeleteManyNeedsDeleteAuthority(t *testing.T) {
+	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
+	ts.addUser(t, "admin", auth.RoleAdmin, auth.Update)
+	c := ts.client()
+	c.header.Set(csrfHeader, c.login(t, "admin"))
+	if strings.Contains(c.do(t, http.MethodGet, "/admin", nil).Body.String(), "link-select") {
+		t.Error("list shows checkboxes to a user who can't delete")
+	}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodDelete, "/admin", strings.NewReader(`{"ids": ["abc123"]}`))
+	req.Header = c.header.Clone()
+	req.AddCookie(c.cookie)
+	rec := httptest.NewRecorder()
+	ts.handler.ServeHTTP(rec, req)
+	wantStatus(t, rec, http.StatusForbidden)
 }
 
 func TestAdminPages(t *testing.T) {

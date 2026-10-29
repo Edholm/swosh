@@ -145,21 +145,21 @@ func TestCreateSwoshWithoutOptionalFields(t *testing.T) {
 	}
 }
 
-func TestListSwoshesOrdersByExpiryWithNeverExpiringLast(t *testing.T) {
+func TestListSwoshesOrdersNewestFirst(t *testing.T) {
 	q := newQueries(t)
-	soon := time.Now().Add(time.Hour)
-	later := time.Now().Add(2 * time.Hour)
-	for _, p := range []sqlc.CreateSwoshParams{
-		{ID: "soon", Payee: "p", Amount: 1, ExpiresOn: &soon},
-		{ID: "never", Payee: "p", Amount: 1},
-		{ID: "later", Payee: "p", Amount: 1, ExpiresOn: &later},
+	ctx := t.Context()
+	now := time.Now()
+	for _, p := range []sqlc.ImportSwoshParams{
+		{ID: "middle", Payee: "p", Amount: 1, CreatedAt: now.Add(-time.Hour)},
+		{ID: "newest", Payee: "p", Amount: 1, CreatedAt: now},
+		{ID: "oldest", Payee: "p", Amount: 1, CreatedAt: now.Add(-2 * time.Hour)},
 	} {
-		if _, err := q.CreateSwosh(t.Context(), p); err != nil {
-			t.Fatalf("CreateSwosh(%s): %v", p.ID, err)
+		if _, err := q.ImportSwosh(ctx, p); err != nil {
+			t.Fatalf("ImportSwosh(%s): %v", p.ID, err)
 		}
 	}
 
-	list, err := q.ListSwoshes(t.Context())
+	list, err := q.ListSwoshes(ctx)
 	if err != nil {
 		t.Fatalf("ListSwoshes: %v", err)
 	}
@@ -167,7 +167,7 @@ func TestListSwoshesOrdersByExpiryWithNeverExpiringLast(t *testing.T) {
 	for _, s := range list {
 		ids = append(ids, s.ID)
 	}
-	if want := []string{"later", "soon", "never"}; !slices.Equal(ids, want) {
+	if want := []string{"newest", "middle", "oldest"}; !slices.Equal(ids, want) {
 		t.Errorf("ListSwoshes order = %v, want %v", ids, want)
 	}
 }
@@ -209,6 +209,24 @@ func TestDeleteSwosh(t *testing.T) {
 		if n, err := q.DeleteSwosh(t.Context(), "gone"); err != nil || n != want {
 			t.Errorf("DeleteSwosh = %d, %v; want %d rows", n, err, want)
 		}
+	}
+}
+
+func TestDeleteSwoshes(t *testing.T) {
+	q := newQueries(t)
+	ctx := t.Context()
+	for _, id := range []string{"a", "b", "keep"} {
+		if _, err := q.CreateSwosh(ctx, sqlc.CreateSwoshParams{ID: id, Payee: "p", Amount: 1}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ids, err := q.DeleteSwoshes(ctx, []string{"a", "b", "missing"})
+	slices.Sort(ids)
+	if err != nil || !slices.Equal(ids, []string{"a", "b"}) {
+		t.Fatalf("DeleteSwoshes = %v, %v; want [a b]", ids, err)
+	}
+	if list, _ := q.ListSwoshes(ctx); len(list) != 1 || list[0].ID != "keep" {
+		t.Errorf("left %v, want only keep", list)
 	}
 }
 
