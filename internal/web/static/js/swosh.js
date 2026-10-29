@@ -207,7 +207,13 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function showResult(url, req, expiry) {
-    resultUrl.value = url;
+    // The link wraps after the host and at the hyphens of the id, so the
+    // whole id shows on narrow phones too.
+    const base = url.slice(0, url.lastIndexOf('/') + 1);
+    const baseSpan = document.createElement('span');
+    baseSpan.className = 'result-base';
+    baseSpan.textContent = base;
+    resultUrl.replaceChildren(baseSpan, document.createElement('wbr'), url.slice(base.length));
     // The server sets the expiry from its own clock; this is close enough.
     resultExpiry.textContent = expiry.seconds
       ? 'This link expires in ' + expiry.label + ', on ' +
@@ -250,10 +256,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   copyBtn.addEventListener('click', async function () {
     try {
-      await navigator.clipboard.writeText(resultUrl.value);
+      await navigator.clipboard.writeText(share.url);
     } catch {
       // No clipboard API outside secure contexts.
-      resultUrl.select();
+      getSelection().selectAllChildren(resultUrl);
       document.execCommand('copy');
     }
     setCopied(true);
