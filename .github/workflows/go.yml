@@ -88,6 +88,9 @@ jobs:
           semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # npm says the 26 beta doesn't meet exec's semantic-release >=24.1.0
+          # peer range, as prereleases never match it. It works fine.
+          npm_config_legacy_peer_deps: "true"
 
   image:
     name: Build and push the image
