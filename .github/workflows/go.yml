@@ -65,6 +65,11 @@ jobs:
     permissions:
       contents: write
 
+    # The tag semantic-release made (from @semantic-release/exec's successCmd),
+    # empty when there was no release.
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+
     steps:
       - uses: actions/checkout@v7
         with:
@@ -74,10 +79,12 @@ jobs:
         with:
           node-version: 24
 
-      - run: >-
+      - id: release
+        run: >-
           npx --yes
           -p semantic-release@26.0.0-beta.5
           -p conventional-changelog-conventionalcommits@10.4.1
+          -p @semantic-release/exec@7.1.0
           semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,9 +98,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-
-    outputs:
-      tag: ${{ steps.tag.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v7
@@ -116,18 +120,12 @@ jobs:
       # commit has one, and latest.
       - run: make image-push KO=ko
 
-      # The release version on this commit, for the deploy job. Empty when the
-      # release job made no release, and then nothing is deployed.
-      - id: tag
-        run: |
-          tag=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-
   deploy:
     name: Deploy
-    needs: image
-    if: needs.image.outputs.tag != ''
+    # Only releases are deployed, by the tag semantic-release made.
+    needs: [release, image]
+    if: needs.release.outputs.tag != ''
     uses: ./.github/workflows/deploy.yml
     with:
-      tag: ${{ needs.image.outputs.tag }}
+      tag: ${{ needs.release.outputs.tag }}
     secrets: inherit

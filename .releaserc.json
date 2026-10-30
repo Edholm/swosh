@@ -38,6 +38,10 @@
     [
       "@semantic-release/github",
       { "successComment": false, "failComment": false, "releasedLabels": false }
+    ],
+    [
+      "@semantic-release/exec",
+      { "successCmd": "echo \"tag=${nextRelease.gitTag}\" >> \"$GITHUB_OUTPUT\"" }
     ]
   ]
 }
