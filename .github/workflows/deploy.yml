@@ -1,7 +1,7 @@
 name: Deploy
 
-# Runs after every master build (from go.yml), or by hand from the Actions tab
-# to deploy or roll back to any tag that is in ghcr.io/edholm/swosh.
+# Runs after a master build that made a release (from go.yml), or by hand from
+# the Actions tab to deploy or roll back to any release in ghcr.io/edholm/swosh.
 on:
   workflow_call:
     inputs:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Image tag, e.g. a short commit SHA or v1.2.3
+        description: Release tag, e.g. v1.2.3
         type: string
         required: true
 
@@ -29,6 +29,13 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      # Only release versions are deployed, never commit SHAs or latest.
+      - name: Check the tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Not a release tag: $TAG"; exit 1; }
+
       - uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}

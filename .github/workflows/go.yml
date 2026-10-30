@@ -116,13 +116,17 @@ jobs:
       # commit has one, and latest.
       - run: make image-push KO=ko
 
-      # The same short SHA as IMAGE_TAGS in the Makefile, for the deploy job.
+      # The release version on this commit, for the deploy job. Empty when the
+      # release job made no release, and then nothing is deployed.
       - id: tag
-        run: echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          tag=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy
     needs: image
+    if: needs.image.outputs.tag != ''
     uses: ./.github/workflows/deploy.yml
     with:
       tag: ${{ needs.image.outputs.tag }}
