@@ -210,8 +210,8 @@ func (q *Queries) ListSwoshes(ctx context.Context) ([]Swosh, error) {
 
 const updateSwosh = `-- name: UpdateSwosh :execrows
 UPDATE swosh
-SET id = $1, payee = $2, amount = $3, description = $4
-WHERE id = $5
+SET id = $1, payee = $2, amount = $3, description = $4, expires_on = $5
+WHERE id = $6
 `
 
 type UpdateSwoshParams struct {
@@ -219,6 +219,7 @@ type UpdateSwoshParams struct {
 	Payee       string
 	Amount      int32
 	Description *string
+	ExpiresOn   *time.Time
 	ID          string
 }
 
@@ -229,6 +230,7 @@ func (q *Queries) UpdateSwosh(ctx context.Context, arg UpdateSwoshParams) (int64
 		arg.Payee,
 		arg.Amount,
 		arg.Description,
+		arg.ExpiresOn,
 		arg.ID,
 	)
 	if err != nil {

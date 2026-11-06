@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -46,7 +47,7 @@ func (f *fakeStore) UpdateSwosh(_ context.Context, arg sqlc.UpdateSwoshParams) (
 		return 0, &pgconn.PgError{Code: "23505"}
 	}
 	delete(f.links, arg.ID)
-	sw.ID, sw.Payee, sw.Amount, sw.Description = arg.NewID, arg.Payee, arg.Amount, arg.Description
+	sw.ID, sw.Payee, sw.Amount, sw.Description, sw.ExpiresOn = arg.NewID, arg.Payee, arg.Amount, arg.Description, arg.ExpiresOn
 	f.links[sw.ID] = sw
 	return 1, nil
 }
@@ -378,6 +379,55 @@ func TestEdit(t *testing.T) {
 		"id": `"abc123"`, "user": `"admin"`,
 		"changed": `{"payee":{"from":"1230000000","to":"0700000000"},"amount":{"from":1,"to":250},"description":{"from":"old","to":""}}`,
 	})
+}
+
+func TestEditExpiry(t *testing.T) {
+	// Postgres keeps microseconds, which the form drops.
+	stored := now.Add(48*time.Hour + 123456*time.Microsecond)
+	for _, tt := range []struct {
+		name      string
+		expiresOn *string // nil leaves the field out
+		code      int
+		want      *time.Time
+		changed   string // logged on success; blank for no change
+	}{
+		{
+			"later", ptr("2026-12-24T15:00:00.000Z"), http.StatusSeeOther, ptr(time.Date(2026, 12, 24, 15, 0, 0, 0, time.UTC)),
+			`{"expires_on":{"from":"2026-10-24T12:00:00.123456Z","to":"2026-12-24T15:00:00Z"}}`,
+		},
+		{
+			"with offset", ptr("2026-12-24T16:00:00+01:00"), http.StatusSeeOther, ptr(time.Date(2026, 12, 24, 15, 0, 0, 0, time.UTC)),
+			`{"expires_on":{"from":"2026-10-24T12:00:00.123456Z","to":"2026-12-24T16:00:00+01:00"}}`,
+		},
+		{"never", ptr(""), http.StatusSeeOther, nil, `{"expires_on":{"from":"2026-10-24T12:00:00.123456Z","to":null}}`},
+		{"unchanged", ptr(stored.Format(time.RFC3339)), http.StatusSeeOther, &stored, ""},
+		{"field left out", nil, http.StatusSeeOther, &stored, ""},
+		{"past", ptr(now.Add(-time.Minute).Format(time.RFC3339)), http.StatusBadRequest, &stored, ""},
+		{"not a time", ptr("tomorrow"), http.StatusBadRequest, &stored, ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1, ExpiresOn: &stored})
+			ts.addUser(t, "admin", allAuthorities...)
+			logged := ts.captureLogs(t)
+			c := ts.client()
+			form := url.Values{"_csrf": {c.login(t, "admin")}, "id": {"abc123"}, "payee": {"1230000000"}, "amount": {"1"}}
+			if tt.expiresOn != nil {
+				form.Set("expiresOn", *tt.expiresOn)
+			}
+			rec := c.do(t, http.MethodPost, "/admin/abc123", form)
+			wantStatus(t, rec, tt.code)
+			if got := ts.store.links["abc123"].ExpiresOn; !sameTime(got, tt.want) {
+				t.Errorf("expires_on = %v, want %v", got, tt.want)
+			}
+			if tt.code != http.StatusSeeOther {
+				if body := rec.Body.String(); !strings.Contains(body, "The expiry must") {
+					t.Errorf("page does not explain the error: %s", body)
+				}
+				return
+			}
+			wantLogged(t, logged("updated link"), map[string]string{"changed": tt.changed})
+		})
+	}
 }
 
 func TestRename(t *testing.T) {

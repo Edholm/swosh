@@ -84,9 +84,16 @@
                         <input class="input" name="description" type="text" value="{{.Description}}"
                                id="swosh-message-{{.OriginalID}}" placeholder="No message">
                     </div>
+                    <div class="field span-3">
+                        <label class="label" for="swosh-expires-{{.OriginalID}}">Expires</label>
+                        {{/* admin.js shows expiresOn, in UTC, as the reader's local time and
+                             writes changes back. Without it the expiry is kept as it is. */}}
+                        <input name="expiresOn" type="hidden" value="{{.ExpiresOn}}">
+                        <input class="input input-number expires-local" type="datetime-local"
+                               id="swosh-expires-{{.OriginalID}}" aria-describedby="swosh-expires-hint-{{.OriginalID}}">
+                        <p class="hint" id="swosh-expires-hint-{{.OriginalID}}">Leave blank to never expire.</p>
+                    </div>
                     <p class="link-meta">
-                        <span>{{template "icon" "clock"}} Expires
-                            {{with .ExpiresOn}}<time datetime="{{.}}">{{.}}</time>{{else}}never{{end}}</span>
                         <span>{{template "icon" "plus"}} Created <time datetime="{{.CreatedAt}}">{{.CreatedAt}}</time></span>
                     </p>
                     {{if or .CanUpdate .CanDelete}}

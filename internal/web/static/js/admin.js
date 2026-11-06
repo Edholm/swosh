@@ -1,7 +1,8 @@
-// The admin pages: filtering the list of links, and deleting links, one at a
-// time or the checked ones together.
+// The admin pages: filtering the list of links, editing expiry times, and
+// deleting links, one at a time or the checked ones together.
 document.addEventListener('DOMContentLoaded', function () {
   setUpFilter();
+  setUpExpiry();
   const deleteDialog = setUpDelete();
   setUpBulk(deleteDialog);
 });
@@ -36,6 +37,28 @@ function setUpFilter() {
       filter.focus();
     }
   });
+}
+
+// setUpExpiry shows each link's expiry, kept in UTC in the hidden expiresOn
+// field, as local time in its date picker, and writes changes back as UTC. A
+// cleared picker means the link never expires.
+function setUpExpiry() {
+  const pad = function (n) {
+    return String(n).padStart(2, '0');
+  };
+  for (const picker of document.querySelectorAll('input.expires-local')) {
+    const hidden = picker.form.elements.namedItem('expiresOn');
+    const date = new Date(hidden.value);
+    if (hidden.value && !isNaN(date)) {
+      picker.value = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+    picker.addEventListener('input', function () {
+      // A datetime-local value without a zone is read as local time.
+      const picked = new Date(picker.value);
+      hidden.value = picker.value && !isNaN(picked) ? picked.toISOString() : '';
+    });
+  }
 }
 
 // setUpDelete wires the delete dialog and returns a function that opens it

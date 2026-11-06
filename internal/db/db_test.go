@@ -180,7 +180,8 @@ func TestUpdateSwoshRenames(t *testing.T) {
 	}
 
 	desc := "renamed"
-	n, err := q.UpdateSwosh(ctx, sqlc.UpdateSwoshParams{ID: "old", NewID: "new", Payee: "q", Amount: 5, Description: &desc})
+	expires := time.Date(2030, 1, 2, 3, 4, 5, 0, time.UTC)
+	n, err := q.UpdateSwosh(ctx, sqlc.UpdateSwoshParams{ID: "old", NewID: "new", Payee: "q", Amount: 5, Description: &desc, ExpiresOn: &expires})
 	if err != nil || n != 1 {
 		t.Fatalf("UpdateSwosh = %d, %v; want 1 row", n, err)
 	}
@@ -191,7 +192,7 @@ func TestUpdateSwoshRenames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetSwosh(new): %v", err)
 	}
-	if got.Payee != "q" || got.Amount != 5 || *got.Description != desc {
+	if got.Payee != "q" || got.Amount != 5 || *got.Description != desc || got.ExpiresOn == nil || !got.ExpiresOn.Equal(expires) {
 		t.Errorf("GetSwosh(new) = %+v, want updated fields", got)
 	}
 

@@ -1434,6 +1434,10 @@ select.input {
         grid-column: span 2;
     }
 
+    .link-form .span-3 {
+        grid-column: span 3;
+    }
+
     .link-form .span-4 {
         grid-column: span 4;
     }

@@ -135,6 +135,11 @@ func (s *server) adminUpdate(w http.ResponseWriter, r *http.Request, p *principa
 	form.Payee = strings.TrimSpace(r.PostFormValue("payee"))
 	form.Amount = strings.TrimSpace(r.PostFormValue("amount"))
 	form.Description = r.PostFormValue("description")
+	// A form without the field keeps the expiry, so older pages still open
+	// in a tab don't clear it.
+	if _, ok := r.PostForm["expiresOn"]; ok {
+		form.ExpiresOn = strings.TrimSpace(r.PostFormValue("expiresOn"))
+	}
 
 	failed := func(code int, msg string) {
 		page := s.newAdminPage(p)
@@ -143,7 +148,7 @@ func (s *server) adminUpdate(w http.ResponseWriter, r *http.Request, p *principa
 		s.renderStatus(w, r, code, "admin-single.html", page)
 	}
 
-	arg, msg := form.params()
+	arg, msg := form.params(sw, s.now())
 	if msg != "" {
 		failed(http.StatusBadRequest, msg)
 		return
@@ -187,7 +192,18 @@ func changes(sw sqlc.Swosh, arg sqlc.UpdateSwoshParams) []slog.Attr {
 	if from, to := deref(sw.Description), deref(arg.Description); from != to {
 		change("description", from, to)
 	}
+	if !sameTime(sw.ExpiresOn, arg.ExpiresOn) {
+		change("expires_on", sw.ExpiresOn, arg.ExpiresOn)
+	}
 	return attrs
+}
+
+// sameTime reports whether a and b are the same instant, or both nil.
+func sameTime(a, b *time.Time) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return a.Equal(*b)
 }
 
 func deref(s *string) string {
@@ -201,7 +217,11 @@ func deref(s *string) string {
 // invalid. Only what would break the link is checked: many existing links
 // break the rules the create API enforces, and admins must still be able to
 // edit them.
-func (l adminLink) params() (sqlc.UpdateSwoshParams, string) {
+//
+// ExpiresOn is RFC 3339, as admin.js fills it in from the date picker, and
+// blank for a link that never expires. A new expiry must be in the future,
+// or the next sweep would delete the link; delete it instead.
+func (l adminLink) params(sw sqlc.Swosh, now time.Time) (sqlc.UpdateSwoshParams, string) {
 	switch {
 	case l.ID == "":
 		return sqlc.UpdateSwoshParams{}, "The id must not be blank."
@@ -219,6 +239,21 @@ func (l adminLink) params() (sqlc.UpdateSwoshParams, string) {
 	arg := sqlc.UpdateSwoshParams{ID: l.OriginalID, NewID: l.ID, Payee: l.Payee, Amount: int32(amount)}
 	if strings.TrimSpace(l.Description) != "" {
 		arg.Description = &l.Description
+	}
+	if l.ExpiresOn != "" {
+		t, err := time.Parse(time.RFC3339, l.ExpiresOn)
+		if err != nil {
+			return sqlc.UpdateSwoshParams{}, "The expiry must be a date and time, or blank for never."
+		}
+		switch {
+		case sw.ExpiresOn != nil && sw.ExpiresOn.Truncate(time.Second).Equal(t):
+			// Unchanged. The form drops fractions of a second; keep them.
+			arg.ExpiresOn = sw.ExpiresOn
+		case !t.After(now):
+			return sqlc.UpdateSwoshParams{}, "The expiry must be in the future. Delete the link to stop it working now."
+		default:
+			arg.ExpiresOn = &t
+		}
 	}
 	return arg, ""
 }

@@ -15,7 +15,7 @@ RETURNING *;
 -- name: UpdateSwosh :execrows
 -- Renames the link when new_id differs from id.
 UPDATE swosh
-SET id = @new_id, payee = @payee, amount = @amount, description = @description
+SET id = @new_id, payee = @payee, amount = @amount, description = @description, expires_on = @expires_on
 WHERE id = @id;
 
 -- name: DeleteSwosh :execrows
