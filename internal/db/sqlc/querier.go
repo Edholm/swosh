@@ -23,6 +23,7 @@ type Querier interface {
 	ImportSwosh(ctx context.Context, arg ImportSwoshParams) (int64, error)
 	// Newest first.
 	ListSwoshes(ctx context.Context) ([]Swosh, error)
+	TouchSwosh(ctx context.Context, arg TouchSwoshParams) error
 	// Renames the link when new_id differs from id.
 	UpdateSwosh(ctx context.Context, arg UpdateSwoshParams) (int64, error)
 }

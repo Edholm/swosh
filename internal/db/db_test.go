@@ -201,6 +201,36 @@ func TestUpdateSwoshRenames(t *testing.T) {
 	}
 }
 
+func TestTouchSwosh(t *testing.T) {
+	q := newQueries(t)
+	ctx := t.Context()
+	sw, err := q.CreateSwosh(ctx, sqlc.CreateSwoshParams{ID: "old", Payee: "p", Amount: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sw.LastAccessedAt != nil {
+		t.Errorf("new link LastAccessedAt = %v, want nil", sw.LastAccessedAt)
+	}
+
+	at := time.Date(2030, 1, 2, 3, 4, 5, 0, time.UTC)
+	if err := q.TouchSwosh(ctx, sqlc.TouchSwoshParams{ID: "old", Now: at}); err != nil {
+		t.Fatalf("TouchSwosh: %v", err)
+	}
+	if _, err := q.UpdateSwosh(ctx, sqlc.UpdateSwoshParams{ID: "old", NewID: "new", Payee: "p", Amount: 1}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := q.GetSwosh(ctx, "new")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.LastAccessedAt == nil || !got.LastAccessedAt.Equal(at) {
+		t.Errorf("LastAccessedAt after rename = %v, want %v", got.LastAccessedAt, at)
+	}
+	if err := q.TouchSwosh(ctx, sqlc.TouchSwoshParams{ID: "missing", Now: at}); err != nil {
+		t.Errorf("TouchSwosh(missing): %v", err)
+	}
+}
+
 func TestDeleteSwosh(t *testing.T) {
 	q := newQueries(t)
 	if _, err := q.CreateSwosh(t.Context(), sqlc.CreateSwoshParams{ID: "gone", Payee: "p", Amount: 1}); err != nil {

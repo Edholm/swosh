@@ -1324,7 +1324,8 @@ select.input {
     grid-template-areas:
         "id amount chevron"
         "payee expiry chevron"
-        "desc created chevron";
+        "desc created chevron"
+        ". accessed chevron";
     align-items: center;
     gap: 0.2rem 1rem;
     padding: 0.85rem 1rem;
@@ -1343,8 +1344,8 @@ select.input {
 
 @media (min-width: 52rem) {
     .link summary {
-        grid-template-columns: 7rem 5.5rem 9rem minmax(0, 1fr) auto auto 1.25rem;
-        grid-template-areas: "id amount payee desc created expiry chevron";
+        grid-template-columns: 7rem 5.5rem 9rem minmax(0, 1fr) auto auto auto 1.25rem;
+        grid-template-areas: "id amount payee desc created accessed expiry chevron";
     }
 }
 
@@ -1379,7 +1380,8 @@ select.input {
     color: var(--muted);
 }
 
-.link-created {
+.link-created,
+.link-accessed {
     grid-area: created;
     display: inline-flex;
     align-items: center;
@@ -1388,6 +1390,10 @@ select.input {
     font-size: 0.8125rem;
     white-space: nowrap;
     color: var(--muted);
+}
+
+.link-accessed {
+    grid-area: accessed;
 }
 
 .link-expiry {

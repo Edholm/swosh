@@ -20,6 +20,7 @@ type Swosh struct {
 	PayeeEditable   bool
 	AmountEditable  bool
 	MessageEditable bool
+	LastAccessedAt  *time.Time
 }
 
 type User struct {

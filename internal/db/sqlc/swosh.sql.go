@@ -13,7 +13,7 @@ import (
 const createSwosh = `-- name: CreateSwosh :one
 INSERT INTO swosh (id, payee, amount, description, expires_on, payee_editable, amount_editable, message_editable)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable
+RETURNING id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable, last_accessed_at
 `
 
 type CreateSwoshParams struct {
@@ -49,6 +49,7 @@ func (q *Queries) CreateSwosh(ctx context.Context, arg CreateSwoshParams) (Swosh
 		&i.PayeeEditable,
 		&i.AmountEditable,
 		&i.MessageEditable,
+		&i.LastAccessedAt,
 	)
 	return i, err
 }
@@ -120,7 +121,7 @@ func (q *Queries) DeleteSwoshes(ctx context.Context, ids []string) ([]string, er
 }
 
 const getSwosh = `-- name: GetSwosh :one
-SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable FROM swosh
+SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable, last_accessed_at FROM swosh
 WHERE id = $1
 `
 
@@ -137,6 +138,7 @@ func (q *Queries) GetSwosh(ctx context.Context, id string) (Swosh, error) {
 		&i.PayeeEditable,
 		&i.AmountEditable,
 		&i.MessageEditable,
+		&i.LastAccessedAt,
 	)
 	return i, err
 }
@@ -173,7 +175,7 @@ func (q *Queries) ImportSwosh(ctx context.Context, arg ImportSwoshParams) (int64
 }
 
 const listSwoshes = `-- name: ListSwoshes :many
-SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable FROM swosh
+SELECT id, payee, amount, description, expires_on, created_at, payee_editable, amount_editable, message_editable, last_accessed_at FROM swosh
 ORDER BY created_at DESC, id
 `
 
@@ -197,6 +199,7 @@ func (q *Queries) ListSwoshes(ctx context.Context) ([]Swosh, error) {
 			&i.PayeeEditable,
 			&i.AmountEditable,
 			&i.MessageEditable,
+			&i.LastAccessedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -206,6 +209,22 @@ func (q *Queries) ListSwoshes(ctx context.Context) ([]Swosh, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const touchSwosh = `-- name: TouchSwosh :exec
+UPDATE swosh
+SET last_accessed_at = $1::timestamptz
+WHERE id = $2
+`
+
+type TouchSwoshParams struct {
+	Now time.Time
+	ID  string
+}
+
+func (q *Queries) TouchSwosh(ctx context.Context, arg TouchSwoshParams) error {
+	_, err := q.db.Exec(ctx, touchSwosh, arg.Now, arg.ID)
+	return err
 }
 
 const updateSwosh = `-- name: UpdateSwosh :execrows

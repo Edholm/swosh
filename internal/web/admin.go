@@ -49,8 +49,10 @@ type adminLink struct {
 	Description string
 	ExpiresOn   string
 	CreatedAt   string
-	CanUpdate   bool
-	CanDelete   bool
+	// LastAccessedAt is empty for links nobody has opened since it was tracked.
+	LastAccessedAt string
+	CanUpdate      bool
+	CanDelete      bool
 }
 
 func (s *server) newAdminPage(p *principal) adminPage {
@@ -72,6 +74,9 @@ func (s *server) adminLinkOf(sw sqlc.Swosh, p *principal) adminLink {
 	}
 	if sw.ExpiresOn != nil {
 		l.ExpiresOn = sw.ExpiresOn.UTC().Format(time.RFC3339)
+	}
+	if sw.LastAccessedAt != nil {
+		l.LastAccessedAt = sw.LastAccessedAt.UTC().Format(time.RFC3339)
 	}
 	return l
 }

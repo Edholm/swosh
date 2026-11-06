@@ -602,6 +602,47 @@ func TestAdminPages(t *testing.T) {
 	wantStatus(t, c.do(t, http.MethodGet, "/admin/nope12", nil), http.StatusNotFound)
 }
 
+func TestAdminAccessIsNotRecorded(t *testing.T) {
+	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
+	ts.addUser(t, "admin", allAuthorities...)
+	ts.addUser(t, "user", "ROLE_USER")
+	admin := ts.client()
+	admin.login(t, "admin")
+	for _, target := range []string{"/abc123", "/abc123/redir", "/abc123/qr", "/admin/abc123"} {
+		admin.do(t, http.MethodGet, target, nil)
+	}
+	if len(ts.store.touched) != 0 {
+		t.Errorf("admin visits touched %v, want none", ts.store.touched)
+	}
+
+	// Only admins are left out.
+	user := ts.client()
+	user.login(t, "user")
+	user.do(t, http.MethodGet, "/abc123", nil)
+	if len(ts.store.touched) != 1 {
+		t.Errorf("non-admin visit touched %v, want once", ts.store.touched)
+	}
+}
+
+func TestAdminPagesShowLastAccess(t *testing.T) {
+	ts := newTestServer(t,
+		sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1, LastAccessedAt: ptr(now.Add(-time.Hour))},
+		sqlc.Swosh{ID: "def456", Payee: "0700000000", Amount: 2},
+	)
+	ts.addUser(t, "admin", allAuthorities...)
+	c := ts.client()
+	c.login(t, "admin")
+
+	body := c.do(t, http.MethodGet, "/admin/abc123", nil).Body.String()
+	if !strings.Contains(body, `Last accessed <time datetime="2026-10-22T11:00:00Z">`) {
+		t.Error("single page is missing the last access time")
+	}
+	body = c.do(t, http.MethodGet, "/admin/def456", nil).Body.String()
+	if !strings.Contains(body, "Last accessed never") {
+		t.Error("single page of a link never opened doesn't say so")
+	}
+}
+
 func TestIndexShowsAdminButtonWhenLoggedIn(t *testing.T) {
 	ts := newTestServer(t)
 	ts.addUser(t, "admin", allAuthorities...)

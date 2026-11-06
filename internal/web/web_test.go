@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -33,7 +34,22 @@ type fakeStore struct {
 	links   map[string]sqlc.Swosh
 	users   map[string]sqlc.User
 	created []sqlc.CreateSwoshParams
+	touched []sqlc.TouchSwoshParams
 	err     error
+	// touchErr fails TouchSwosh only.
+	touchErr error
+}
+
+func (f *fakeStore) TouchSwosh(_ context.Context, arg sqlc.TouchSwoshParams) error {
+	if f.touchErr != nil {
+		return f.touchErr
+	}
+	f.touched = append(f.touched, arg)
+	if sw, ok := f.links[arg.ID]; ok {
+		sw.LastAccessedAt = &arg.Now
+		f.links[arg.ID] = sw
+	}
+	return nil
 }
 
 func (f *fakeStore) GetSwosh(_ context.Context, id string) (sqlc.Swosh, error) {
@@ -161,6 +177,39 @@ func TestNotFoundWhenLinkIsMissing(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAccessIsRecorded(t *testing.T) {
+	for _, target := range []string{"/abc123", "/abc123/redir", "/abc123/qr"} {
+		t.Run(target, func(t *testing.T) {
+			ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
+			ts.do(t, http.MethodGet, target, "")
+			want := []sqlc.TouchSwoshParams{{ID: "abc123", Now: now}}
+			if !slices.Equal(ts.store.touched, want) {
+				t.Errorf("touched = %v, want %v", ts.store.touched, want)
+			}
+		})
+	}
+}
+
+func TestAccessIsNotRecordedForMissingLinks(t *testing.T) {
+	expired := sqlc.Swosh{ID: "old123", Payee: "1230000000", Amount: 1, ExpiresOn: ptr(now.Add(-time.Second))}
+	ts := newTestServer(t, expired)
+	ts.do(t, http.MethodGet, "/old123", "")
+	ts.do(t, http.MethodGet, "/nope12", "")
+	if len(ts.store.touched) != 0 {
+		t.Errorf("touched = %v, want none", ts.store.touched)
+	}
+}
+
+func TestFailedAccessRecordStillServesLink(t *testing.T) {
+	ts := newTestServer(t, sqlc.Swosh{ID: "abc123", Payee: "1230000000", Amount: 1})
+	logged := ts.captureLogs(t)
+	ts.store.touchErr = errors.New("connection refused")
+	if rec := ts.do(t, http.MethodGet, "/abc123", ""); rec.Code != http.StatusOK {
+		t.Errorf("status = %d, want 200", rec.Code)
+	}
+	wantLogged(t, logged("record link access"), map[string]string{"id": `"abc123"`, "err": `"connection refused"`})
 }
 
 func TestDatabaseErrorIsNotARedirect(t *testing.T) {

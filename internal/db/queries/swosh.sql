@@ -38,3 +38,8 @@ RETURNING id;
 INSERT INTO swosh (id, payee, amount, description, expires_on, created_at)
 VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (id) DO NOTHING;
+
+-- name: TouchSwosh :exec
+UPDATE swosh
+SET last_accessed_at = sqlc.arg(now)::timestamptz
+WHERE id = sqlc.arg(id);

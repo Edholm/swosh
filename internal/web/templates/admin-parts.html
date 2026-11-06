@@ -39,6 +39,9 @@
                 <span class="link-created" title="Created">
                     {{template "icon" "plus"}}<time datetime="{{.CreatedAt}}" data-relative>{{.CreatedAt}}</time>
                 </span>
+                <span class="link-accessed" title="Last accessed">
+                    {{template "icon" "eye"}}{{with .LastAccessedAt}}<time datetime="{{.}}" data-relative>{{.}}</time>{{else}}Never{{end}}
+                </span>
                 <span class="link-expiry badge">
                     {{template "icon" "clock"}}
                     {{with .ExpiresOn}}<time datetime="{{.}}" data-relative>{{.}}</time>{{else}}Never{{end}}
@@ -95,6 +98,7 @@
                     </div>
                     <p class="link-meta">
                         <span>{{template "icon" "plus"}} Created <time datetime="{{.CreatedAt}}">{{.CreatedAt}}</time></span>
+                        <span>{{template "icon" "eye"}} Last accessed {{with .LastAccessedAt}}<time datetime="{{.}}">{{.}}</time>{{else}}never{{end}}</span>
                     </p>
                     {{if or .CanUpdate .CanDelete}}
                     <div class="form-actions">

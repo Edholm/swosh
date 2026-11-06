@@ -47,6 +47,7 @@ type Store interface {
 	UpdateSwosh(ctx context.Context, arg sqlc.UpdateSwoshParams) (int64, error)
 	DeleteSwosh(ctx context.Context, id string) (int64, error)
 	DeleteSwoshes(ctx context.Context, ids []string) ([]string, error)
+	TouchSwosh(ctx context.Context, arg sqlc.TouchSwoshParams) error
 	GetUserByUsername(ctx context.Context, username string) (sqlc.User, error)
 }
 
@@ -249,9 +250,9 @@ func (s *server) qr(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(png)
 }
 
-// lookup finds the link named in the path. For an unknown or expired link it
-// shows the not found page, and on a database error it answers 500. It
-// reports whether the caller should go on.
+// lookup finds the link named in the path and records the access. For an
+// unknown or expired link it shows the not found page, and on a database
+// error it answers 500. It reports whether the caller should go on.
 func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, bool) {
 	id := r.PathValue("id")
 	sw, err := s.Store.GetSwosh(r.Context(), id)
@@ -264,10 +265,22 @@ func (s *server) lookup(w http.ResponseWriter, r *http.Request) (sqlc.Swosh, boo
 	case sw.ExpiresOn != nil && !sw.ExpiresOn.After(s.now()):
 		// Expired, but the expiry job has not deleted it yet.
 	default:
+		s.touch(r, sw.ID)
 		return sw, true
 	}
 	s.renderStatus(w, r, http.StatusNotFound, "notfound.html", nil)
 	return sqlc.Swosh{}, false
+}
+
+// touch sets the link's last access time, unless a logged-in admin made the
+// request. A failure is logged but doesn't stop the link from being served.
+func (s *server) touch(r *http.Request, id string) {
+	if p := s.currentUser(r); p != nil && p.has(auth.RoleAdmin) {
+		return
+	}
+	if err := s.Store.TouchSwosh(r.Context(), sqlc.TouchSwoshParams{ID: id, Now: s.now()}); err != nil {
+		slog.ErrorContext(r.Context(), "record link access", slog.String("id", id), slog.Any("err", err))
+	}
 }
 
 // editable lists the fields of sw that the payer may change in Swish, e.g.
